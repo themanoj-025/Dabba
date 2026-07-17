@@ -1,0 +1,58 @@
+# Data
+data/raw/
+data/processed/
+*.csv
+*.xlsx
+
+# Model artifacts
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+!models/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports (keep CSVs, ignore generated images)
+reports/figures/*.png
+reports/figures/*.html
+!reports/figures/.gitkeep
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+htmlcov/
+
+# Kaggle
+kaggle.json

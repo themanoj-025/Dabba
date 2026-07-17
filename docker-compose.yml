@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - DABBA_LOG_LEVEL=INFO
+
+  streamlit:
+    build: .
+    command: streamlit run app/streamlit_app.py --server.port 8501
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - DABBA_LOG_LEVEL=INFO
