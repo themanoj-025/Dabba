@@ -2,6 +2,9 @@
 
 4-page app with warm food-tech design system, Plotly charts,
 styled components, and LLM-powered features with graceful fallback.
+
+Uses custom radio navigation (not Streamlit multi-page auto-discovery)
+for consistent theming and layout.
 """
 
 from __future__ import annotations
@@ -14,8 +17,6 @@ import streamlit as st
 from dabba.config import get_config
 
 logger = logging.getLogger(__name__)
-
-# ─── Page config ─────────────────────────────────────────────────────
 
 st.set_page_config(
     page_title="Dabba — Restaurant Intelligence Platform",
@@ -55,7 +56,6 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # Navigation
     page = st.radio(
         "Navigate",
         ["🍽️ Discover", "🚀 Ops Monitor", "📊 Model Performance", "💬 Food Concierge"],
@@ -64,14 +64,12 @@ with st.sidebar:
 
     st.markdown("---")
 
-    # LLM status
     config = get_config()
     llm_status = "🟢 LLM Active" if config.llm_enabled and config.anthropic_api_key else "🟡 Rules-based"
     st.markdown(
         f'<p style="font-size:0.75rem;color:#9ca3af;">{llm_status} mode</p>',
         unsafe_allow_html=True,
     )
-
     st.markdown(
         """
         <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.5rem;">
@@ -84,22 +82,21 @@ with st.sidebar:
 
 # ─── Page routing ────────────────────────────────────────────────────
 
-st.session_state.current_page = page
+# Import page modules
+from pages import page_discover as discover
+from pages import page_ops as ops
+from pages import page_model_performance as model_perf
+from pages import page_concierge as concierge
 
 if "🍽️" in page:
-    from app.pages import page_discover
-    page_discover.show()
+    discover.show()
 elif "🚀" in page:
-    from app.pages import page_ops
-    page_ops.show()
+    ops.show()
 elif "📊" in page:
-    from app.pages import page_model_performance
-    page_model_performance.show()
+    model_perf.show()
 elif "💬" in page:
-    from app.pages import page_concierge
-    page_concierge.show()
+    concierge.show()
 else:
-    # Home / default
     st.title("🍛 Dabba — Restaurant Intelligence Platform")
     st.markdown(
         """

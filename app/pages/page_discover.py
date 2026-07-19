@@ -9,7 +9,6 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import streamlit as st
 
 from app.components.restaurant_card import render_restaurant_card
@@ -57,7 +56,6 @@ def show() -> None:
             "Area", area_options, key=f"{PAGE_NAME}_area"
         )
 
-        # Prioritize toggle (A/B weight profiles)
         prioritize = st.select_slider(
             "Prioritize",
             options=["speed", "balanced", "quality"],
@@ -95,7 +93,6 @@ def show() -> None:
         df, feature_cols, collaborative_model=None, config=config
     )
 
-    # Build embeddings for similar-restaurant retrieval
     embeddings = build_restaurant_embeddings(df, feature_cols, config=config)
 
     # ─── Get recommendations ──────────────────────────────────────
@@ -111,32 +108,32 @@ def show() -> None:
             top_n=top_n,
         )
 
-    # ─── Display results ──────────────────────────────────────────
     if results.empty:
         st.info("No restaurants match your filters. Try adjusting your preferences.")
         return
 
+    # ─── Handle similar-restaurant lookup via session state ────────
+    if f"{PAGE_NAME}_similar_result" not in st.session_state:
+        st.session_state[f"{PAGE_NAME}_similar_result"] = None
+        st.session_state[f"{PAGE_NAME}_similar_name"] = None
+
+    # Callback for "Find Similar" button
+    def _on_find_similar(restaurant_name: str):
+        matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
+        if not matches.empty:
+            idx = df.index.get_loc(matches.index[0])
+            sim = find_similar_restaurants(idx, df, embeddings, top_k=5, config=config)
+            st.session_state[f"{PAGE_NAME}_similar_result"] = sim
+            st.session_state[f"{PAGE_NAME}_similar_name"] = restaurant_name
+        else:
+            st.session_state[f"{PAGE_NAME}_similar_name"] = None
+
+    # ─── Display results ──────────────────────────────────────────
     st.subheader(f"Top {len(results)} Recommendations")
 
-    # Similar restaurant callback
-    similar_results = None
-    similar_restaurant = None
-
-    def _find_similar(restaurant: Dict[str, Any]):
-        nonlocal similar_results, similar_restaurant
-        similar_restaurant = restaurant
-        name = restaurant.get("name", "")
-        matches = df[df["name"].str.contains(name, case=False, na=False)]
-        if not matches.empty:
-            idx = matches.index[0]
-            sim = find_similar_restaurants(idx, df, embeddings, top_k=5, config=config)
-            similar_results = sim
-
-    # Render each recommendation
     for i, (_, row) in enumerate(results.iterrows()):
         rest_dict = row.to_dict()
 
-        # Generate LLM or rules-based explanation
         explanation = None
         if use_llm:
             rs = rest_dict.get("reliability_score_display", 0.5)
@@ -145,25 +142,29 @@ def show() -> None:
                 rest_dict, rs, sentiment, config=config,
             )
 
+        # Render card with similar button
         render_restaurant_card(
             rest_dict,
             explanation=explanation,
             show_similar_button=True,
-            similar_callback=_find_similar,
+            similar_callback=_on_find_similar,
             key_prefix=f"{PAGE_NAME}_{i}",
         )
 
     # ─── Similar restaurants section ──────────────────────────────
-    if similar_results is not None and not similar_results.empty:
+    similar_df = st.session_state.get(f"{PAGE_NAME}_similar_result")
+    similar_name = st.session_state.get(f"{PAGE_NAME}_similar_name")
+
+    if similar_df is not None and not similar_df.empty and similar_name:
         st.markdown("---")
-        st.subheader(f"🔍 Similar to **{similar_restaurant.get('name', '')}**")
-        for j, (_, srow) in enumerate(similar_results.iterrows()):
+        st.subheader(f"🔍 Similar to **{similar_name}**")
+        for j, (_, srow) in enumerate(similar_df.iterrows()):
             render_restaurant_card(
                 srow.to_dict(),
                 key_prefix=f"sim_{j}",
             )
 
-    # ─── Priority explanation ─────────────────────────────────────
+    # Priority explanation
     if prioritize != "balanced":
         st.markdown("---")
         st.caption(
