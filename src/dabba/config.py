@@ -1,21 +1,21 @@
-"""Centralized configuration for the Dabba project.
+"""Centralized configuration for the Dabba project v3.
 
-All paths, constants, thresholds, and hyperparameters live here.
-No hardcoded values should appear in any other source file.
+All paths, constants, thresholds, hyperparameters, and API settings
+live here. No hardcoded values should appear in any other source file.
 """
 
 from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class DabbaConfig(BaseSettings):
-    """Root configuration for the Dabba project.
+    """Root configuration for the Dabba project v3.
 
     Attributes:
         project_root: Absolute path to the project root directory.
@@ -33,6 +33,15 @@ class DabbaConfig(BaseSettings):
         reliability_w_sentiment: Weight for sentiment in reliability score.
         reliability_w_delay: Weight for delay risk in reliability score.
         log_level: Logging level.
+        mlflow_tracking_uri: MLflow tracking server URI.
+        mlflow_experiment_name: MLflow experiment name.
+        anthropic_api_key: Anthropic API key (optional, for LLM layer).
+        llm_enabled: Whether LLM features are enabled.
+        llm_model: Model string for Anthropic.
+        llm_max_tokens: Max tokens for LLM responses.
+        hybrid_weight_content: Weight for content-based score in hybrid recommender.
+        hybrid_weight_collaborative: Weight for collaborative filtering score.
+        hybrid_weight_reliability: Weight for reliability score.
     """
 
     model_config = {"env_prefix": "DABBA_", "env_file": ".env"}
@@ -63,6 +72,25 @@ class DabbaConfig(BaseSettings):
     reliability_w_rating: float = 0.4
     reliability_w_sentiment: float = 0.3
     reliability_w_delay: float = 0.3
+
+    # --- Hybrid Recommender Weights ---
+    hybrid_weight_content: float = 0.4
+    hybrid_weight_collaborative: float = 0.3
+    hybrid_weight_reliability: float = 0.3
+
+    # --- LLM Settings ---
+    anthropic_api_key: Optional[str] = Field(default=None)
+    llm_enabled: bool = False
+    llm_model: str = "claude-sonnet-4-20250514"
+    llm_max_tokens: int = 1000
+
+    # --- MLflow ---
+    mlflow_tracking_uri: str = "http://localhost:5000"
+    mlflow_experiment_name: str = "dabba"
+
+    # --- Drift Detection ---
+    drift_ks_threshold: float = 0.05  # p-value threshold for KS test
+    drift_feature_sample: int = 100   # samples to use for drift detection
 
     # --- Logging ---
     log_level: str = "INFO"
@@ -102,6 +130,11 @@ class DabbaConfig(BaseSettings):
         return self.models_dir / "best_eta_model.pkl"
 
     @property
+    def best_collaborative_model_path(self) -> Path:
+        """Path to the saved collaborative filtering model."""
+        return self.models_dir / "best_collaborative_model.pt"
+
+    @property
     def rating_comparison_path(self) -> Path:
         """Path to the rating model comparison CSV."""
         return self.reports_dir / "model_comparison_rating.csv"
@@ -110,6 +143,21 @@ class DabbaConfig(BaseSettings):
     def eta_comparison_path(self) -> Path:
         """Path to the ETA model comparison CSV."""
         return self.reports_dir / "model_comparison_eta.csv"
+
+    @property
+    def synthetic_interactions_path(self) -> Path:
+        """Path to the synthetic user-restaurant interaction dataset."""
+        return self.data_processed_dir / "synthetic_interactions.csv"
+
+    @property
+    def faiss_index_path(self) -> Path:
+        """Path to the FAISS index for similar restaurant retrieval."""
+        return self.models_dir / "restaurant_faiss.index"
+
+    @property
+    def restaurant_embeddings_path(self) -> Path:
+        """Path to the restaurant feature embeddings for RAG."""
+        return self.models_dir / "restaurant_embeddings.npy"
 
 
 def get_config() -> DabbaConfig:
