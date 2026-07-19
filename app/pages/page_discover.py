@@ -113,20 +113,30 @@ def show() -> None:
         return
 
     # ─── Handle similar-restaurant lookup via session state ────────
-    if f"{PAGE_NAME}_similar_result" not in st.session_state:
-        st.session_state[f"{PAGE_NAME}_similar_result"] = None
-        st.session_state[f"{PAGE_NAME}_similar_name"] = None
+    state_key = f"{PAGE_NAME}_similar_result"
+    name_key = f"{PAGE_NAME}_similar_name"
+    if state_key not in st.session_state:
+        st.session_state[state_key] = None
+        st.session_state[name_key] = None
 
-    # Callback for "Find Similar" button
+    # Clear similar results when filters change (cuisine/budget/area change)
+    # by checking if this is a rerun after a filter change
+    filter_key = f"{PAGE_NAME}_filter_hash"
+    current_hash = hash((tuple(selected_cuisines or []), budget, selected_area, prioritize))
+    if st.session_state.get(filter_key) != current_hash:
+        st.session_state[state_key] = None
+        st.session_state[name_key] = None
+        st.session_state[filter_key] = current_hash
+
     def _on_find_similar(restaurant_name: str):
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
         if not matches.empty:
             idx = df.index.get_loc(matches.index[0])
             sim = find_similar_restaurants(idx, df, embeddings, top_k=5, config=config)
-            st.session_state[f"{PAGE_NAME}_similar_result"] = sim
-            st.session_state[f"{PAGE_NAME}_similar_name"] = restaurant_name
+            st.session_state[state_key] = sim
+            st.session_state[name_key] = restaurant_name
         else:
-            st.session_state[f"{PAGE_NAME}_similar_name"] = None
+            st.session_state[name_key] = None
 
     # ─── Display results ──────────────────────────────────────────
     st.subheader(f"Top {len(results)} Recommendations")

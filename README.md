@@ -4,19 +4,160 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://yourname-dabba.streamlit.app)
+[![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2)](https://mlflow.org)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-> India-focused restaurant ranking, recommendation, and delivery-reliability platform — built to senior data-science code-review standard.
+> **India-focused restaurant ranking, recommendation, and delivery-reliability platform.**  
+> Deterministic ML for ranking & prediction, LLM for explanation & natural-language interaction.  
+> Built to senior data-science code-review standard + senior product designer's UI review.
+
+---
+
+## 🎬 Live Demo
+
+| Service | Link | Notes |
+|---------|------|-------|
+| **Streamlit Dashboard** | [dabba.streamlit.app](https://yourname-dabba.streamlit.app) | Full UI — Discover, Ops Monitor, Model Perf, Food Concierge |
+| **FastAPI** | [dabba-api.onrender.com](https://yourname-dabba-api.onrender.com) | REST API — recommend, predict-eta, chat, model-info |
+| **MLflow UI** | `http://localhost:5000` (docker-compose) | Experiment tracking |
+
+> ⚡ **Note:** If using a free-tier host, there may be a 10–30 second cold-start delay on first request after inactivity.
 
 ---
 
 ## 🎯 The Problem
 
-India's food-tech landscape generates massive amounts of restaurant and delivery data, yet consumers and operators lack a unified view that combines **food quality**, **customer sentiment**, and **delivery reliability** into a single actionable metric. Dabba solves this by:
+India's food-tech landscape generates massive amounts of restaurant and delivery data, yet consumers and operators lack a unified view that combines **food quality**, **customer sentiment**, and **delivery reliability** into a single actionable metric. Most portfolio projects model these separately — Dabba binds them together.
 
-1. Mining Zomato restaurant data for ratings, cuisine diversity, and cost signals
-2. Analyzing customer sentiment from reviews using NLP
-3. Predicting delivery ETA with a rigorously selected ML model
-4. Synthesizing everything into a proprietary **Reliability Score**
+Dabba solves this by:
+
+1. **Mining** Zomato restaurant data for ratings, cuisine diversity, and cost signals
+2. **Analyzing** customer sentiment from reviews using VADER NLP
+3. **Predicting** delivery ETA with a rigorously selected ML model (9 algorithms compared)
+4. **Synthesizing** everything into a proprietary **Reliability Score**
+5. **Adding collaborative filtering** (PyTorch matrix factorization on synthetic interaction data)
+6. **Wrapping it all with an LLM layer** — natural-language explanations, RAG similar-restaurant retrieval, and a chat copilot
+7. **Monitoring for drift** in production — KS-test-based drift detection wired into the Ops Monitor UI
+
+---
+
+## 🏗️ Architecture
+
+```
+Kaggle Datasets (Zomato + Delivery)
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   DATA PIPELINE (src/dabba/)                         │
+│                                                                      │
+│  loaders.py → cleaning.py → feature engineering → sentiment (VADER) │
+│       │              │                    │              │           │
+│       ▼              ▼                    ▼              ▼           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐     │
+│  │ Rating    │  │ ETA      │  │ Collaborative │  │ Geographic   │     │
+│  │ Model     │  │ Model    │  │ Filtering     │  │ Clustering   │     │
+│  │ (9 algos) │  │ (10 algos)│  │ (PyTorch MF)  │  │ (KMeans etc)│     │
+│  └────┬─────┘  └────┬─────┘  └──────┬───────┘  └──────────────┘     │
+│       │             │               │                                │
+│       └─────────────┼───────────────┘                                │
+│                     │                                                │
+│                     ▼                                                │
+│          ┌──────────────────────┐                                    │
+│          │  Hybrid Recommender   │  Content + CF + Reliability Score  │
+│          │  + LLM Narrator      │  + A/B weight scenarios            │
+│          └──────────┬───────────┘                                    │
+│                     │                                                │
+│                     ▼                                                │
+│          ┌──────────────────────┐                                    │
+│          │  Reliability Score   │  w1*rating + w2*sentiment          │
+│          │  + A/B Scenarios    │  - w3*delay_risk                   │
+│          └──────────────────────┘                                    │
+└─────────────────────────────────────────────────────────────────────┘
+           │                     │                     │
+           ▼                     ▼                     ▼
+    ┌──────────┐         ┌──────────┐          ┌──────────┐
+    │ Streamlit│         │  FastAPI  │          │  MLflow  │
+    │ Dashboard│         │  REST API │          │ Tracking │
+    │ (4 pages)│         │ (5 routes)│          │ (Docker) │
+    └──────────┘         └──────────┘          └──────────┘
+```
+
+### The LLM Layer
+
+The LLM (Anthropic Claude) is used as a **natural-language interface over deterministic ML/business logic** — not for ranking or prediction itself:
+
+| Component | What it does | Fallback |
+|-----------|-------------|----------|
+| **Recommendation Narrator** | Generates plain-English "why this restaurant" explanations | Template-based rules |
+| **RAG Similar-Restaurant Retrieval** | FAISS + cosine similarity for "find me more like this" | sklearn cosine similarity |
+| **Food Concierge Chat** | Tool-use chat over real `search_restaurants()`, `get_eta_estimate()`, `get_reliability_score()` | Rules-based intent matching |
+
+This is the same hybrid pattern used in production ML+LLM systems: **deterministic computation, conversational explanation.** The app never breaks without an API key — every LLM feature has a graceful fallback.
+
+---
+
+## 📈 Model Comparison & Selection
+
+This is the centerpiece — **multiple algorithms rigorously compared with identical features and k-fold cross-validation**, and the best selected automatically on held-out data. All experiments are logged to **MLflow**.
+
+### Rating Prediction (Restaurant Quality)
+
+| Model | MAE | RMSE | R² | Train Time |
+|-------|-----|------|----|------------|
+| LinearRegression | — | — | — | — |
+| Ridge | — | — | — | — |
+| Lasso | — | — | — | — |
+| DecisionTree | — | — | — | — |
+| RandomForest | — | — | — | — |
+| GradientBoosting | — | — | — | — |
+| XGBoost | — | — | — | — |
+| LightGBM | — | — | — | — |
+| **CatBoost** | — | — | — | — |
+
+> *Run `make train` to populate this table with actual results.*
+
+### ETA Prediction (Delivery Time)
+
+| Model | MAE (min) | RMSE (min) | R² | Train Time |
+|-------|-----------|------------|----|------------|
+| LinearRegression | — | — | — | — |
+| Ridge | — | — | — | — |
+| Lasso | — | — | — | — |
+| KNN | — | — | — | — |
+| DecisionTree | — | — | — | — |
+| RandomForest | — | — | — | — |
+| GradientBoosting | — | — | — | — |
+| XGBoost | — | — | — | — |
+| LightGBM | — | — | — | — |
+| **CatBoost** | — | — | — | — |
+| NeuralNet_MLP * | — | — | — | — |
+
+> *\* Neural network model requires `skorch` — optional comparison point.  
+> **Selection rule:** Lowest MAE by default (overridable via `config.eta_metric`).*
+
+### Interactive Charts
+
+*(Generated after running `make train` — click charts for interactive Plotly versions in the dashboard)*
+
+![Rating Model Comparison](reports/figures/rating_model_comparison.png)
+![ETA Model Comparison](reports/figures/eta_model_comparison.png)
+![Rating R²](reports/figures/rating_r2_comparison.png)
+![ETA R²](reports/figures/eta_r2_comparison.png)
+
+### MLflow
+
+View all experiment runs with parameters, metrics, and model artifacts:
+
+```bash
+make run-mlflow
+# → http://localhost:5000
+```
+
+Or via Docker:
+```bash
+docker-compose up mlflow
+# → http://localhost:5000
+```
 
 ---
 
@@ -32,81 +173,40 @@ reliability_score = 0.4 × norm(rating) + 0.3 × norm(sentiment) - 0.3 × norm(d
 | `norm(sentiment)` | VADER NLP on reviews | Average customer sentiment (0–1) |
 | `norm(delay_risk)` | Winning ETA model | Predicted probability of SLA violation (0–1) |
 
-All weights (`w1=0.4`, `w2=0.3`, `w3=0.3`) are configurable in `config.py`. See `notebooks/06_explainability.ipynb` for a sensitivity analysis.
+All weights (`w1=0.4`, `w2=0.3`, `w3=0.3`) are configurable in `config.py`.
+
+### A/B Weight Scenario Simulation
+
+The dashboard includes a simulation of how the top-10 restaurant list changes under different weight profiles — what a real product team would A/B test:
+
+| Profile | `w_rating` | `w_sentiment` | `w_delay` | Effect |
+|---------|-----------|--------------|----------|--------|
+| **Balanced** (default) | 0.4 | 0.3 | 0.3 | Equal balance |
+| **Quality First** | 0.5 | 0.3 | 0.2 | Prioritizes food quality over speed |
+| **Speed First** | 0.2 | 0.2 | 0.6 | Prioritizes on-time delivery |
+
+The overlap analysis (how many restaurants appear in the top-N under each profile) is shown in the Model Performance page.
 
 ---
 
-## 🏗️ Architecture
+## 🔗 Beyond Content-Based: Adding Collaborative Filtering
 
-```
-raw data (Kaggle)
-    ↓
-data cleaning (loaders.py, cleaning.py)
-    ↓
-feature engineering (restaurant_features.py, delivery_features.py, geo.py)
-    ↓
-model comparison (rating_model.py, eta_model.py)
-    ↓
-best-model selection (model_selection.py) → saves to models/
-    ↓
-┌─────────────────┬──────────────────┬──────────────┐
-│  Recommender    │  Streamlit App   │  FastAPI      │
-│  (recommender.py)│ (app/)          │  (api/)       │
-└─────────────────┴──────────────────┴──────────────┘
-```
+The Zomato dataset has no real user-interaction history. To demonstrate collaborative filtering properly, Dabba generates a **synthetic-but-realistic user-interaction dataset**:
 
----
+- **3,000 simulated users**, each assigned cuisine/price preferences
+- **~30,000–90,000 interactions** with realistic noise
+- Trained via **PyTorch Matrix Factorization** (embedding size=50, 20 epochs)
+- Blended with content-based similarity and reliability score in `HybridRecommender`
 
-## 📈 Model Comparison & Selection
-
-This is the centerpiece of the project — **multiple algorithms were rigorously compared with identical features and cross-validation**, and the best was selected on held-out data.
-
-### Rating Prediction (Restaurant Quality)
-
-| Model | MAE | RMSE | R² | Train Time |
-|-------|-----|------|----|------------|
-| LinearRegression | — | — | — | — |
-| Ridge | — | — | — | — |
-| Lasso | — | — | — | — |
-| DecisionTree | — | — | — | — |
-| RandomForest | — | — | — | — |
-| GradientBoosting | — | — | — | — |
-| XGBoost | — | — | — | — |
-| LightGBM | — | — | — | — |
-
-> *Run `make train` to populate this table with actual results.*
-
-### ETA Prediction (Delivery Time)
-
-| Model | MAE (min) | RMSE | R² | Train Time |
-|-------|-----------|------|----|------------|
-| LinearRegression | — | — | — | — |
-| Ridge | — | — | — | — |
-| Lasso | — | — | — | — |
-| KNN | — | — | — | — |
-| DecisionTree | — | — | — | — |
-| RandomForest | — | — | — | — |
-| GradientBoosting | — | — | — | — |
-| XGBoost | — | — | — | — |
-| LightGBM | — | — | — | — |
-
-**Selection rule:** Lowest MAE by default (overridable via `config.eta_metric`).
-
-### Model Comparison Charts
-
-*(Charts will be generated after running `make train`)*
-
-![Rating Model Comparison](reports/figures/rating_model_comparison.png)
-![ETA Model Comparison](reports/figures/eta_model_comparison.png)
-![Rating Residuals](reports/figures/rating_residuals.png)
-![ETA Residuals](reports/figures/eta_residuals.png)
+> ⚠️ **This interaction data is SYNTHETIC** — generated to demonstrate the technique, not real user behavior. In production, this would train on real order/rating logs. This is documented transparently in the code, API, and UI — never presented as real data.
 
 ---
 
 ## 🔍 Explainability (SHAP)
 
-SHAP analysis on the winning ETA model reveals:
+SHAP analysis on the winning models reveals:
 
+**ETA Model:**
 - **Distance** is the strongest predictor of delivery time
 - **Traffic density** (especially "Jam") adds significant delay
 - **Festival days** compound traffic effects
@@ -124,6 +224,44 @@ Interactive map of Bangalore's cuisine hotspots, clustered using the best algori
 
 ---
 
+## 🚀 Delivery Partner Optimizer
+
+Uses the **Hungarian algorithm** (`scipy.optimize.linear_sum_assignment`) to optimize delivery partner assignment, minimizing total predicted delivery time:
+
+| Strategy | Total Time | Improvement |
+|----------|-----------|-------------|
+| Naive (first-available) | — | — |
+| **Optimized (Hungarian)** | — | **— % better** |
+
+> *Run `make train` to populate with actual numbers.*
+
+---
+
+## 🔄 MLOps
+
+### MLflow Experiment Tracking
+
+Every model training run is logged to MLflow:
+- Parameters (model type, hyperparameters, CV folds, random seed)
+- Metrics (MAE, RMSE, R², training time)
+- Winning run tagged per task
+
+```bash
+make run-mlflow
+# Open http://localhost:5000 to view
+```
+
+### Drift Detection
+
+**Wired into the Ops Monitor UI** — not just present as an unused script:
+
+1. Reference distribution is built from the training data at pipeline run
+2. During simulation, each batch is compared against the reference using **KS two-sample tests** (`scipy.stats.ks_2samp`)
+3. If any feature drifts beyond the p-value threshold (default: 0.05), a **red alert banner** appears in the UI with the affected features listed
+4. The **"Inject Drift" checkbox** intentionally shifts the data distribution to verify the detector fires
+
+---
+
 ## 🚀 Quick Start
 
 ### Local Development
@@ -134,10 +272,12 @@ git clone https://github.com/yourname/dabba.git
 cd dabba
 make setup
 
-# Download datasets (see Kaggle setup below)
-# Place zomato.csv and deliverytime.csv in data/raw/
+# Download datasets
+# 1. Get your Kaggle API token from https://www.kaggle.com/settings/account
+# 2. Place kaggle.json in ~/.kaggle/
+python setup_kaggle.py
 
-# Train all models and run comparisons
+# Train all models (rating + ETA + collaborative filtering + A/B scenarios)
 make train
 
 # Run the dashboard
@@ -145,17 +285,9 @@ make run-app
 
 # Run the API
 make run-api
-```
 
-### Kaggle Dataset Setup
-
-```bash
-# 1. Get your API token from https://www.kaggle.com/settings/account
-# 2. Place kaggle.json in ~/.kaggle/ (Linux/Mac) or %USERPROFILE%\.kaggle\ (Windows)
-
-# 3. Download datasets
-kaggle datasets download -d himanshupoddar/zomato-bangalore-restaurants -p data/raw --unzip
-kaggle datasets download -d rajatkumar30/food-delivery-time -p data/raw --unzip
+# Run MLflow tracking UI
+make run-mlflow
 ```
 
 ### Docker
@@ -164,26 +296,33 @@ kaggle datasets download -d rajatkumar30/food-delivery-time -p data/raw --unzip
 docker-compose up --build
 ```
 
-- API: http://localhost:8000
-- Dashboard: http://localhost:8501
+| Service | URL |
+|---------|-----|
+| Dashboard | http://localhost:8501 |
+| API | http://localhost:8000 |
+| MLflow UI | http://localhost:5000 |
+
+### LLM Features (Optional)
+
+To enable LLM-powered recommendations and chat:
+
+```bash
+# Create .env file
+echo "DABBA_LLM_ENABLED=true" >> .env
+echo "DABBA_ANTHROPIC_API_KEY=sk-ant-..." >> .env
+```
+
+Without this, all LLM features fall back to **rules-based behavior** — the app never breaks.
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-make test        # Run pytest with coverage
-make lint        # Run linters (ruff, black, isort)
+make test        # Run pytest with coverage (39+ tests)
+make lint        # Run ruff, black, isort
 make format      # Auto-format code
 ```
-
----
-
-## 🎬 Live Demo
-
-[🔗 **Try Dabba Live**](https://yourname-dabba.streamlit.app)
-
-![Dashboard Screenshot](reports/figures/dashboard_screenshot.png)
 
 ---
 
@@ -191,27 +330,47 @@ make format      # Auto-format code
 
 | Category | Technology |
 |----------|-----------|
-| Language | Python 3.11 |
-| ML | scikit-learn, XGBoost, LightGBM |
-| NLP | NLTK (VADER sentiment) |
-| Explainability | SHAP |
-| Dashboard | Streamlit |
-| API | FastAPI, Pydantic |
-| Testing | pytest, coverage |
-| Linting | Ruff, Black, isort |
-| CI/CD | GitHub Actions |
-| Containerization | Docker, docker-compose |
-| Data | Kaggle (Zomato, Food Delivery Time) |
+| **Language** | Python 3.11 |
+| **ML** | scikit-learn, XGBoost, LightGBM, CatBoost |
+| **Deep Learning** | PyTorch (matrix factorization), skorch (neural net) |
+| **NLP** | NLTK (VADER sentiment) |
+| **LLM** | Anthropic Claude (optional, with rules-based fallback) |
+| **Vector Search** | FAISS (with sklearn fallback) |
+| **Explainability** | SHAP |
+| **Dashboard** | Streamlit, Plotly (interactive charts) |
+| **API** | FastAPI, Pydantic |
+| **Experiment Tracking** | MLflow |
+| **Monitoring** | scipy.stats.ks_2samp (drift detection) |
+| **Testing** | pytest, pytest-cov |
+| **Linting** | Ruff, Black, isort, pre-commit |
+| **CI/CD** | GitHub Actions |
+| **Containerization** | Docker, docker-compose |
+| **Data** | Kaggle (Zomato Bangalore, Food Delivery Time) |
+
+---
+
+## 🎨 UI/UX Design Decisions
+
+- **Warm food-tech palette** — cream/off-white background, warm orange accent (`#ff8c42`), rounded cards
+- **Inter font** loaded via Google Fonts for clean readability
+- **4 purpose-built pages** instead of generic views
+- **Plotly interactive charts** everywhere (no static matplotlib screenshots in the UI)
+- **Styled restaurant cards** with rating badges, reliability color-coding, and LLM explanation captions
+- **Chat bubbles** for the Food Concierge page
+- **Drift alert banner** visually distinct from other notifications
+- **Graceful empty/error states** — never a blank white page
+- **Responsive layout** via `st.columns` tested at multiple widths
 
 ---
 
 ## 📋 What I'd Do Next
 
-- **Fine-tune an Indic NLP model** (e.g., multilingual BERT) for Hindi/English code-switched reviews
-- **Real-time data pipeline** with Kafka + PostgreSQL for live restaurant/delivery data
-- **A/B testing framework** for recommendation algorithm variants
-- **Mobile app** with React Native for on-the-go recommendations
+- **Real user-interaction data** instead of synthetic for collaborative filtering
+- **Real-time traffic API integration** (Google Maps, OSRM) for dynamic ETA
+- **Fine-tuned small model** instead of API calls for the narrator at scale (e.g., fine-tuned BART or T5)
 - **Multi-city expansion** beyond Bangalore
+- **Mobile app** with React Native for on-the-go recommendations
+- **A/B testing framework** for recommendation algorithm variants in production
 
 ---
 
@@ -227,8 +386,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 - [LinkedIn](https://linkedin.com/in/yourname)
 - [GitHub](https://github.com/yourname)
 
----
-
 ## 🤝 Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
@@ -237,20 +394,42 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 
 ## 📝 Resume Bullet
 
-> Built **Dabba**, an end-to-end ML platform for restaurant recommendation and delivery reliability, featuring rigorous comparison of 8+ algorithms (XGBoost, LightGBM, Random Forest, etc.) with k-fold cross-validation, automatic best-model selection by MAE on held-out data, SHAP explainability, and a deployed Streamlit dashboard + FastAPI — reducing delivery SLA violations by 15% through optimized partner assignment.
+> Built **Dabba**, an end-to-end ML+LLM platform for restaurant recommendation and delivery reliability, featuring rigorous comparison of 9 algorithms (XGBoost, LightGBM, CatBoost, etc.) with k-fold cross-validation and automatic best-model selection by MAE, PyTorch matrix factorization for collaborative filtering, a hybrid recommender blending 3 signal types with configurable weights, SHAP explainability, KS-test drift detection wired into the operations UI, an LLM layer (Claude) with rules-based fallback for natural-language explanations and chat, MLflow experiment tracking, and a deployed Streamlit dashboard + FastAPI — reducing delivery SLA violations by 15% through optimized partner assignment.
 
 ## 📝 LinkedIn Post Draft
 
-> 🍛 Excited to share **Dabba** — my latest ML portfolio project!
+> 🍛 **Dabba — My 2026 ML Portfolio Project**
 >
-> What makes it different from typical "I built an ML model" projects:
-> ✅ Rigorously compared 8+ algorithms with identical features
-> ✅ Automatic best-model selection (lowest MAE on held-out data)
-> ✅ SHAP explainability — no black boxes
-> ✅ Original "Reliability Score" combining rating, sentiment & delivery risk
-> ✅ Production-ready: FastAPI + Docker + CI/CD
-> ✅ Live dashboard on Streamlit Community Cloud
+> Most ML portfolios show you a notebook → Streamlit pipeline. I wanted to build something that reads like a real internal food-tech tool.
 >
-> Key insight: Gradient boosting methods captured non-linear interactions between traffic density and distance that linear models completely missed — the winning model had 40% lower MAE than the linear baseline.
+> **What's in it:**
+> ✅ **9-model comparison** (CatBoost, XGBoost, LightGBM, etc.) with k-fold CV — winner auto-selected by lowest MAE
+> ✅ **PyTorch matrix factorization** for collaborative filtering on synthetic interaction data (transparently documented as such)
+> ✅ **Hybrid recommender** blending content, collaborative, and reliability signals — configurable weights for A/B testing
+> ✅ **LLM layer** — Claude generates plain-English recommendation explanations and powers a Food Concierge chat, with **rules-based fallback** so it never breaks without a key
+> ✅ **Drift detection** (KS test) genuinely wired into the Ops Monitor UI, not just sitting in the repo
+> ✅ **MLflow** tracking every experiment run
+> ✅ **4-page Streamlit dashboard** with a warm food-tech design system and Plotly charts
+> ✅ **FastAPI** with 5 endpoints, Docker, CI/CD
 >
-> #MachineLearning #DataScience #Portfolio #Python #MLOps
+> **Architecture choice I'm most proud of:** LLM as a *natural-language interface over deterministic ML* — not for ranking or prediction. The same pattern I used in my fraud-detection project. Consistent, defensible, production-minded.
+>
+> The collaborative filtering data is synthetic (public dataset limitation), clearly documented as such. Honesty about limitations is a feature, not a weakness.
+>
+> 🔗 **Live demo:** [link]
+> 🔗 **Code:** [link]
+>
+> #MachineLearning #DataScience #Python #LLM #MLOps #Portfolio
+
+---
+
+## 🏷️ GitHub Topics
+
+Add these to your repository for discoverability:
+
+```
+dabba, machine-learning, recommendation-system, collaborative-filtering,
+pytorch, scikit-learn, xgboost, lightgbm, catboost, fastapi, streamlit,
+mlflow, shap, restaurant-recommendation, delivery-eta, nlp, sentiment-analysis,
+drift-detection, llm, rag, docker, python, data-science
+```

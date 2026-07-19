@@ -33,7 +33,7 @@ def clean_zomato_rating(series: pd.Series) -> pd.Series:
         series: Raw 'rate' column.
 
     Returns:
-        pd.Series: Cleaned numeric rating (float, 0–5 scale).
+        pd.Series: Cleaned numeric rating (float, 0-5 scale).
     """
     def _extract(value: object) -> Optional[float]:
         if pd.isna(value):
@@ -54,7 +54,7 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
     """Parse the cost-for-two column (e.g. '1,200', '₹300').
     
     Strategy:
-        - Remove non-numeric characters (₹, commas, spaces)
+        - Remove non-numeric characters (comma, rupee sign, spaces)
         - Cast to float; unparseable values become NaN.
 
     Args:
@@ -97,6 +97,8 @@ def clean_zomato(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.D
         pd.DataFrame: Cleaned Zomato data.
     """
     config = config or get_config()
+    # Work on a copy to avoid SettingWithCopyWarning
+    df = df.copy()
     logger.info("Starting Zomato cleaning — input shape: %s", df.shape)
 
     # 1. Deduplicate
@@ -106,11 +108,11 @@ def clean_zomato(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.D
 
     # 2. Clean specific columns
     if "rate" in df.columns:
-        df["rate"] = clean_zomato_rating(df["rate"])
+        df.loc[:, "rate"] = clean_zomato_rating(df["rate"])
 
     cost_col = "approx_cost(for two people)"
     if cost_col in df.columns:
-        df[cost_col] = clean_zomato_cost(df[cost_col])
+        df.loc[:, cost_col] = clean_zomato_cost(df[cost_col])
         # Rename for consistency
         df = df.rename(columns={cost_col: "cost_for_two"})
 
@@ -167,6 +169,8 @@ def clean_delivery(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd
         pd.DataFrame: Cleaned delivery data.
     """
     config = config or get_config()
+    # Work on a copy to avoid SettingWithCopyWarning
+    df = df.copy()
     logger.info("Starting delivery cleaning — input shape: %s", df.shape)
 
     # 1. Deduplicate
@@ -186,6 +190,7 @@ def clean_delivery(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd
             df[target_col]
             .astype(str)
             .str.replace(r"[^\d.]", "", regex=True)
+            .replace("", np.nan)
             .astype(float)
         )
         df = df.rename(columns={target_col: "time_taken_min"})
