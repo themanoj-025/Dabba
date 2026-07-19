@@ -50,11 +50,11 @@ class DabbaConfig(BaseSettings):
     project_root: Path = Field(
         default_factory=lambda: Path(__file__).resolve().parent.parent.parent
     )
-    data_raw_dir: Path = Field(default=None)
-    data_processed_dir: Path = Field(default=None)
-    models_dir: Path = Field(default=None)
-    reports_dir: Path = Field(default=None)
-    reports_figures_dir: Path = Field(default=None)
+    data_raw_dir: Optional[Path] = Field(default=None)
+    data_processed_dir: Optional[Path] = Field(default=None)
+    models_dir: Optional[Path] = Field(default=None)
+    reports_dir: Optional[Path] = Field(default=None)
+    reports_figures_dir: Optional[Path] = Field(default=None)
 
     # --- Data ---
     zomato_filename: str = "zomato.csv"
