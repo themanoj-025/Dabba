@@ -1,13 +1,21 @@
-"""Streamlit dashboard — main entry point.
+"""Dabba v3 — Streamlit dashboard entry point.
 
-Run with: streamlit run app/streamlit_app.py
+4-page app with warm food-tech design system, Plotly charts,
+styled components, and LLM-powered features with graceful fallback.
 """
 
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import streamlit as st
+
+from dabba.config import get_config
+
+logger = logging.getLogger(__name__)
+
+# ─── Page config ─────────────────────────────────────────────────────
 
 st.set_page_config(
     page_title="Dabba — Restaurant Intelligence Platform",
@@ -16,43 +24,101 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- Sidebar ---
+# ─── Load theme CSS ──────────────────────────────────────────────────
+
+css_path = Path(__file__).parent / "assets" / "theme.css"
+if css_path.exists():
+    with open(css_path) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+# ─── Sidebar ─────────────────────────────────────────────────────────
+
 with st.sidebar:
-    st.image("https://img.icons8.com/color/96/curry.png", width=80)
-    st.title("🍛 Dabba")
     st.markdown(
         """
-        **India-focused restaurant ranking, recommendation,
-        and delivery-reliability platform.**
-
-        Built for ML portfolio / job-application standard.
-
-        ---
-        **Author:** [Your Name](https://linkedin.com/in/yourname)
-        **GitHub:** [github.com/yourname/dabba](https://github.com/yourname/dabba)
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem;">
+            <span style="font-size:2.2rem;">🍛</span>
+            <span style="font-size:1.5rem;font-weight:700;color:#2d2d2d;">Dabba</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
         """
+        <p style="font-size:0.85rem;color:#6b7280;margin-bottom:1.5rem;">
+        Restaurant ranking, recommendation, and delivery-reliability platform.
+        Powered by rigorous ML + LLM.
+        </p>
+        """,
+        unsafe_allow_html=True,
     )
 
-# --- Main page ---
-st.title("🍛 Dabba — Restaurant Intelligence Platform")
+    st.markdown("---")
 
-st.markdown(
-    """
-    Welcome to **Dabba**, an India-focused restaurant ranking and
-    delivery-reliability platform built with rigorous ML experimentation.
+    # Navigation
+    page = st.radio(
+        "Navigate",
+        ["🍽️ Discover", "🚀 Ops Monitor", "📊 Model Performance", "💬 Food Concierge"],
+        label_visibility="collapsed",
+    )
 
-    ### Navigate to a page:
-    - 🍽️ **Customer View** — Get personalized restaurant recommendations
-    - 🚀 **Operations View** — Monitor delivery SLAs and run simulations
-    - 📊 **Model Info** — See which algorithms won and why
+    st.markdown("---")
 
-    ### The Reliability Score
-    ```
-    reliability_score = 0.4 × norm(rating) + 0.3 × norm(sentiment) - 0.3 × norm(delay_risk)
-    ```
-    A composite score combining restaurant quality, customer sentiment,
-    and delivery reliability — powered by the winning ML models.
-    """
-)
+    # LLM status
+    config = get_config()
+    llm_status = "🟢 LLM Active" if config.llm_enabled and config.anthropic_api_key else "🟡 Rules-based"
+    st.markdown(
+        f'<p style="font-size:0.75rem;color:#9ca3af;">{llm_status} mode</p>',
+        unsafe_allow_html=True,
+    )
 
-st.info("👈 Use the sidebar to navigate to a specific page.")
+    st.markdown(
+        """
+        <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.5rem;">
+        <b>Author:</b> <a href="https://linkedin.com/in/yourname" style="color:#ff8c42;">Your Name</a><br>
+        <b>GitHub:</b> <a href="https://github.com/yourname/dabba" style="color:#ff8c42;">github.com/yourname/dabba</a>
+        </p>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ─── Page routing ────────────────────────────────────────────────────
+
+st.session_state.current_page = page
+
+if "🍽️" in page:
+    from app.pages import page_discover
+    page_discover.show()
+elif "🚀" in page:
+    from app.pages import page_ops
+    page_ops.show()
+elif "📊" in page:
+    from app.pages import page_model_performance
+    page_model_performance.show()
+elif "💬" in page:
+    from app.pages import page_concierge
+    page_concierge.show()
+else:
+    # Home / default
+    st.title("🍛 Dabba — Restaurant Intelligence Platform")
+    st.markdown(
+        """
+        Welcome to **Dabba**, an India-focused restaurant ranking and
+        delivery-reliability platform built with rigorous ML experimentation.
+
+        ### Navigate to a page:
+        - 🍽️ **Discover** — Get personalized restaurant recommendations
+        - 🚀 **Ops Monitor** — Monitor delivery SLAs and run simulations
+        - 📊 **Model Performance** — See which algorithms won and why
+        - 💬 **Food Concierge** — Chat with our AI copilot
+
+        ### The Reliability Score
+        ```
+        reliability_score = 0.4 × norm(rating) + 0.3 × norm(sentiment)
+                              - 0.3 × norm(delay_risk)
+        ```
+        A composite score combining restaurant quality, customer sentiment,
+        and delivery reliability — powered by the winning ML models.
+        """
+    )
+    st.info("👈 Use the sidebar to navigate to a specific page.")

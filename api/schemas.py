@@ -1,4 +1,4 @@
-"""Pydantic schemas for the Dabba FastAPI application.
+"""Pydantic schemas for the Dabba FastAPI application v3.
 
 Defines request and response models for all API endpoints.
 """
@@ -18,13 +18,6 @@ class HealthResponse(BaseModel):
     eta_model_loaded: bool = False
 
 
-class ModelInfoResponse(BaseModel):
-    """Deployed model information response."""
-
-    rating_model: Optional[Dict[str, Any]] = None
-    eta_model: Optional[Dict[str, Any]] = None
-
-
 class RecommendRequest(BaseModel):
     """Restaurant recommendation request."""
 
@@ -32,6 +25,12 @@ class RecommendRequest(BaseModel):
     budget: Optional[float] = Field(None, description="Max cost for two (INR)")
     area: Optional[str] = Field(None, description="Area/neighborhood")
     top_n: int = Field(5, description="Number of recommendations")
+    prioritize: Optional[str] = Field(
+        "balanced", description="'balanced', 'speed', or 'quality'"
+    )
+    use_llm_narration: bool = Field(
+        False, description="Generate LLM-powered explanation"
+    )
 
 
 class Recommendation(BaseModel):
@@ -61,9 +60,15 @@ class ETARequest(BaseModel):
     distance_km: float = Field(..., description="Haversine distance in km")
     traffic_level: int = Field(1, description="Traffic density (0=Low, 3=Jam)")
     is_festival: bool = Field(False, description="Whether it's a festival day")
-    delivery_person_age: Optional[float] = Field(None, description="Delivery person age")
-    delivery_person_rating: Optional[float] = Field(None, description="Delivery person rating")
-    vehicle_condition: Optional[int] = Field(None, description="Vehicle condition score")
+    delivery_person_age: Optional[float] = Field(
+        None, description="Delivery person age"
+    )
+    delivery_person_rating: Optional[float] = Field(
+        None, description="Delivery person rating"
+    )
+    vehicle_condition: Optional[int] = Field(
+        None, description="Vehicle condition score"
+    )
 
 
 class ETAResponse(BaseModel):
@@ -72,3 +77,25 @@ class ETAResponse(BaseModel):
     predicted_minutes: float
     is_at_risk: bool
     sla_threshold: float
+
+
+class ChatMessage(BaseModel):
+    """A message in the chat history."""
+
+    role: str = Field(..., description="'user' or 'assistant'")
+    content: str = Field(..., description="Message content")
+
+
+class ChatRequest(BaseModel):
+    """Food Concierge chat request."""
+
+    message: str = Field(..., description="User's message")
+    history: Optional[List[ChatMessage]] = Field(
+        default_factory=list, description="Conversation history"
+    )
+
+
+class ChatResponse(BaseModel):
+    """Food Concierge chat response."""
+
+    reply: str = Field(..., description="Concierge's reply")
