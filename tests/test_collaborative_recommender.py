@@ -12,6 +12,23 @@ from dabba.models.collaborative_recommender import (
 )
 
 
+# ─── Fixtures (module-level, required by pytest) ──────────────────────
+
+@pytest.fixture
+def sample_restaurants():
+    """Create a small sample restaurant DataFrame."""
+    rng = np.random.RandomState(42)
+    n = 20
+    cols = {"name": [f"Rest_{i}" for i in range(n)]}
+    cols["cost_for_two"] = rng.randint(100, 2000, n)
+    cols["cuisines"] = rng.choice(["North Indian", "Chinese", "Italian", "South Indian"], n)
+    for cuisine in ["north_indian", "chinese", "italian", "south_indian"]:
+        cols[f"cuisine_{cuisine}"] = rng.randint(0, 2, n)
+    return pd.DataFrame(cols)
+
+
+# ─── Tests ────────────────────────────────────────────────────────────
+
 class TestSyntheticDataGenerator:
     """Tests for synthetic interaction data generation."""
 
@@ -29,11 +46,6 @@ class TestSyntheticDataGenerator:
         df = generate_synthetic_interactions(sample_restaurants, n_users=50)
         assert df["rating"].min() >= 1.0
         assert df["rating"].max() <= 5.0
-
-    def test_synthetic_nature_documented(self):
-        """The dataset should have a comment about being synthetic."""
-        # This is verified by code comments in the module
-        pass  # Documentation check done via code review
 
 
 class TestMatrixFactorization:
@@ -53,7 +65,6 @@ class TestMatrixFactorization:
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         criterion = torch.nn.MSELoss()
 
-        # Create simple training data
         users = torch.LongTensor([0, 1, 2, 3, 4])
         items = torch.LongTensor([0, 1, 2, 3, 4])
         targets = torch.FloatTensor([5.0, 4.0, 3.0, 2.0, 1.0])
@@ -95,18 +106,3 @@ class TestInteractionDataset:
         assert user.item() == 0
         assert item.item() == 5
         assert rating.item() == 4.5
-
-
-# ─── Fixtures ─────────────────────────────────────────────────────────
-
-@pytest.fixture
-def sample_restaurants():
-    """Create a small sample restaurant DataFrame."""
-    rng = np.random.RandomState(42)
-    n = 20
-    cols = {"name": [f"Rest_{i}" for i in range(n)]}
-    cols["cost_for_two"] = rng.randint(100, 2000, n)
-    cols["cuisines"] = rng.choice(["North Indian", "Chinese", "Italian", "South Indian"], n)
-    for cuisine in ["north_indian", "chinese", "italian", "south_indian"]:
-        cols[f"cuisine_{cuisine}"] = rng.randint(0, 2, n)
-    return pd.DataFrame(cols)

@@ -3,14 +3,16 @@ version: "3.8"
 services:
   api:
     build: .
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     volumes:
       - ./models:/app/models
       - ./data:/app/data
+      - ./reports:/app/reports
     environment:
       - DABBA_LOG_LEVEL=INFO
+      - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
 
   streamlit:
     build: .
@@ -20,5 +22,20 @@ services:
     volumes:
       - ./models:/app/models
       - ./data:/app/data
+      - ./reports:/app/reports
     environment:
       - DABBA_LOG_LEVEL=INFO
+      - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
+
+  mlflow:
+    build: .
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlflow/mlruns
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+
+volumes:
+  mlflow_data:
