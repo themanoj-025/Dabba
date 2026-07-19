@@ -1,58 +1,88 @@
-# Data
+# ─── Data (raw + processed datasets, large artifacts) ───────────────
 data/raw/
 data/processed/
 *.csv
 *.xlsx
 
-# Model artifacts
+# ─── Model artifacts ─────────────────────────────────────────────────
 models/*.pkl
 models/*.joblib
 models/*.h5
 models/*.pt
+models/*.index
+models/*.npy
+models/*.onnx
 !models/.gitkeep
 
-# Python
+# ─── Reports / Generated figures ─────────────────────────────────────
+reports/figures/*.png
+reports/figures/*.html
+reports/figures/*.json
+reports/figures/*.svg
+reports/ab_scenarios.json
+reports/mlruns/
+!reports/figures/.gitkeep
+
+# ─── MLflow ──────────────────────────────────────────────────────────
+mlflow_data/
+mlruns/
+
+# ─── Python bytecode / build artifacts ───────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
+*.egg
 dist/
 build/
-*.egg
+*.so
 
-# Virtual environments
+# ─── Virtual environments ────────────────────────────────────────────
 .venv/
 venv/
 env/
+virtualenv/
 
-# IDE
+# ─── IDE / Editor ────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
+*.code-workspace
+.history/
 
-# Environment
+# ─── Environment / Secrets ───────────────────────────────────────────
 .env
 .env.local
+.env.*.local
+*.pem
+*.key
 
-# Jupyter
+# ─── Jupyter ─────────────────────────────────────────────────────────
 .ipynb_checkpoints/
 
-# OS
+# ─── OS files ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+Desktop.ini
+*.dmg
 
-# Reports (keep CSVs, ignore generated images)
-reports/figures/*.png
-reports/figures/*.html
-!reports/figures/.gitkeep
-
-# Logs
+# ─── Logs ────────────────────────────────────────────────────────────
 *.log
+logs/
 
-# Coverage
+# ─── Coverage / Testing ──────────────────────────────────────────────
 .coverage
+.coverage.*
+coverage.xml
 htmlcov/
+.pytest_cache/
 
-# Kaggle
+# ─── Linting / Formatting caches ─────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.types_cache/
+
+# ─── Kaggle ──────────────────────────────────────────────────────────
 kaggle.json
