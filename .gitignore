@@ -3,6 +3,8 @@ data/raw/
 data/processed/
 *.csv
 *.xlsx
+# Exception: track the README in data/raw/ for documentation
+!data/raw/README.md
 
 # ─── Model artifacts ─────────────────────────────────────────────────
 models/*.pkl
@@ -10,16 +12,18 @@ models/*.joblib
 models/*.h5
 models/*.pt
 models/*.index
-models/*.npy
 models/*.onnx
+models/*.npy
 !models/.gitkeep
 
-# ─── Reports / Generated figures ─────────────────────────────────────
+# ─── Reports / Generated figures (including SHAP values) ─────────────
 reports/figures/*.png
 reports/figures/*.html
 reports/figures/*.json
 reports/figures/*.svg
+reports/figures/*.npy
 reports/ab_scenarios.json
+reports/*.csv
 reports/mlruns/
 !reports/figures/.gitkeep
 
