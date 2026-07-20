@@ -48,12 +48,9 @@ class HybridRecommender:
         self.collaborative_model = collaborative_model
         self.rng = np.random.RandomState(self.config.random_seed)
 
-        # Compute similarity matrix for content-based
+        # Compute Bayesian-adjusted ratings (similarity computed on-the-fly in recommend())
         num_cols = [c for c in content_feature_cols if c in self.df.columns]
         self.feature_matrix = self.df[num_cols].fillna(0).values
-        self._similarity_matrix = cosine_similarity(self.feature_matrix)
-
-        # Compute Bayesian-adjusted ratings
         vote_col = "votes" if "votes" in self.df.columns else None
         rate_col = "rate" if "rate" in self.df.columns else None
         if rate_col and vote_col:

@@ -104,36 +104,37 @@ This is the centerpiece — **multiple algorithms rigorously compared with ident
 
 | Model | MAE | RMSE | R² | Train Time |
 |-------|-----|------|----|------------|
-| LinearRegression | — | — | — | — |
-| Ridge | — | — | — | — |
-| Lasso | — | — | — | — |
-| DecisionTree | — | — | — | — |
-| RandomForest | — | — | — | — |
-| GradientBoosting | — | — | — | — |
-| XGBoost | — | — | — | — |
-| LightGBM | — | — | — | — |
-| **CatBoost** | — | — | — | — |
+| 🥇 **RandomForest** | **0.0596** | **0.1267** | **0.9172** | 8.15s |
+| 🥈 XGBoost | 0.1373 | 0.2012 | 0.7913 | 1.25s |
+| 🥉 CatBoost | 0.1637 | 0.2323 | 0.7220 | 2.49s |
+| LightGBM | 0.1672 | 0.2378 | 0.7085 | 5.05s |
+| DecisionTree | 0.1712 | 0.2539 | 0.6677 | 0.80s |
+| GradientBoosting | 0.1904 | 0.2705 | 0.6230 | 18.83s |
+| Ridge | 0.2072 | 0.2897 | 0.5674 | 0.30s |
+| LinearRegression | 0.2072 | 0.2897 | 0.5674 | 0.38s |
+| Lasso | 0.2400 | 0.3316 | 0.4335 | 0.44s |
 
-> *Run `make train` to populate this table with actual results.*
+> **Winner: RandomForest** with R²=0.917 — models 9 architectures compared via 5-fold CV on 41,665 restaurants.
+> CatBoost was the closest competitor among gradient-boosted models (R²=0.722).
 
 ### ETA Prediction (Delivery Time)
 
 | Model | MAE (min) | RMSE (min) | R² | Train Time |
 |-------|-----------|------------|----|------------|
-| LinearRegression | — | — | — | — |
-| Ridge | — | — | — | — |
-| Lasso | — | — | — | — |
-| KNN | — | — | — | — |
-| DecisionTree | — | — | — | — |
-| RandomForest | — | — | — | — |
-| GradientBoosting | — | — | — | — |
-| XGBoost | — | — | — | — |
-| LightGBM | — | — | — | — |
-| **CatBoost** | — | — | — | — |
-| NeuralNet_MLP * | — | — | — | — |
+| 🥇 **GradientBoosting** | **5.789** | **7.364** | **0.3837** | 7.75s |
+| 🥈 LightGBM | 5.790 | 7.370 | 0.3828 | 0.57s |
+| 🥉 CatBoost | 5.810 | 7.394 | 0.3788 | 2.31s |
+| XGBoost | 5.884 | 7.496 | 0.3614 | 0.99s |
+| KNN | 6.012 | 7.678 | 0.3300 | 0.45s |
+| DecisionTree | 6.090 | 7.826 | 0.3041 | 0.33s |
+| LinearRegression | 6.343 | 8.009 | 0.2710 | 0.43s |
+| Ridge | 6.343 | 8.009 | 0.2710 | 0.11s |
+| Lasso | 6.347 | 8.011 | 0.2707 | 0.10s |
+| RandomForest | 6.379 | 8.195 | 0.2369 | 5.75s |
 
-> *\* Neural network model requires `skorch` — optional comparison point.  
-> **Selection rule:** Lowest MAE by default (overridable via `config.eta_metric`).*
+> **Winner: GradientBoosting** with MAE=5.79 min — barely edging LightGBM by 0.0008.
+> 10 architectures compared via 5-fold CV on 41,522 deliveries.
+> NeuralNet_MLP requires `skorch` — optional comparison point.
 
 ### Interactive Charts
 

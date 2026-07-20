@@ -1,14 +1,14 @@
-# 🏗️ Dabba — System Architecture
+# 🏗️ Dabba v3 — System Architecture
 
 ## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                          DABBA SYSTEM ARCHITECTURE                       │
+│                          DABBA v3 SYSTEM ARCHITECTURE                    │
 └─────────────────────────────────────────────────────────────────────────┘
 
  ┌─────────────────────────────────────────────────────────────────────┐
- │                        DATA PIPELINE                                 │
+ │                        DATA PIPELINE (src/dabba/)                    │
  │                                                                      │
  │  Kaggle (Zomato + Delivery CSVs)                                     │
  │         │                                                            │
@@ -19,174 +19,110 @@
  │         ▼                                                            │
  │  ┌──────────────┐                                                    │
  │  │ Data Cleaning │  cleaning.py (pandas, numpy)                      │
- │  │   • Dedup    │  • Parse ratings/costs                             │
- │  │   • Validate │  • Fill missing                                   │
  │  └──────┬───────┘                                                    │
  │         ▼                                                            │
  │  ┌──────────────────────┐                                            │
- │  │  Feature Engineering │  restaurant_features.py, delivery_features │
+ │  │  Feature Engineering │  restaurant_features.py, delivery_features  │
  │  │  • Cuisine encoding  │  .py, geo.py, sentiment.py                │
- │  │  • Distance (haversine)│  • Traffic ordinal                     │
- │  │  • Time features     │  • VADER sentiment                        │
- │  └──────┬───────┬───────┘                                            │
- │         │       │                                                    │
- │         ▼       ▼                                                    │
- │  ┌────────────┐ ┌────────────┐                                       │
- │  │ Rating Model│ │ ETA Model  │  rating_model.py, eta_model.py       │
- │  │ Comparison  │ │ Comparison │  • 5-fold CV on identical features   │
- │  │ 8 models    │ │ 9 models   │  • Lowest MAE wins                  │
- │  └──────┬─────┘ └──────┬─────┘                                       │
- │         │              │                                              │
- │         ▼              ▼                                              │
- │  ┌────────────┐ ┌────────────┐                                       │
- │  │ Best Model  │ │ Best Model │  model_selection.py, joblib          │
- │  │ (full data) │ │ (full data)│  → Saved to models/                 │
- │  └────────────┘ └────────────┘                                       │
- │         │              │                                              │
- │         └──────┬───────┘                                              │
- │                ▼                                                     │
- │  ┌──────────────────────┐                                            │
- │  │   Reliability Score  │  business_cost.py                          │
- │  │   0.4×rating +       │                                            │
- │  │   0.3×sentiment -    │                                            │
- │  │   0.3×delay_risk     │                                            │
- │  └──────────────────────┘                                            │
+ │  │  • Distance (haversine)│                                         │
+ │  │  • Time features     │                                           │
+ │  └──────┬───────┬───────┘                                           │
+ │         │       │                                                   │
+ │         ▼       ▼                                                   │
+ │  ┌──────────┐ ┌──────────┐  ┌──────────────┐  ┌──────────────┐     │
+ │  │ Rating    │ │ ETA      │  │ Collaborative │  │ Geographic   │     │
+ │  │ Models    │ │ Models   │  │ Filtering     │  │ Clustering   │     │
+ │  │ (9 algos) │ │ (10 algos)│  │ (PyTorch MF)  │  │ (KMeans etc)│     │
+ │  └────┬─────┘ └────┬─────┘  └──────┬───────┘  └──────────────┘     │
+ │       │            │               │                                │
+ │       └────────────┼───────────────┘                                │
+ │                    │                                                │
+ │                    ▼                                                │
+ │         ┌──────────────────────┐                                    │
+ │         │  Hybrid Recommender  │  Content + CF + Reliability Score   │
+ │         │  + LLM Narrator     │  + A/B weight scenarios             │
+ │         └──────────┬───────────┘                                    │
+ │                    │                                                │
+ │                    ▼                                                │
+ │         ┌──────────────────────┐                                    │
+ │         │  Reliability Score   │  w1*rating + w2*sentiment          │
+ │         │  + A/B Scenarios    │  - w3*delay_risk                   │
+ │         └──────────┬───────────┘                                    │
+ │                    │                                                │
+ │         ┌──────────▼──────────┐                                     │
+ │         │  Drift Detection    │  KS-test, wired into Ops UI         │
+ │         └─────────────────────┘                                     │
  └─────────────────────────────────────────────────────────────────────┘
-
- ┌─────────────────────────────────────────────────────────────────────┐
- │                       APPLICATION LAYER                              │
- │                                                                      │
- │  ┌─────────────────┐    ┌──────────────────┐                         │
- │  │   Streamlit App  │    │    FastAPI        │                       │
- │  │   (Port 8501)    │    │   (Port 8000)     │                       │
- │  │                  │    │                   │                       │
- │  │  ├─ Customer View│    │  GET  /health     │                       │
- │  │  ├─ Ops View     │    │  GET  /model-info │                       │
- │  │  └─ Model Info   │    │  POST /recommend  │                       │
- │  │                  │    │  POST /predict-eta│                       │
- │  └────────┬─────────┘    └────────┬──────────┘                       │
- │           │                      │                                   │
- │           └──────────────────────┘                                   │
- │                    │   (CORS-enabled)                                │
- │                    ▼                                                 │
- │           ┌──────────────┐                                           │
- │           │  Saved Models │  models/best_rating_model.pkl           │
- │           │  + CSVs      │  models/best_eta_model.pkl               │
- │           │              │  reports/model_comparison_*.csv          │
- │           └──────────────┘                                           │
- └─────────────────────────────────────────────────────────────────────┘
-
- ┌─────────────────────────────────────────────────────────────────────┐
- │                       INFRASTRUCTURE                                 │
- │                                                                      │
- │  ┌──────────────────────────────────────────────────────────────┐    │
- │  │                    Docker Compose                             │    │
- │  │  ┌──────────────┐     ┌──────────────────┐                   │    │
- │  │  │ api service   │     │ streamlit service│                  │    │
- │  │  │ uvicorn:8000  │     │ streamlit:8501   │                  │    │
- │  │  │ Volumes:      │     │ Volumes:          │                  │    │
- │  │  │  ./models     │     │  ./models         │                  │    │
- │  │  │  ./data       │     │  ./data           │                  │    │
- │  │  └──────────────┘     └──────────────────┘                   │    │
- │  └──────────────────────────────────────────────────────────────┘    │
- │                                                                      │
- │  ┌──────────────────────────────────────────────────────────────┐    │
- │  │                    CI/CD (GitHub Actions)                     │    │
- │  │  push/PR → Python 3.11 → pip install → pre-commit → pytest  │    │
- │  │  → coverage report → Codecov                                 │    │
- │  └──────────────────────────────────────────────────────────────┘    │
- └─────────────────────────────────────────────────────────────────────┘
-```
-
-## Component Interaction Diagram
-
-```
-┌─────────┐     HTTP/JSON      ┌──────────┐     joblib.load()    ┌──────────┐
-│ Browser │ ◄────────────────► │ FastAPI  │ ◄──────────────────► │ models/  │
-│         │                    │ (api/)   │                      │ *.pkl    │
-└─────────┘                    └────┬─────┘                      └──────────┘
-                                    │
-                                    │ pandas.read_csv()
-                                    ▼
-                            ┌───────────────┐
-                            │ data/processed/│
-                            │ *.csv         │
-                            └───────────────┘
-
-┌─────────┐                   ┌──────────────┐    pandas.read_csv() ┌──────────┐
-│ Browser │ ◄───────────────► │ Streamlit    │ ◄──────────────────► │ data/    │
-│         │                   │ (app/)       │                      │ *.csv    │
-└─────────┘                   └──────────────┘                      └──────────┘
-
-┌─────────┐                   ┌──────────────┐    joblib.load()    ┌──────────┐
-│ Browser │ ◄───────────────► │ Streamlit    │ ◄──────────────────► │ models/  │
-│         │                   │ Model Info   │                     │ *.pkl    │
-└─────────┘                   └──────────────┘                     └──────────┘
+            │                     │                     │
+            ▼                     ▼                     ▼
+     ┌──────────┐         ┌──────────┐          ┌──────────┐
+     │ Streamlit│         │  FastAPI  │          │  MLflow  │
+     │ Dashboard│         │  REST API │          │ Tracking │
+     │ (4 pages)│         │ (5 routes)│          │ (Docker) │
+     │ Custom   │         │ Routers   │          │ Port 5000│
+     │ Radio Nav│         │ Pattern   │          │          │
+     └──────────┘         └──────────┘          └──────────┘
+            │                     │
+            ▼                     ▼
+     ┌──────────────────────────────────────┐
+     │        LLM Layer (Anthropic)          │
+     │  ┌────────────┬──────────┬─────────┐  │
+     │  │ Narrator   │ RAG      │ Chat    │  │
+     │  │ Explanations│ Retrieval│ Copilot │  │
+     │  └────────────┴──────────┴─────────┘  │
+     │  Rules-based fallback (no API key)     │
+     └──────────────────────────────────────┘
 ```
 
 ## Module Dependencies
 
 ```
-                    ┌─────────────────────────┐
-                    │      dabba.config        │ (Read by ALL modules)
-                    └─────────────────────────┘
-                              ▲
-         ┌────────────────────┼────────────────────┐
-         │                    │                    │
-         ▼                    ▼                    ▼
-   ┌──────────┐        ┌──────────┐        ┌──────────────┐
-   │   data/  │        │ features/│        │   models/    │
-   │ loading +│◄───────│ + nlp/   │◄───────│ training +   │
-   │ cleaning │        │          │        │ selection    │
-   └──────────┘        └──────────┘        └──────┬───────┘
-         │                    │                    │
-         └────────────────────┴────────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │ evaluation/      │
-                    │ metrics + SLA    │
-                    └──────────────────┘
-                              │
-                              ▼
-                    ┌──────────────────┐
-                    │   pipeline.py    │ (Orchestrator)
-                    └──────────────────┘
+pipeline.py (orchestrator)
+ ├── config.py
+ ├── data/loaders.py → config.py
+ ├── data/cleaning.py → config.py
+ ├── features/restaurant_features.py → config.py, geo.py
+ ├── features/delivery_features.py → config.py, geo.py
+ ├── features/geo.py → scikit-learn
+ ├── nlp/sentiment.py → config.py, nltk
+ ├── models/rating_model.py → config.py, sklearn, xgboost, lightgbm, catboost
+ ├── models/eta_model.py → config.py, sklearn, xgboost, lightgbm, catboost
+ ├── models/model_selection.py → config.py
+ ├── models/collaborative_recommender.py → config.py, torch
+ ├── models/hybrid_recommender.py → config.py, recommender.py
+ ├── evaluation/metrics.py → sklearn
+ └── evaluation/business_cost.py → config.py
+
+api/main.py (FastAPI)
+ ├── config.py
+ ├── api/schemas.py → pydantic
+ ├── routers/recommend.py → schemas, hybrid_recommender, llm
+ ├── routers/eta.py → schemas, config
+ ├── routers/chat.py → schemas, llm/food_concierge
+ └── routers/model_info.py → schemas, config
+
+app/streamlit_app.py (Dashboard)
+ ├── pages/page_discover.py → dabba.models, dabba.llm
+ ├── pages/page_ops.py → dabba.monitoring, app.components
+ ├── pages/page_model_performance.py → pandas, plotly
+ └── pages/page_concierge.py → dabba.llm
 ```
 
 ## Deployment Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Docker Host                                 │
-│                                                                  │
-│  ┌──────────────────────┐    ┌──────────────────────────────┐   │
-│  │   API Container       │    │   Dashboard Container        │   │
-│  │   uvicorn api.main    │    │   streamlit run app/...      │   │
-│  │   Port 8000           │    │   Port 8501                  │   │
-│  │                       │    │                              │   │
-│  │   Volumes:            │    │   Volumes:                   │   │
-│  │   - ./models:/app/models│   │   - ./models:/app/models    │   │
-│  │   - ./data:/app/data  │    │   - ./data:/app/data         │   │
-│  └──────┬───────────────┘    └──────────┬───────────────────┘   │
-│         │                               │                       │
-│         └───────────────────────────────┘                       │
-│                         │                                       │
-│                         ▼                                       │
-│              ┌──────────────────────┐                           │
-│              │   Docker Network      │                           │
-│              └──────────────────────┘                           │
-└─────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│                  docker-compose.yml                   │
+│                                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────┐  │
+│  │ Streamlit    │  │ FastAPI     │  │ MLflow       │  │
+│  │ :8501        │  │ :8000       │  │ :5000        │  │
+│  │ app/         │  │ api/        │  │ reports/     │  │
+│  │              │  │             │  │ mlruns/      │  │
+│  └─────────────┘  └─────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────┘
 ```
 
-## Data Volume & Storage
+## Authentication
 
-| Artifact | Format | Location | Size (Est.) | Persistence |
-|----------|--------|----------|-------------|-------------|
-| Raw Zomato data | CSV | `data/raw/zomato.csv` | ~5-10 MB | Gitignored |
-| Raw delivery data | CSV | `data/raw/deliverytime.csv` | ~5-10 MB | Gitignored |
-| Processed restaurants | CSV | `data/processed/restaurants_processed.csv` | ~5 MB | Gitignored |
-| Best rating model | Pickle | `models/best_rating_model.pkl` | ~1-100 MB | Gitignored |
-| Best ETA model | Pickle | `models/best_eta_model.pkl` | ~1-100 MB | Gitignored |
-| Comparison CSVs | CSV | `reports/` | < 1 MB | Gitignored |
-| Charts/images | PNG | `reports/figures/` | < 10 MB | Gitignored |
+No authentication — development/demo tool. Security headers (CSP, X-Frame-Options, XSS) only.
