@@ -80,7 +80,8 @@ class DriftDetector:
                 }
         logger.info(
             "DriftDetector fit on %d numeric features from %d samples",
-            len(self.reference_stats), len(df),
+            len(self.reference_stats),
+            len(df),
         )
 
     def detect(self, batch: pd.DataFrame) -> DriftResult:
@@ -112,10 +113,14 @@ class DriftDetector:
             # Sample if too large (for speed)
             if len(ref_values) > self.config.drift_feature_sample:
                 rng = np.random.RandomState(self.config.random_seed)
-                ref_values = rng.choice(ref_values, self.config.drift_feature_sample, replace=False)
+                ref_values = rng.choice(
+                    ref_values, self.config.drift_feature_sample, replace=False
+                )
             if len(batch_values) > self.config.drift_feature_sample:
                 rng = np.random.RandomState(self.config.random_seed)
-                batch_values = rng.choice(batch_values, self.config.drift_feature_sample, replace=False)
+                batch_values = rng.choice(
+                    batch_values, self.config.drift_feature_sample, replace=False
+                )
 
             statistic, p_value = ks_2samp(ref_values, batch_values)
 
@@ -127,8 +132,8 @@ class DriftDetector:
             f"🚨 **Drift Detected!** {len(drifted)}/{total} features "
             f"have drifted (p<{threshold}). "
             f"Affected: {', '.join(list(drifted.keys())[:5])}"
-            if has_drift else
-            f"✅ No significant drift detected across {total} features."
+            if has_drift
+            else f"✅ No significant drift detected across {total} features."
         )
 
         return DriftResult(

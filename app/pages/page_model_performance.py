@@ -62,8 +62,7 @@ def show() -> None:
 
     # ─── Methodology ───────────────────────────────────────────────
     st.header("📋 Methodology")
-    st.markdown(
-        """
+    st.markdown("""
         **How the comparison works:**
 
         1. **Same features** — All models train on identical feature sets
@@ -76,8 +75,7 @@ def show() -> None:
         GradientBoosting, XGBoost, LightGBM, **CatBoost** (+ KNN for ETA).
 
         All experiments logged via **MLflow** — view the tracking UI at `localhost:5000`.
-        """
-    )
+        """)
 
 
 def _show_model_section(df: pd.DataFrame, task: str) -> None:
@@ -115,7 +113,9 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
 
     # Fallback: plotly express
     fig = px.bar(
-        df, x="model", y=["mae", "rmse"],
+        df,
+        x="model",
+        y=["mae", "rmse"],
         title=f"{task.title()} — MAE & RMSE by Model",
         barmode="group",
         template="plotly_white",
@@ -126,10 +126,13 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
 
     # R² chart
     fig_r2 = px.bar(
-        df, x="model", y="r2",
+        df,
+        x="model",
+        y="r2",
         title=f"{task.title()} — R² Score",
         template="plotly_white",
-        color="r2", color_continuous_scale="RdYlGn",
+        color="r2",
+        color_continuous_scale="RdYlGn",
     )
     fig_r2.update_layout(xaxis_tickangle=-45, height=350)
     st.plotly_chart(fig_r2, use_container_width=True)
@@ -151,16 +154,14 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
         st.image(str(shap_png), use_container_width=True)
 
     # Winner reasoning
-    st.markdown(
-        f"""
+    st.markdown(f"""
         **Why {best['model']} won:**
         This model achieved the lowest MAE of {best['mae']:.4f}
         ({'minutes' if task == 'eta' else 'rating points'}),
         meaning its predictions are closest to the actual values on average.
         The comparison used 5-fold cross-validation with identical features
         for all models, ensuring a fair comparison.
-        """
-    )
+        """)
 
 
 def _show_ab_scenarios(path: Path) -> None:

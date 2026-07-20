@@ -33,27 +33,50 @@ def show() -> None:
         st.header("Your Preferences")
 
         cuisine_options = [
-            "North Indian", "Chinese", "South Indian", "Mughlai", "Cafe",
-            "Bakery", "Italian", "Fast Food", "Continental", "Desserts",
-            "Biryani", "Street Food", "Ice Cream", "Andhra", "Thai",
+            "North Indian",
+            "Chinese",
+            "South Indian",
+            "Mughlai",
+            "Cafe",
+            "Bakery",
+            "Italian",
+            "Fast Food",
+            "Continental",
+            "Desserts",
+            "Biryani",
+            "Street Food",
+            "Ice Cream",
+            "Andhra",
+            "Thai",
         ]
         selected_cuisines = st.multiselect(
             "Cuisine", cuisine_options, key=f"{PAGE_NAME}_cuisine"
         )
 
         budget = st.slider(
-            "Budget (₹ for two)", 100, 5000, 1000, 100,
+            "Budget (₹ for two)",
+            100,
+            5000,
+            1000,
+            100,
             key=f"{PAGE_NAME}_budget",
         )
 
         area_options = [
-            "All", "Koramangala", "Indiranagar", "HSR Layout", "Whitefield",
-            "Electronic City", "JP Nagar", "BTM Layout", "Marathahalli",
-            "Jayanagar", "MG Road", "Sarjapur Road",
+            "All",
+            "Koramangala",
+            "Indiranagar",
+            "HSR Layout",
+            "Whitefield",
+            "Electronic City",
+            "JP Nagar",
+            "BTM Layout",
+            "Marathahalli",
+            "Jayanagar",
+            "MG Road",
+            "Sarjapur Road",
         ]
-        selected_area = st.selectbox(
-            "Area", area_options, key=f"{PAGE_NAME}_area"
-        )
+        selected_area = st.selectbox("Area", area_options, key=f"{PAGE_NAME}_area")
 
         prioritize = st.select_slider(
             "Prioritize",
@@ -63,9 +86,7 @@ def show() -> None:
             help="Speed = delivery reliability first. Quality = rating/sentiment first.",
         )
 
-        top_n = st.slider(
-            "Results", 3, 20, 5, key=f"{PAGE_NAME}_topn"
-        )
+        top_n = st.slider("Results", 3, 20, 5, key=f"{PAGE_NAME}_topn")
 
         st.markdown("---")
         use_llm = st.checkbox(
@@ -83,10 +104,18 @@ def show() -> None:
 
     # ─── Build recommender ────────────────────────────────────────
     feature_cols = [c for c in df.columns if c.startswith("cuisine_")]
-    feature_cols += [c for c in [
-        "votes_log", "cost_for_two", "online_order_binary",
-        "book_table_binary", "cuisine_count", "avg_sentiment",
-    ] if c in df.columns]
+    feature_cols += [
+        c
+        for c in [
+            "votes_log",
+            "cost_for_two",
+            "online_order_binary",
+            "book_table_binary",
+            "cuisine_count",
+            "avg_sentiment",
+        ]
+        if c in df.columns
+    ]
 
     recommender = HybridRecommender(
         df, feature_cols, collaborative_model=None, config=config
@@ -121,7 +150,9 @@ def show() -> None:
     # Clear similar results when filters change (cuisine/budget/area change)
     # by checking if this is a rerun after a filter change
     filter_key = f"{PAGE_NAME}_filter_hash"
-    current_hash = hash((tuple(selected_cuisines or []), budget, selected_area, prioritize))
+    current_hash = hash(
+        (tuple(selected_cuisines or []), budget, selected_area, prioritize)
+    )
     if st.session_state.get(filter_key) != current_hash:
         st.session_state[state_key] = None
         st.session_state[name_key] = None
@@ -148,7 +179,10 @@ def show() -> None:
             rs = rest_dict.get("reliability_score_display", 0.5)
             sentiment = rest_dict.get("avg_sentiment", 0.0)
             explanation = narrate_recommendation(
-                rest_dict, rs, sentiment, config=config,
+                rest_dict,
+                rs,
+                sentiment,
+                config=config,
             )
 
         # Render card with similar button

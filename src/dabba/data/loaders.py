@@ -38,7 +38,9 @@ def load_zomato(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
         )
 
     df = pd.read_csv(path, low_memory=False)
-    logger.info("Loaded Zomato dataset: shape=%s, columns=%s", df.shape, list(df.columns))
+    logger.info(
+        "Loaded Zomato dataset: shape=%s, columns=%s", df.shape, list(df.columns)
+    )
     return df
 
 
@@ -65,7 +67,9 @@ def load_delivery(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
         )
 
     df = pd.read_csv(path, low_memory=False)
-    logger.info("Loaded delivery dataset: shape=%s, columns=%s", df.shape, list(df.columns))
+    logger.info(
+        "Loaded delivery dataset: shape=%s, columns=%s", df.shape, list(df.columns)
+    )
     return df
 
 

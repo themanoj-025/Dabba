@@ -71,31 +71,37 @@ class TestCleanZomato:
 
     def test_removes_duplicates(self):
         """Duplicate rows should be removed."""
-        df = pd.DataFrame({
-            "rate": ["4.1/5", "4.1/5", "3.0/5"],
-            "approx_cost(for two people)": ["500", "500", "300"],
-            "name": ["A", "A", "B"],
-        })
+        df = pd.DataFrame(
+            {
+                "rate": ["4.1/5", "4.1/5", "3.0/5"],
+                "approx_cost(for two people)": ["500", "500", "300"],
+                "name": ["A", "A", "B"],
+            }
+        )
         result = clean_zomato(df)
         assert len(result) == 2
 
     def test_drops_missing_target(self):
         """Rows with missing rate should be dropped."""
-        df = pd.DataFrame({
-            "rate": ["4.1/5", None, "3.0/5"],
-            "approx_cost(for two people)": ["500", "300", "300"],
-            "name": ["A", "B", "C"],
-        })
+        df = pd.DataFrame(
+            {
+                "rate": ["4.1/5", None, "3.0/5"],
+                "approx_cost(for two people)": ["500", "300", "300"],
+                "name": ["A", "B", "C"],
+            }
+        )
         result = clean_zomato(df)
         assert len(result) == 2
 
     def test_snake_case_columns(self):
         """Column names should be normalized to snake_case."""
-        df = pd.DataFrame({
-            "rate": ["4.1/5"],
-            "approx_cost(for two people)": ["500"],
-            "Online Order": ["Yes"],
-        })
+        df = pd.DataFrame(
+            {
+                "rate": ["4.1/5"],
+                "approx_cost(for two people)": ["500"],
+                "Online Order": ["Yes"],
+            }
+        )
         result = clean_zomato(df)
         assert "online_order" in result.columns
         assert "cost_for_two" in result.columns
@@ -106,37 +112,43 @@ class TestCleanDelivery:
 
     def test_parses_time_taken(self):
         """Time_taken column should be parsed to float."""
-        df = pd.DataFrame({
-            "Time_taken(min)": ["25 min", "30 min", "NAN"],
-            "Restaurant_latitude": [12.9, 12.9, 12.9],
-            "Restaurant_longitude": [77.6, 77.6, 77.6],
-            "Delivery_location_latitude": [12.95, 12.95, 12.95],
-            "Delivery_location_longitude": [77.65, 77.65, 77.65],
-        })
+        df = pd.DataFrame(
+            {
+                "Time_taken(min)": ["25 min", "30 min", "NAN"],
+                "Restaurant_latitude": [12.9, 12.9, 12.9],
+                "Restaurant_longitude": [77.6, 77.6, 77.6],
+                "Delivery_location_latitude": [12.95, 12.95, 12.95],
+                "Delivery_location_longitude": [77.65, 77.65, 77.65],
+            }
+        )
         result = clean_delivery(df)
         assert "time_taken_min" in result.columns
         assert result["time_taken_min"].iloc[0] == 25.0
 
     def test_removes_invalid_latlong(self):
         """Rows with invalid lat/long should be removed."""
-        df = pd.DataFrame({
-            "Time_taken(min)": ["25", "30", "35"],
-            "Restaurant_latitude": [12.9, 999.0, 12.9],
-            "Restaurant_longitude": [77.6, 77.6, 77.6],
-            "Delivery_location_latitude": [12.95, 12.95, 12.95],
-            "Delivery_location_longitude": [77.65, 77.65, 77.65],
-        })
+        df = pd.DataFrame(
+            {
+                "Time_taken(min)": ["25", "30", "35"],
+                "Restaurant_latitude": [12.9, 999.0, 12.9],
+                "Restaurant_longitude": [77.6, 77.6, 77.6],
+                "Delivery_location_latitude": [12.95, 12.95, 12.95],
+                "Delivery_location_longitude": [77.65, 77.65, 77.65],
+            }
+        )
         result = clean_delivery(df)
         assert len(result) == 2
 
     def test_removes_extreme_times(self):
         """Delivery times > 120 min should be removed as outliers."""
-        df = pd.DataFrame({
-            "Time_taken(min)": ["25", "150", "30"],
-            "Restaurant_latitude": [12.9, 12.9, 12.9],
-            "Restaurant_longitude": [77.6, 77.6, 77.6],
-            "Delivery_location_latitude": [12.95, 12.95, 12.95],
-            "Delivery_location_longitude": [77.65, 77.65, 77.65],
-        })
+        df = pd.DataFrame(
+            {
+                "Time_taken(min)": ["25", "150", "30"],
+                "Restaurant_latitude": [12.9, 12.9, 12.9],
+                "Restaurant_longitude": [77.6, 77.6, 77.6],
+                "Delivery_location_latitude": [12.95, 12.95, 12.95],
+                "Delivery_location_longitude": [77.65, 77.65, 77.65],
+            }
+        )
         result = clean_delivery(df)
         assert len(result) == 2

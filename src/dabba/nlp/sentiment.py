@@ -22,12 +22,15 @@ def _get_vader():
     """Safely import and return VADER SentimentIntensityAnalyzer."""
     try:
         from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
         return SentimentIntensityAnalyzer()
     except ImportError:
         logger.warning("NLTK VADER not installed — attempting download")
         import nltk
+
         nltk.download("vader_lexicon", quiet=True)
         from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
         return SentimentIntensityAnalyzer()
 
 
@@ -97,6 +100,7 @@ def add_sentiment_scores(
         # Strategy 1: Try ast.literal_eval (handles well-formed stringified lists)
         try:
             import ast
+
             parsed = ast.literal_eval(s)
             if isinstance(parsed, list):
                 texts = []

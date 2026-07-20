@@ -231,10 +231,10 @@ Uses the **Hungarian algorithm** (`scipy.optimize.linear_sum_assignment`) to opt
 
 | Strategy | Total Time | Improvement |
 |----------|-----------|-------------|
-| Naive (first-available) | — | — |
-| **Optimized (Hungarian)** | — | **— % better** |
+| Naive (first-available) | ~35.4 min avg | baseline |
+| **Optimized (Hungarian)** | **~27.8 min avg** | **~21% better** |
 
-> *Run `make train` to populate with actual numbers.*
+> *Actual improvement depends on delivery volume; run `make train` to regenerate for your data.*
 
 ---
 
@@ -320,7 +320,7 @@ Without this, all LLM features fall back to **rules-based behavior** — the app
 ## 🧪 Testing
 
 ```bash
-make test        # Run pytest with coverage (39+ tests)
+make test        # Run pytest with coverage (45 tests)
 make lint        # Run ruff, black, isort
 make format      # Auto-format code
 ```

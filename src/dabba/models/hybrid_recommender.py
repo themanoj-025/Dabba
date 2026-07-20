@@ -49,8 +49,8 @@ class HybridRecommender:
         self.rng = np.random.RandomState(self.config.random_seed)
 
         # Compute Bayesian-adjusted ratings (similarity computed on-the-fly in recommend())
-        num_cols = [c for c in content_feature_cols if c in self.df.columns]
-        self.feature_matrix = self.df[num_cols].fillna(0).values
+        # Note: feature_matrix not pre-computed — was causing 13GB memory allocation
+        # via all-pairs cosine_similarity. User embedding computed per-request instead.
         vote_col = "votes" if "votes" in self.df.columns else None
         rate_col = "rate" if "rate" in self.df.columns else None
         if rate_col and vote_col:
@@ -74,11 +74,15 @@ class HybridRecommender:
                 # Normalize to [0, 1]
                 score_min, score_max = raw_scores.min(), raw_scores.max()
                 if score_max > score_min:
-                    self.collaborative_scores = (raw_scores - score_min) / (score_max - score_min)
+                    self.collaborative_scores = (raw_scores - score_min) / (
+                        score_max - score_min
+                    )
                 else:
                     self.collaborative_scores = np.full_like(raw_scores, 0.5)
-                logger.info("Collaborative scores computed for %d restaurants",
-                            len(self.collaborative_scores))
+                logger.info(
+                    "Collaborative scores computed for %d restaurants",
+                    len(self.collaborative_scores),
+                )
             except Exception as e:
                 logger.warning("Failed to compute collaborative scores: %s", e)
 
@@ -121,7 +125,9 @@ class HybridRecommender:
         # 1. Content-based similarity score
         if len(self.content_feature_cols) > 0 and len(candidates) > 0:
             # Use mean features as query
-            query_features = self.df[self.content_feature_cols].mean().values.reshape(1, -1)
+            query_features = (
+                self.df[self.content_feature_cols].mean().values.reshape(1, -1)
+            )
             candidate_features = candidates[self.content_feature_cols].fillna(0).values
             sim_scores_raw = cosine_similarity(query_features, candidate_features)[0]
             # Normalize
@@ -135,10 +141,12 @@ class HybridRecommender:
 
         # 2. Collaborative filtering score
         if self.collaborative_scores is not None:
-            cf_scores = np.array([
-                self.collaborative_scores[self.df.index.get_loc(idx)]
-                for idx in candidates.index
-            ])
+            cf_scores = np.array(
+                [
+                    self.collaborative_scores[self.df.index.get_loc(idx)]
+                    for idx in candidates.index
+                ]
+            )
         else:
             cf_scores = np.ones(len(candidates)) * 0.5
 
@@ -184,9 +192,16 @@ class HybridRecommender:
 
         result = candidates.sort_values("combined_score", ascending=False).head(top_n)
         display_cols = [
-            "name", "rate", "bayesian_rating", "cost_for_two",
-            "location", "cuisines", "reliability_score_display",
-            "cf_score", "combined_score", "explanation",
+            "name",
+            "rate",
+            "bayesian_rating",
+            "cost_for_two",
+            "location",
+            "cuisines",
+            "reliability_score_display",
+            "cf_score",
+            "combined_score",
+            "explanation",
         ]
         display_cols = [c for c in display_cols if c in result.columns]
         return result[display_cols].reset_index(drop=True)

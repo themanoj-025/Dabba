@@ -40,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ─── Security Headers ────────────────────────────────────────────────
 @app.middleware("http")
 async def add_security_headers(request, call_next):
@@ -55,6 +56,7 @@ async def add_security_headers(request, call_next):
         "default-src 'none'; frame-ancestors 'none';"
     )
     return response
+
 
 config = get_config()
 

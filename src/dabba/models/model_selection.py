@@ -15,7 +15,6 @@ from typing import Optional
 
 import pandas as pd
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,13 +31,15 @@ def comparison_to_dataframe(results: list, task: str = "rating") -> pd.DataFrame
     """
     records = []
     for r in results:
-        records.append({
-            "model": r.name,
-            "mae": round(r.mae, 4),
-            "rmse": round(r.rmse, 4),
-            "r2": round(r.r2, 4),
-            "train_time_s": round(r.train_time, 2),
-        })
+        records.append(
+            {
+                "model": r.name,
+                "mae": round(r.mae, 4),
+                "rmse": round(r.rmse, 4),
+                "r2": round(r.r2, 4),
+                "train_time_s": round(r.train_time, 2),
+            }
+        )
     df = pd.DataFrame(records).sort_values("mae").reset_index(drop=True)
     logger.info("Comparison table for %s:\n%s", task, df.to_string(index=False))
     return df
@@ -80,7 +81,10 @@ def select_best_model(
 
     logger.info(
         "Best %s model: %s (%s=%.4f)",
-        task, best.name, metric.upper(), getattr(best, metric),
+        task,
+        best.name,
+        metric.upper(),
+        getattr(best, metric),
     )
 
     return best.name

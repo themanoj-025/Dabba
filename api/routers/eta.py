@@ -1,5 +1,4 @@
-"""ETA Prediction router — delivery time estimation using winning model.
-"""
+"""ETA Prediction router — delivery time estimation using winning model."""
 
 from __future__ import annotations
 
@@ -46,14 +45,18 @@ async def predict_eta(request: ETARequest) -> ETAResponse:
             detail="ETA model not loaded. Run `make train` first.",
         )
 
-    features = pd.DataFrame([{
-        "haversine_distance_km": request.distance_km,
-        "traffic_ordinal": request.traffic_level,
-        "is_festival": int(request.is_festival),
-        "delivery_person_age": request.delivery_person_age,
-        "delivery_person_ratings": request.delivery_person_rating,
-        "vehicle_condition": request.vehicle_condition,
-    }])
+    features = pd.DataFrame(
+        [
+            {
+                "haversine_distance_km": request.distance_km,
+                "traffic_ordinal": request.traffic_level,
+                "is_festival": int(request.is_festival),
+                "delivery_person_age": request.delivery_person_age,
+                "delivery_person_ratings": request.delivery_person_rating,
+                "vehicle_condition": request.vehicle_condition,
+            }
+        ]
+    )
 
     try:
         prediction = _eta_model.predict(features)[0]

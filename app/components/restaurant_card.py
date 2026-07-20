@@ -33,7 +33,9 @@ def render_restaurant_card(
     cost = restaurant.get("cost_for_two", "N/A")
     location = restaurant.get("location", "N/A")
     cuisines = restaurant.get("cuisines", "N/A")
-    reliability = restaurant.get("reliability_score_display", restaurant.get("reliability_score", 0.5))
+    reliability = restaurant.get(
+        "reliability_score_display", restaurant.get("reliability_score", 0.5)
+    )
     combined_score = restaurant.get("combined_score", None)
     cf_score = restaurant.get("cf_score", None)
 
@@ -78,17 +80,21 @@ def render_restaurant_card(
             f'<span class="badge badge-cost">₹{int(cost) if cost != "N/A" else "?"}</span>'
             f'{" | CF: " + f"{cf_score:.2f}" if cf_score else ""}'
             f'{" | Score: " + f"{combined_score:.3f}" if combined_score else ""}'
-            f'</p>',
+            f"</p>",
             unsafe_allow_html=True,
         )
 
         # Row 3: Explanation
         if explanation:
-            st.markdown(f'<p class="explanation">💬 {explanation}</p>', unsafe_allow_html=True)
+            st.markdown(
+                f'<p class="explanation">💬 {explanation}</p>', unsafe_allow_html=True
+            )
 
         # Row 4: Similar button
         if show_similar_button and similar_callback:
-            if st.button("🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"):
+            if st.button(
+                "🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"
+            ):
                 similar_callback(restaurant)
 
         st.markdown("</div>", unsafe_allow_html=True)

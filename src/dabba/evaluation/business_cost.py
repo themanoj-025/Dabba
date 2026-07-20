@@ -77,7 +77,9 @@ def compute_sla_analysis(
         "sla_threshold_min": threshold,
         "total_orders": total,
         "actual_on_time_rate": round(float((total - actual_late.sum()) / total), 4),
-        "predicted_on_time_rate": round(float((total - predicted_late.sum()) / total), 4),
+        "predicted_on_time_rate": round(
+            float((total - predicted_late.sum()) / total), 4
+        ),
         "true_positives": tp,
         "false_positives": fp,
         "false_negatives": fn,
@@ -85,8 +87,11 @@ def compute_sla_analysis(
         "precision": round(precision, 4),
         "recall": round(recall, 4),
     }
-    logger.info("SLA analysis (threshold=%.0f min): on-time rate=%.2f%%",
-                threshold, metrics["actual_on_time_rate"] * 100)
+    logger.info(
+        "SLA analysis (threshold=%.0f min): on-time rate=%.2f%%",
+        threshold,
+        metrics["actual_on_time_rate"] * 100,
+    )
     return metrics
 
 
@@ -142,11 +147,7 @@ def compute_reliability_score(
     norm_sentiment = _min_max_norm(sentiment)
     norm_delay = _min_max_norm(delay_risk)
 
-    score = (
-        w_rating * norm_rating
-        + w_sentiment * norm_sentiment
-        - w_delay * norm_delay
-    )
+    score = w_rating * norm_rating + w_sentiment * norm_sentiment - w_delay * norm_delay
     score = np.clip(score, 0.0, 1.0)
 
     return float(score) if score.ndim == 0 else score
@@ -220,9 +221,15 @@ def run_ab_scenario_simulation(
         }
 
     # Compute overlap between profiles
-    balanced_names = {r["name"] for r in results.get("balanced", {}).get("top_restaurants", [])}
-    quality_names = {r["name"] for r in results.get("quality_first", {}).get("top_restaurants", [])}
-    speed_names = {r["name"] for r in results.get("speed_first", {}).get("top_restaurants", [])}
+    balanced_names = {
+        r["name"] for r in results.get("balanced", {}).get("top_restaurants", [])
+    }
+    quality_names = {
+        r["name"] for r in results.get("quality_first", {}).get("top_restaurants", [])
+    }
+    speed_names = {
+        r["name"] for r in results.get("speed_first", {}).get("top_restaurants", [])
+    }
 
     results["_meta"] = {
         "balanced_vs_quality_overlap": len(balanced_names & quality_names),
@@ -230,6 +237,9 @@ def run_ab_scenario_simulation(
         "quality_vs_speed_overlap": len(quality_names & speed_names),
     }
 
-    logger.info("A/B scenario simulation complete: %d profiles, %d restaurants",
-                len(WEIGHT_PROFILES), len(df))
+    logger.info(
+        "A/B scenario simulation complete: %d profiles, %d restaurants",
+        len(WEIGHT_PROFILES),
+        len(df),
+    )
     return results

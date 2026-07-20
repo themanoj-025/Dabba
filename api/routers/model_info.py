@@ -1,5 +1,4 @@
-"""Model Info router — deployed model names and metrics.
-"""
+"""Model Info router — deployed model names and metrics."""
 
 from __future__ import annotations
 

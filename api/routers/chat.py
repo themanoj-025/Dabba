@@ -1,5 +1,4 @@
-"""Food Concierge chat router — LLM-powered with rules-based fallback.
-"""
+"""Food Concierge chat router — LLM-powered with rules-based fallback."""
 
 from __future__ import annotations
 

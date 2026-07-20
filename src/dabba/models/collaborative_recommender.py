@@ -77,7 +77,8 @@ def generate_synthetic_interactions(
     rng = np.random.RandomState(config.random_seed)
     logger.info(
         "Generating SYNTHETIC interactions: %d users, %d restaurants",
-        n_users, len(restaurants_df),
+        n_users,
+        len(restaurants_df),
     )
 
     # Build cuisine feature matrix for restaurants
@@ -126,8 +127,9 @@ def generate_synthetic_interactions(
         probs = np.maximum(affinity, 0) + 0.05  # minimum chance
         probs = probs / probs.sum()
 
-        chosen = rng.choice(n_restaurants, size=min(n_ratings, n_restaurants),
-                           replace=False, p=probs)
+        chosen = rng.choice(
+            n_restaurants, size=min(n_ratings, n_restaurants), replace=False, p=probs
+        )
 
         for rest_idx in chosen:
             # Rating = base affinity + noise, clipped to [1, 5]
@@ -135,16 +137,19 @@ def generate_synthetic_interactions(
             noise = rng.normal(0, 0.3)
             rating = float(np.clip(base * 4 + 1 + noise, 1.0, 5.0))
 
-            interactions.append({
-                "user_id": user_id,
-                "restaurant_id": int(rest_ids[rest_idx]),
-                "rating": round(rating, 2),
-            })
+            interactions.append(
+                {
+                    "user_id": user_id,
+                    "restaurant_id": int(rest_ids[rest_idx]),
+                    "rating": round(rating, 2),
+                }
+            )
 
     df = pd.DataFrame(interactions)
     logger.info(
         "Generated %d SYNTHETIC interactions (density: %.4f%%)",
-        len(df), 100 * len(df) / (n_users * n_restaurants),
+        len(df),
+        100 * len(df) / (n_users * n_restaurants),
     )
     return df
 
@@ -152,6 +157,7 @@ def generate_synthetic_interactions(
 # ═══════════════════════════════════════════════════════════════════════
 # PYTORCH MATRIX FACTORIZATION MODEL
 # ═══════════════════════════════════════════════════════════════════════
+
 
 class MatrixFactorization(nn.Module):
     """Simple matrix factorization model using embedding layers.
@@ -244,8 +250,13 @@ def train_matrix_factorization(
     optimizer = optim.Adam(model.parameters(), lr=lr)
     criterion = nn.MSELoss()
 
-    logger.info("Training MF: %d users, %d items, %d factors, %d epochs",
-                n_users, len(item_map), n_factors, n_epochs)
+    logger.info(
+        "Training MF: %d users, %d items, %d factors, %d epochs",
+        n_users,
+        len(item_map),
+        n_factors,
+        n_epochs,
+    )
 
     for epoch in range(n_epochs):
         total_loss = 0.0
@@ -266,8 +277,9 @@ def train_matrix_factorization(
             n_batches += 1
 
         if (epoch + 1) % 5 == 0:
-            logger.info("Epoch %d/%d — loss: %.4f",
-                        epoch + 1, n_epochs, total_loss / n_batches)
+            logger.info(
+                "Epoch %d/%d — loss: %.4f", epoch + 1, n_epochs, total_loss / n_batches
+            )
 
     logger.info("Matrix factorization training complete")
     return model
@@ -330,9 +342,12 @@ def get_collaborative_scores(
 
             # Predict for all items for each user in batch
             user_expanded = batch_users.unsqueeze(1).expand(-1, n_items)
-            item_expanded = torch.LongTensor(restaurant_ids).unsqueeze(0).expand(
-                len(batch_users), -1
-            ).to(device)
+            item_expanded = (
+                torch.LongTensor(restaurant_ids)
+                .unsqueeze(0)
+                .expand(len(batch_users), -1)
+                .to(device)
+            )
 
             preds = model(user_expanded, item_expanded)
             scores += preds.cpu().numpy().mean(axis=0)

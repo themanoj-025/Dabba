@@ -27,14 +27,16 @@ class TestETAModels:
         # Create synthetic data
         rng = np.random.RandomState(42)
         n = 200
-        df = pd.DataFrame({
-            "haversine_distance_km": rng.uniform(1, 15, n),
-            "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
-            "is_festival": rng.choice([0, 1], n),
-            "delivery_person_age": rng.uniform(20, 45, n),
-            "delivery_person_ratings": rng.uniform(3.0, 5.0, n),
-            "vehicle_condition": rng.choice([1, 2, 3], n),
-        })
+        df = pd.DataFrame(
+            {
+                "haversine_distance_km": rng.uniform(1, 15, n),
+                "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
+                "is_festival": rng.choice([0, 1], n),
+                "delivery_person_age": rng.uniform(20, 45, n),
+                "delivery_person_ratings": rng.uniform(3.0, 5.0, n),
+                "vehicle_condition": rng.choice([1, 2, 3], n),
+            }
+        )
         y = pd.Series(rng.uniform(15, 60, n))
 
         results, best = train_and_evaluate_eta_models(df, y)
@@ -47,10 +49,12 @@ class TestETAModels:
         """Predictions should have same length as input."""
         rng = np.random.RandomState(42)
         n = 100
-        df = pd.DataFrame({
-            "haversine_distance_km": rng.uniform(1, 15, n),
-            "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
-        })
+        df = pd.DataFrame(
+            {
+                "haversine_distance_km": rng.uniform(1, 15, n),
+                "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
+            }
+        )
         y = pd.Series(rng.uniform(15, 60, n))
 
         results, _ = train_and_evaluate_eta_models(df, y)
@@ -63,10 +67,12 @@ class TestETAModels:
         """MAE should always be non-negative."""
         rng = np.random.RandomState(42)
         n = 100
-        df = pd.DataFrame({
-            "haversine_distance_km": rng.uniform(1, 15, n),
-            "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
-        })
+        df = pd.DataFrame(
+            {
+                "haversine_distance_km": rng.uniform(1, 15, n),
+                "traffic_ordinal": rng.choice([0, 1, 2, 3], n),
+            }
+        )
         y = pd.Series(rng.uniform(15, 60, n))
 
         results, _ = train_and_evaluate_eta_models(df, y)

@@ -32,6 +32,7 @@ def _get_anthropic_client(config: DabbaConfig):
         return None
     try:
         import anthropic
+
         _anthropic_client = anthropic.Anthropic(api_key=config.anthropic_api_key)
         logger.info("Anthropic client initialized")
         return _anthropic_client
@@ -41,6 +42,7 @@ def _get_anthropic_client(config: DabbaConfig):
 
 
 # ─── LLM-powered narration ──────────────────────────────────────────────
+
 
 def _llm_narrate(
     restaurant: Dict[str, Any],
@@ -81,12 +83,12 @@ def _llm_narrate(
         logger.info("LLM narration generated for %s", restaurant.get("name"))
         return text
     except Exception as e:
-        logger.warning("LLM narration failed for %s: %s",
-                       restaurant.get("name"), e)
+        logger.warning("LLM narration failed for %s: %s", restaurant.get("name"), e)
         return None
 
 
 # ─── Rules-based fallback narration ─────────────────────────────────────
+
 
 def _rules_narrate(
     restaurant: Dict[str, Any],
@@ -146,6 +148,7 @@ def _rules_narrate(
 
 
 # ─── Public API ─────────────────────────────────────────────────────────
+
 
 def narrate_recommendation(
     restaurant: Dict[str, Any],

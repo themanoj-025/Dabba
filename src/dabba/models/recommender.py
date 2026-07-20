@@ -109,7 +109,10 @@ class RestaurantRecommender:
             self.rating_model = joblib.load(path)
             logger.info("Loaded rating model from %s", path)
         except FileNotFoundError:
-            logger.warning("Rating model not found at %s — predictions will use bayesian rating", path)
+            logger.warning(
+                "Rating model not found at %s — predictions will use bayesian rating",
+                path,
+            )
 
     def _compute_similarity(self, query_features: np.ndarray) -> np.ndarray:
         """Compute cosine similarity between query and all restaurants.
@@ -169,9 +172,8 @@ class RestaurantRecommender:
             candidates["similarity_score"] = 1.0
 
         # Combine: similarity + bayesian rating
-        candidates["combined_score"] = (
-            0.5 * candidates["similarity_score"]
-            + 0.5 * (candidates["bayesian_rating"] / 5.0)
+        candidates["combined_score"] = 0.5 * candidates["similarity_score"] + 0.5 * (
+            candidates["bayesian_rating"] / 5.0
         )
 
         # Generate explanations
@@ -192,8 +194,14 @@ class RestaurantRecommender:
         # Sort and return top N
         result = candidates.sort_values("combined_score", ascending=False).head(top_n)
         display_cols = [
-            "name", "rate", "bayesian_rating", "cost_for_two",
-            "location", "cuisines", "similarity_score", "combined_score",
+            "name",
+            "rate",
+            "bayesian_rating",
+            "cost_for_two",
+            "location",
+            "cuisines",
+            "similarity_score",
+            "combined_score",
             "recommendation_explanation",
         ]
         display_cols = [c for c in display_cols if c in result.columns]

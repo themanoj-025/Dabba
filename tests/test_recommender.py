@@ -35,22 +35,30 @@ class TestRestaurantRecommender:
     @pytest.fixture
     def sample_df(self):
         """Create a sample restaurant DataFrame."""
-        return pd.DataFrame({
-            "name": ["A", "B", "C", "D", "E"],
-            "rate": [4.5, 3.8, 4.2, 3.5, 4.8],
-            "votes": [500, 50, 300, 10, 1000],
-            "cost_for_two": [500, 300, 800, 200, 1200],
-            "location": ["Koramangala", "Indiranagar", "Koramangala", "HSR Layout", "MG Road"],
-            "cuisines": [
-                "North Indian, Chinese",
-                "Italian",
-                "North Indian, Mughlai",
-                "South Indian",
-                "Japanese",
-            ],
-            "votes_log": [6.2, 3.9, 5.7, 2.4, 6.9],
-            "online_order_binary": [1, 1, 0, 1, 1],
-        })
+        return pd.DataFrame(
+            {
+                "name": ["A", "B", "C", "D", "E"],
+                "rate": [4.5, 3.8, 4.2, 3.5, 4.8],
+                "votes": [500, 50, 300, 10, 1000],
+                "cost_for_two": [500, 300, 800, 200, 1200],
+                "location": [
+                    "Koramangala",
+                    "Indiranagar",
+                    "Koramangala",
+                    "HSR Layout",
+                    "MG Road",
+                ],
+                "cuisines": [
+                    "North Indian, Chinese",
+                    "Italian",
+                    "North Indian, Mughlai",
+                    "South Indian",
+                    "Japanese",
+                ],
+                "votes_log": [6.2, 3.9, 5.7, 2.4, 6.9],
+                "online_order_binary": [1, 1, 0, 1, 1],
+            }
+        )
 
     def test_recommend_returns_dataframe(self, sample_df):
         """recommend() should return a DataFrame."""

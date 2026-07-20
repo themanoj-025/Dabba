@@ -11,8 +11,8 @@ from dabba.models.collaborative_recommender import (
     generate_synthetic_interactions,
 )
 
-
 # ─── Fixtures (module-level, required by pytest) ──────────────────────
+
 
 @pytest.fixture
 def sample_restaurants():
@@ -21,13 +21,16 @@ def sample_restaurants():
     n = 20
     cols = {"name": [f"Rest_{i}" for i in range(n)]}
     cols["cost_for_two"] = rng.randint(100, 2000, n)
-    cols["cuisines"] = rng.choice(["North Indian", "Chinese", "Italian", "South Indian"], n)
+    cols["cuisines"] = rng.choice(
+        ["North Indian", "Chinese", "Italian", "South Indian"], n
+    )
     for cuisine in ["north_indian", "chinese", "italian", "south_indian"]:
         cols[f"cuisine_{cuisine}"] = rng.randint(0, 2, n)
     return pd.DataFrame(cols)
 
 
 # ─── Tests ────────────────────────────────────────────────────────────
+
 
 class TestSyntheticDataGenerator:
     """Tests for synthetic interaction data generation."""
@@ -86,21 +89,25 @@ class TestInteractionDataset:
 
     def test_length(self):
         """Dataset length should match number of interactions."""
-        df = pd.DataFrame({
-            "user_idx": [0, 1, 2],
-            "item_idx": [0, 1, 2],
-            "rating": [4.0, 3.5, 5.0],
-        })
+        df = pd.DataFrame(
+            {
+                "user_idx": [0, 1, 2],
+                "item_idx": [0, 1, 2],
+                "rating": [4.0, 3.5, 5.0],
+            }
+        )
         dataset = InteractionDataset(df)
         assert len(dataset) == 3
 
     def test_getitem(self):
         """Dataset should return user, item, rating tensors."""
-        df = pd.DataFrame({
-            "user_idx": [0],
-            "item_idx": [5],
-            "rating": [4.5],
-        })
+        df = pd.DataFrame(
+            {
+                "user_idx": [0],
+                "item_idx": [5],
+                "rating": [4.5],
+            }
+        )
         dataset = InteractionDataset(df)
         user, item, rating = dataset[0]
         assert user.item() == 0

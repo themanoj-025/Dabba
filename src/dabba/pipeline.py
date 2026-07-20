@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -66,10 +67,9 @@ def generate_comparison_charts(
         output_dir = get_config().reports_figures_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    df = pd.DataFrame([
-        {"Model": r.name, "MAE": r.mae, "RMSE": r.rmse, "R2": r.r2}
-        for r in results
-    ])
+    df = pd.DataFrame(
+        [{"Model": r.name, "MAE": r.mae, "RMSE": r.rmse, "R2": r.r2} for r in results]
+    )
 
     # Matplotlib bar chart (for README/static images)
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -94,9 +94,12 @@ def generate_comparison_charts(
         import plotly.io as pio
 
         fig_px = px.bar(
-            df, x="Model", y=["MAE", "RMSE"],
+            df,
+            x="Model",
+            y=["MAE", "RMSE"],
             title=f"{task.title()} Model Comparison — MAE & RMSE",
-            barmode="group", template="plotly_white",
+            barmode="group",
+            template="plotly_white",
         )
         pio.write_json(fig_px, output_dir / f"{task}_model_comparison.json")
     except ImportError:
@@ -104,8 +107,10 @@ def generate_comparison_charts(
 
     # R² chart
     fig, ax = plt.subplots(figsize=(10, 5))
-    colors = ["#4CAF50" if r.r2 > 0.7 else "#FFC107" if r.r2 > 0.5 else "#F44336"
-              for r in results]
+    colors = [
+        "#4CAF50" if r.r2 > 0.7 else "#FFC107" if r.r2 > 0.5 else "#F44336"
+        for r in results
+    ]
     ax.barh(df["Model"], df["R2"], color=colors)
     ax.set_xlabel("R² Score", fontsize=12)
     ax.set_title(f"{task.title()} Model Comparison — R² Score", fontsize=14)
@@ -159,11 +164,15 @@ def generate_residual_plots(
         fig = go.Figure()
         for result in sorted_results:
             if result.predictions is not None:
-                fig.add_trace(go.Scatter(
-                    x=y_true, y=result.predictions - y_true,
-                    mode="markers", name=result.name,
-                    marker=dict(size=4, opacity=0.3),
-                ))
+                fig.add_trace(
+                    go.Scatter(
+                        x=y_true,
+                        y=result.predictions - y_true,
+                        mode="markers",
+                        name=result.name,
+                        marker=dict(size=4, opacity=0.3),
+                    )
+                )
         fig.add_hline(y=0, line_dash="dash", line_color="red")
         fig.update_layout(title=f"{task.title()} — Residuals", template="plotly_white")
         pio.write_json(fig, output_dir / f"{task}_residuals.json")
@@ -198,14 +207,18 @@ def compute_shap_explanations(
             return
 
         # Use TreeExplainer for tree-based models
-        if hasattr(inner_model, "get_booster") or hasattr(inner_model, "feature_importances_"):
+        if hasattr(inner_model, "get_booster") or hasattr(
+            inner_model, "feature_importances_"
+        ):
             explainer = shap.TreeExplainer(inner_model)
         else:
             explainer = shap.Explainer(inner_model, X)
 
         shap_values = explainer(X.sample(min(100, len(X)), random_state=42))
         shap.summary_plot(shap_values, show=False)
-        plt.savefig(output_dir / f"{task}_shap_summary.png", dpi=150, bbox_inches="tight")
+        plt.savefig(
+            output_dir / f"{task}_shap_summary.png", dpi=150, bbox_inches="tight"
+        )
         plt.close()
         logger.info("SHAP summary plot saved for %s model", task)
 
@@ -245,8 +258,12 @@ def main() -> None:
     feature_cols = []
     for c in df_zomato.columns:
         if c.startswith("cuisine_") or c in [
-            "votes_log", "cost_for_two", "online_order_binary",
-            "book_table_binary", "cuisine_count", "avg_sentiment",
+            "votes_log",
+            "cost_for_two",
+            "online_order_binary",
+            "book_table_binary",
+            "cuisine_count",
+            "avg_sentiment",
         ]:
             if c not in seen:
                 seen.add(c)
@@ -257,7 +274,9 @@ def main() -> None:
 
     # Rating model comparison (now with CatBoost + MLflow)
     logger.info("--- Rating model comparison ---")
-    rating_results, rating_best = train_and_evaluate_rating_models(X_rating, y_rating, config)
+    rating_results, rating_best = train_and_evaluate_rating_models(
+        X_rating, y_rating, config
+    )
 
     fitted_rating_model = None
     if rating_results:
@@ -266,7 +285,9 @@ def main() -> None:
         generate_comparison_charts(rating_results, task="rating")
         generate_residual_plots(rating_results, y_rating.values, task="rating")
 
-        best_name = select_best_model(rating_results, metric=config.rating_metric, task="rating")
+        best_name = select_best_model(
+            rating_results, metric=config.rating_metric, task="rating"
+        )
         logger.info("🏆 Best rating model: %s", best_name)
 
         if best_name:
@@ -285,11 +306,22 @@ def main() -> None:
     describe_dataset(df_delivery, "Delivery (cleaned)")
     df_delivery = add_delivery_features(df_delivery, config)
 
-    eta_feature_cols = [c for c in df_delivery.columns if c in [
-        "haversine_distance_km", "traffic_ordinal", "is_festival",
-        "delivery_person_age", "delivery_person_ratings", "vehicle_condition",
-    ]]
-    eta_feature_cols += [c for c in df_delivery.columns if c.startswith("order_hour_bucket_")]
+    eta_feature_cols = [
+        c
+        for c in df_delivery.columns
+        if c
+        in [
+            "haversine_distance_km",
+            "traffic_ordinal",
+            "is_festival",
+            "delivery_person_age",
+            "delivery_person_ratings",
+            "vehicle_condition",
+        ]
+    ]
+    eta_feature_cols += [
+        c for c in df_delivery.columns if c.startswith("order_hour_bucket_")
+    ]
 
     X_eta = df_delivery[eta_feature_cols].fillna(0)
     y_eta = df_delivery["time_taken_min"]
@@ -304,7 +336,9 @@ def main() -> None:
         generate_comparison_charts(eta_results, task="eta")
         generate_residual_plots(eta_results, y_eta.values, task="eta")
 
-        best_eta_name = select_best_model(eta_results, metric=config.eta_metric, task="eta")
+        best_eta_name = select_best_model(
+            eta_results, metric=config.eta_metric, task="eta"
+        )
         logger.info("🏆 Best ETA model: %s", best_eta_name)
 
         if best_eta_name:
@@ -314,7 +348,9 @@ def main() -> None:
             compute_shap_explanations(fitted_eta_model, X_eta, task="eta")
 
         if eta_best and eta_best.predictions is not None:
-            sla_metrics = compute_sla_analysis(y_eta.values, eta_best.predictions, config=config)
+            sla_metrics = compute_sla_analysis(
+                y_eta.values, eta_best.predictions, config=config
+            )
             logger.info("SLA analysis: %s", sla_metrics)
 
     # ─── Stage 4: Reliability Score + A/B Scenarios ──────────────────
@@ -335,7 +371,9 @@ def main() -> None:
         )
         df_zomato["reliability_score"] = reliability
         df_zomato.to_csv(processed_path, index=False)
-        logger.info("Reliability scores computed — mean=%.3f", float(np.mean(reliability)))
+        logger.info(
+            "Reliability scores computed — mean=%.3f", float(np.mean(reliability))
+        )
 
         # A/B scenario simulation
         scenario_df = df_zomato.copy()
@@ -357,8 +395,11 @@ def main() -> None:
         df_zomato, n_users=3000, config=config
     )
     interactions.to_csv(config.synthetic_interactions_path, index=False)
-    logger.info("Saved %d synthetic interactions to %s",
-                len(interactions), config.synthetic_interactions_path)
+    logger.info(
+        "Saved %d synthetic interactions to %s",
+        len(interactions),
+        config.synthetic_interactions_path,
+    )
 
     logger.info("--- Training matrix factorization model ---")
     n_users = int(interactions["user_id"].max()) + 1
@@ -396,7 +437,9 @@ def main() -> None:
         if len(coords) > 20:
             cluster_results = compare_clustering_methods(coords, k_range=range(3, 11))
             for method, info in cluster_results.items():
-                logger.info("  %s: silhouette=%.3f", method, info.get("silhouette_score", -1))
+                logger.info(
+                    "  %s: silhouette=%.3f", method, info.get("silhouette_score", -1)
+                )
 
     logger.info("\n=== Pipeline Complete ===")
     logger.info("Best rating model: %s", config.best_rating_model_path)

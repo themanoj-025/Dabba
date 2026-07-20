@@ -99,13 +99,15 @@ class TestSaveComparisonCsv:
 
     def test_saves_csv(self, tmp_path):
         """Should save a valid CSV file."""
-        df = pd.DataFrame({
-            "model": ["A", "B"],
-            "mae": [3.0, 4.0],
-            "rmse": [4.0, 5.0],
-            "r2": [0.9, 0.8],
-            "train_time_s": [1.0, 0.5],
-        })
+        df = pd.DataFrame(
+            {
+                "model": ["A", "B"],
+                "mae": [3.0, 4.0],
+                "rmse": [4.0, 5.0],
+                "r2": [0.9, 0.8],
+                "train_time_s": [1.0, 0.5],
+            }
+        )
         path = tmp_path / "comparison.csv"
         save_comparison_csv(df, path)
         assert path.exists()

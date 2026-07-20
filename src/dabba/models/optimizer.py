@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,7 +31,8 @@ def optimize_assignments(
     total_time = cost_matrix[row_ind, col_ind].sum()
     logger.info(
         "Optimized %d assignments — total predicted time: %.1f min",
-        len(row_ind), total_time,
+        len(row_ind),
+        total_time,
     )
     return col_ind, total_time
 
@@ -98,11 +98,15 @@ def compare_assignment_strategies(
     opt_assignment, opt_total = optimize_assignments(cost_matrix)
     naive_total = naive_assignments(cost_matrix)
 
-    improvement = (naive_total - opt_total) / naive_total * 100 if naive_total > 0 else 0
+    improvement = (
+        (naive_total - opt_total) / naive_total * 100 if naive_total > 0 else 0
+    )
 
     logger.info(
         "Assignment comparison: optimized=%.1f min, naive=%.1f min, improvement=%.1f%%",
-        opt_total, naive_total, improvement,
+        opt_total,
+        naive_total,
+        improvement,
     )
 
     return {

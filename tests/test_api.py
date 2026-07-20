@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 def client():
     """Create a test client for the FastAPI app."""
     from api.main import app
+
     return TestClient(app)
 
 
@@ -39,17 +40,23 @@ class TestETAEndpoint:
 
     def test_predict_eta_without_model(self, client):
         """Should return 503 if model is not loaded."""
-        response = client.post("/predict-eta", json={
-            "distance_km": 5.0,
-            "traffic_level": 1,
-            "is_festival": False,
-        })
+        response = client.post(
+            "/predict-eta",
+            json={
+                "distance_km": 5.0,
+                "traffic_level": 1,
+                "is_festival": False,
+            },
+        )
         # Either 503 (no model) or 200 (model loaded)
         assert response.status_code in [200, 503]
 
     def test_predict_eta_schema(self, client):
         """Request should be validated by Pydantic schema."""
-        response = client.post("/predict-eta", json={
-            "distance_km": "not_a_number",
-        })
+        response = client.post(
+            "/predict-eta",
+            json={
+                "distance_km": "not_a_number",
+            },
+        )
         assert response.status_code == 422  # Validation error

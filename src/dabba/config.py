@@ -89,7 +89,7 @@ class DabbaConfig(BaseSettings):
 
     # --- Drift Detection ---
     drift_ks_threshold: float = 0.05  # p-value threshold for KS test
-    drift_feature_sample: int = 100   # samples to use for drift detection
+    drift_feature_sample: int = 100  # samples to use for drift detection
 
     # --- Logging ---
     log_level: str = "INFO"

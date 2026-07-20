@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 # Suppress FutureWarning from pandas fillna downcasting behavior
-pd.set_option('future.no_silent_downcasting', True)
+pd.set_option("future.no_silent_downcasting", True)
 
 from dabba.config import DabbaConfig, get_config  # noqa: E402
 
@@ -24,9 +24,10 @@ logger = logging.getLogger(__name__)
 # Zomato cleaning
 # ---------------------------------------------------------------------------
 
+
 def clean_zomato_rating(series: pd.Series) -> pd.Series:
     """Parse the messy Zomato rating column (e.g. '4.1/5', 'NEW', '-').
-    
+
     Strategy:
         - Extract numeric portion before '/5'
         - Replace non-numeric sentinels ('NEW', '-', etc.) with NaN
@@ -38,6 +39,7 @@ def clean_zomato_rating(series: pd.Series) -> pd.Series:
     Returns:
         pd.Series: Cleaned numeric rating (float, 0-5 scale).
     """
+
     def _extract(value: object) -> Optional[float]:
         if pd.isna(value):
             return np.nan
@@ -55,7 +57,7 @@ def clean_zomato_rating(series: pd.Series) -> pd.Series:
 
 def clean_zomato_cost(series: pd.Series) -> pd.Series:
     """Parse the cost-for-two column (e.g. '1,200', '₹300').
-    
+
     Strategy:
         - Remove non-numeric characters (comma, rupee sign, spaces)
         - Cast to float; unparseable values become NaN.
@@ -66,6 +68,7 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
     Returns:
         pd.Series: Cleaned cost as float (INR).
     """
+
     def _parse(value: object) -> Optional[float]:
         if pd.isna(value):
             return np.nan
@@ -81,7 +84,9 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
     return cleaned
 
 
-def clean_zomato(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+def clean_zomato(
+    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw Zomato dataframe.
 
     Steps:
@@ -152,7 +157,10 @@ def clean_zomato(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.D
 # Delivery cleaning
 # ---------------------------------------------------------------------------
 
-def clean_delivery(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+
+def clean_delivery(
+    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw delivery dataframe.
 
     Steps:

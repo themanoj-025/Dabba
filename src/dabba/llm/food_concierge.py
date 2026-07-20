@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # ─── Tools that the concierge can call ──────────────────────────────────
 
+
 class ConciergeTools:
     """Deterministic tools the concierge can invoke."""
 
@@ -80,13 +81,19 @@ class ConciergeTools:
             return {"predicted_minutes": 30, "is_at_risk": False, "note": "approximate"}
 
         # Look up restaurant features (mean if not found)
-        matches = self.df[self.df["name"].str.contains(restaurant_name, case=False, na=False)]
+        matches = self.df[
+            self.df["name"].str.contains(restaurant_name, case=False, na=False)
+        ]
         if matches.empty:
             return None
 
         # Use restaurant-level features + mean delivery features
         # In production, this would use actual delivery data per restaurant
-        return {"predicted_minutes": 35, "is_at_risk": False, "note": "estimated from similar orders"}
+        return {
+            "predicted_minutes": 35,
+            "is_at_risk": False,
+            "note": "estimated from similar orders",
+        }
 
     def get_reliability_score(self, restaurant_name: str) -> Optional[float]:
         """Get the reliability score for a restaurant.
@@ -99,7 +106,9 @@ class ConciergeTools:
         """
         if "reliability_score" not in self.df.columns:
             return None
-        matches = self.df[self.df["name"].str.contains(restaurant_name, case=False, na=False)]
+        matches = self.df[
+            self.df["name"].str.contains(restaurant_name, case=False, na=False)
+        ]
         if matches.empty:
             return None
         return float(matches.iloc[0].get("reliability_score", 0.5))
@@ -119,6 +128,7 @@ def _get_llm_client(config: DabbaConfig):
         return None
     try:
         import anthropic
+
         _anthropic_client = anthropic.Anthropic(api_key=config.anthropic_api_key)
         return _anthropic_client
     except Exception as e:
@@ -133,8 +143,14 @@ TOOL_DEFINITIONS = [
         "input_schema": {
             "type": "object",
             "properties": {
-                "cuisine": {"type": "string", "description": "Cuisine preference (e.g., North Indian, Chinese)"},
-                "max_budget": {"type": "number", "description": "Maximum cost for two in INR"},
+                "cuisine": {
+                    "type": "string",
+                    "description": "Cuisine preference (e.g., North Indian, Chinese)",
+                },
+                "max_budget": {
+                    "type": "number",
+                    "description": "Maximum cost for two in INR",
+                },
                 "area": {"type": "string", "description": "Bangalore neighborhood"},
                 "top_n": {"type": "integer", "description": "Number of results"},
             },
@@ -229,9 +245,18 @@ def _llm_concierge_response(
 # ─── Rules-based fallback concierge ─────────────────────────────────────
 
 _INTENT_PATTERNS = [
-    (r"(?:find|search|look|show|get|recommend|suggest)\s+(?:me\s+)?(?:some\s+)?(.+?)(?:\s+(?:in|near|at)\s+(.+))?$", "search"),
-    (r"(?:how\s+long|eta|delivery\s+time|when)\s+(?:for|does|will)\s+(.+?)(?:\?)?$", "eta"),
-    (r"(?:reliability|reliable|trust|score|rating)\s+(?:of|for|score)?\s*(.+?)(?:\?)?$", "reliability"),
+    (
+        r"(?:find|search|look|show|get|recommend|suggest)\s+(?:me\s+)?(?:some\s+)?(.+?)(?:\s+(?:in|near|at)\s+(.+))?$",
+        "search",
+    ),
+    (
+        r"(?:how\s+long|eta|delivery\s+time|when)\s+(?:for|does|will)\s+(.+?)(?:\?)?$",
+        "eta",
+    ),
+    (
+        r"(?:reliability|reliable|trust|score|rating)\s+(?:of|for|score)?\s*(.+?)(?:\?)?$",
+        "reliability",
+    ),
     (r"(?:cheap|budget|affordable|under\s+₹?\d+)", "budget_search"),
     (r"(?:spicy|spice|hot)", "cuisine_search"),
     (r"(?:hello|hi|hey|namaste)", "greeting"),
@@ -290,13 +315,18 @@ def _rules_concierge_response(
             "👋 **Namaste!** I'm your Dabba Food Concierge. "
             "I can help you find restaurants, check delivery ETAs, "
             "or look up reliability scores. Try asking something like:\n"
-            "- \"Find North Indian food near Koramangala\"\n"
-            "- \"How long does delivery from Meghana Foods take?\"\n"
-            "- \"What's the reliability score for Truffles?\""
+            '- "Find North Indian food near Koramangala"\n'
+            '- "How long does delivery from Meghana Foods take?"\n'
+            '- "What\'s the reliability score for Truffles?"'
         )
 
     elif intent == "search":
-        cuisine = params.get("query", "").replace("food", "").replace("restaurants", "").strip()
+        cuisine = (
+            params.get("query", "")
+            .replace("food", "")
+            .replace("restaurants", "")
+            .strip()
+        )
         area = params.get("area", "")
         results = tools.search_restaurants(
             cuisine=cuisine if cuisine else None,
@@ -335,7 +365,11 @@ def _rules_concierge_response(
         restaurant = params.get("restaurant", "")
         eta_info = tools.get_eta_estimate(restaurant)
         if eta_info:
-            risk = "⚠️ **At risk** of exceeding SLA" if eta_info.get("is_at_risk") else "✅ **On track**"
+            risk = (
+                "⚠️ **At risk** of exceeding SLA"
+                if eta_info.get("is_at_risk")
+                else "✅ **On track**"
+            )
             return (
                 f"🚀 For **{restaurant}**:\n"
                 f"- Estimated delivery: **~{eta_info['predicted_minutes']} min**\n"
@@ -354,21 +388,24 @@ def _rules_concierge_response(
                 badge = "🟡 **Moderately Reliable**"
             else:
                 badge = "🔴 **Low Reliability**"
-            return f"📊 {badge}\n**{restaurant}** reliability score: **{score:.2f}/1.0**"
+            return (
+                f"📊 {badge}\n**{restaurant}** reliability score: **{score:.2f}/1.0**"
+            )
         return f"😅 I couldn't find reliability data for '{restaurant}'."
 
     else:
         return (
             "🤔 I'm not sure I understood that. Here's what I can help with:\n\n"
-            "🔍 **Search** — \"Find North Indian food near Koramangala\"\n"
-            "⏱️ **ETA** — \"How long does delivery from Meghana Foods take?\"\n"
-            "📊 **Reliability** — \"What's the reliability score for Truffles?\"\n"
-            "💰 **Budget** — \"Find cheap restaurants under ₹300\"\n\n"
+            '🔍 **Search** — "Find North Indian food near Koramangala"\n'
+            '⏱️ **ETA** — "How long does delivery from Meghana Foods take?"\n'
+            '📊 **Reliability** — "What\'s the reliability score for Truffles?"\n'
+            '💰 **Budget** — "Find cheap restaurants under ₹300"\n\n'
             "Try one of those! 😊"
         )
 
 
 # ─── Public API ─────────────────────────────────────────────────────────
+
 
 def get_concierge_response(
     user_input: str,
@@ -397,7 +434,8 @@ def get_concierge_response(
     if config.llm_enabled:
         llm_response = _llm_concierge_response(
             conversation_history + [{"role": "user", "content": user_input}],
-            tools, config,
+            tools,
+            config,
         )
         if llm_response:
             return llm_response

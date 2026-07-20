@@ -88,22 +88,26 @@ class TestRestaurantFeatures:
 
     def test_encode_cuisines(self):
         """Should create binary columns for top cuisines."""
-        df = pd.DataFrame({
-            "cuisines": ["North Indian, Chinese", "Italian", "North Indian"],
-        })
+        df = pd.DataFrame(
+            {
+                "cuisines": ["North Indian, Chinese", "Italian", "North Indian"],
+            }
+        )
         result = encode_cuisines(df, top_n=5)
         assert "cuisine_north_indian" in result.columns
         assert result["cuisine_north_indian"].iloc[0] == 1
 
     def test_add_restaurant_features(self):
         """Should add all expected feature columns."""
-        df = pd.DataFrame({
-            "cost_for_two": [500, 1200, 300],
-            "cuisines": ["North Indian, Chinese", "Italian", "Biryani"],
-            "online_order": ["Yes", "No", "Yes"],
-            "book_table": ["Yes", "No", "No"],
-            "votes": [100, 500, 10],
-        })
+        df = pd.DataFrame(
+            {
+                "cost_for_two": [500, 1200, 300],
+                "cuisines": ["North Indian, Chinese", "Italian", "Biryani"],
+                "online_order": ["Yes", "No", "Yes"],
+                "book_table": ["Yes", "No", "No"],
+                "votes": [100, 500, 10],
+            }
+        )
         result = add_restaurant_features(df)
         assert "cost_for_two_bucket" in result.columns
         assert "cuisine_count" in result.columns
@@ -117,16 +121,18 @@ class TestDeliveryFeatures:
 
     def test_add_delivery_features(self):
         """Should add expected feature columns."""
-        df = pd.DataFrame({
-            "time_taken_min": [25.0, 30.0, 35.0],
-            "restaurant_latitude": [12.9, 12.95, 12.91],
-            "restaurant_longitude": [77.6, 77.65, 77.59],
-            "delivery_location_latitude": [12.95, 13.0, 12.93],
-            "delivery_location_longitude": [77.65, 77.7, 77.62],
-            "order_date": ["2024-01-15", "2024-01-16", "2024-01-17"],
-            "festival": ["No", "Yes", "No"],
-            "road_traffic_density": ["Low", "High", "Medium"],
-        })
+        df = pd.DataFrame(
+            {
+                "time_taken_min": [25.0, 30.0, 35.0],
+                "restaurant_latitude": [12.9, 12.95, 12.91],
+                "restaurant_longitude": [77.6, 77.65, 77.59],
+                "delivery_location_latitude": [12.95, 13.0, 12.93],
+                "delivery_location_longitude": [77.65, 77.7, 77.62],
+                "order_date": ["2024-01-15", "2024-01-16", "2024-01-17"],
+                "festival": ["No", "Yes", "No"],
+                "road_traffic_density": ["Low", "High", "Medium"],
+            }
+        )
         result = add_delivery_features(df)
         assert "haversine_distance_km" in result.columns
         assert "is_festival" in result.columns

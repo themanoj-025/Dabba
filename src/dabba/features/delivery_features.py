@@ -17,7 +17,9 @@ from dabba.features.geo import haversine_distance
 logger = logging.getLogger(__name__)
 
 
-def add_delivery_features(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+def add_delivery_features(
+    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+) -> pd.DataFrame:
     """Engineer features for the ETA prediction model.
 
     Features created:
@@ -46,15 +48,28 @@ def add_delivery_features(df: pd.DataFrame, config: Optional[DabbaConfig] = None
     # --- Haversine distance ---
     rest_lat = "restaurant_latitude" if "restaurant_latitude" in df.columns else None
     rest_lon = "restaurant_longitude" if "restaurant_longitude" in df.columns else None
-    del_lat = "delivery_location_latitude" if "delivery_location_latitude" in df.columns else None
-    del_lon = "delivery_location_longitude" if "delivery_location_longitude" in df.columns else None
+    del_lat = (
+        "delivery_location_latitude"
+        if "delivery_location_latitude" in df.columns
+        else None
+    )
+    del_lon = (
+        "delivery_location_longitude"
+        if "delivery_location_longitude" in df.columns
+        else None
+    )
 
     if rest_lat and rest_lon and del_lat and del_lon:
         df["haversine_distance_km"] = haversine_distance(
-            df[rest_lat].values, df[rest_lon].values,
-            df[del_lat].values, df[del_lon].values,
+            df[rest_lat].values,
+            df[rest_lon].values,
+            df[del_lat].values,
+            df[del_lon].values,
         )
-        logger.info("Computed haversine distances — mean=%.2f km", df["haversine_distance_km"].mean())
+        logger.info(
+            "Computed haversine distances — mean=%.2f km",
+            df["haversine_distance_km"].mean(),
+        )
 
     # --- Time features ---
     if "order_date" in df.columns:
@@ -80,16 +95,22 @@ def add_delivery_features(df: pd.DataFrame, config: Optional[DabbaConfig] = None
 
     # --- Festival flag ---
     if "festival" in df.columns:
-        df["is_festival"] = df["festival"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        df["is_festival"] = (
+            df["festival"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        )
 
     # --- Traffic ordinal encoding ---
     if "road_traffic_density" in df.columns:
         traffic_map = {"Low": 0, "Medium": 1, "High": 2, "Jam": 3}
-        df["traffic_ordinal"] = df["road_traffic_density"].map(traffic_map).fillna(1).astype(int)
+        df["traffic_ordinal"] = (
+            df["road_traffic_density"].map(traffic_map).fillna(1).astype(int)
+        )
 
     # --- Delivery person age bucket ---
     if "delivery_person_age" in df.columns:
-        df["delivery_person_age"] = pd.to_numeric(df["delivery_person_age"], errors="coerce")
+        df["delivery_person_age"] = pd.to_numeric(
+            df["delivery_person_age"], errors="coerce"
+        )
         bins = [0, 25, 35, 45, 100]
         labels = ["young", "mid", "senior", "veteran"]
         df["delivery_person_age_bucket"] = pd.cut(
@@ -98,9 +119,9 @@ def add_delivery_features(df: pd.DataFrame, config: Optional[DabbaConfig] = None
 
     # --- Speed for outlier detection (informational) ---
     if "haversine_distance_km" in df.columns and "time_taken_min" in df.columns:
-        df["speed_kmh"] = (df["haversine_distance_km"] / (df["time_taken_min"] / 60)).replace(
-            [np.inf, -np.inf], np.nan
-        )
+        df["speed_kmh"] = (
+            df["haversine_distance_km"] / (df["time_taken_min"] / 60)
+        ).replace([np.inf, -np.inf], np.nan)
 
     # --- Drop rows where key features are missing ---
     key_features = ["time_taken_min"]

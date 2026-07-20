@@ -1,5 +1,4 @@
-"""Recommendation router — hybrid recommendations with optional LLM narration.
-"""
+"""Recommendation router — hybrid recommendations with optional LLM narration."""
 
 from __future__ import annotations
 
@@ -33,10 +32,18 @@ def load_recommender() -> None:
 
     df = pd.read_csv(data_path)
     feature_cols = [c for c in df.columns if c.startswith("cuisine_")]
-    feature_cols += [c for c in [
-        "votes_log", "cost_for_two", "online_order_binary",
-        "book_table_binary", "cuisine_count", "avg_sentiment",
-    ] if c in df.columns]
+    feature_cols += [
+        c
+        for c in [
+            "votes_log",
+            "cost_for_two",
+            "online_order_binary",
+            "book_table_binary",
+            "cuisine_count",
+            "avg_sentiment",
+        ]
+        if c in df.columns
+    ]
 
     _hybrid_recommender = HybridRecommender(df, feature_cols, config=config)
     logger.info("Hybrid recommender loaded with %d restaurants", len(df))
@@ -81,17 +88,29 @@ async def recommend(request: RecommendRequest) -> RecommendResponse:
         if request.use_llm_narration and config.llm_enabled:
             rs = rest_dict.get("reliability_score_display", 0.5)
             explanation = narrate_recommendation(
-                rest_dict, rs, config=config,
+                rest_dict,
+                rs,
+                config=config,
             )
 
         rec = Recommendation(
             name=str(row.get("name", "Unknown")),
-            rating=float(row["rate"]) if "rate" in row and pd.notna(row["rate"]) else None,
-            bayesian_rating=float(row["bayesian_rating"]) if "bayesian_rating" in row else None,
-            cost_for_two=float(row["cost_for_two"]) if "cost_for_two" in row and pd.notna(row["cost_for_two"]) else None,
+            rating=(
+                float(row["rate"]) if "rate" in row and pd.notna(row["rate"]) else None
+            ),
+            bayesian_rating=(
+                float(row["bayesian_rating"]) if "bayesian_rating" in row else None
+            ),
+            cost_for_two=(
+                float(row["cost_for_two"])
+                if "cost_for_two" in row and pd.notna(row["cost_for_two"])
+                else None
+            ),
             location=str(row.get("location", "")) or None,
             cuisines=str(row.get("cuisines", "")) or None,
-            combined_score=float(row["combined_score"]) if "combined_score" in row else None,
+            combined_score=(
+                float(row["combined_score"]) if "combined_score" in row else None
+            ),
             explanation=explanation,
         )
         recommendations.append(rec)

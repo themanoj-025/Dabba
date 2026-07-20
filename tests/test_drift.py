@@ -11,11 +11,13 @@ from dabba.monitoring.drift import DriftDetector
 def reference_data():
     """Create reference data with known distribution."""
     rng = np.random.RandomState(42)
-    return pd.DataFrame({
-        "feature_a": rng.normal(0, 1, 500),
-        "feature_b": rng.uniform(0, 10, 500),
-        "feature_c": rng.poisson(5, 500),
-    })
+    return pd.DataFrame(
+        {
+            "feature_a": rng.normal(0, 1, 500),
+            "feature_b": rng.uniform(0, 10, 500),
+            "feature_c": rng.poisson(5, 500),
+        }
+    )
 
 
 class TestDriftDetector:
@@ -42,11 +44,13 @@ class TestDriftDetector:
         """Shifted distribution should trigger drift."""
         detector = DriftDetector(reference_data)
         rng = np.random.RandomState(42)
-        shifted = pd.DataFrame({
-            "feature_a": rng.normal(5, 1, 100),  # shifted mean by 5 std
-            "feature_b": rng.uniform(5, 15, 100),
-            "feature_c": rng.poisson(15, 100),
-        })
+        shifted = pd.DataFrame(
+            {
+                "feature_a": rng.normal(5, 1, 100),  # shifted mean by 5 std
+                "feature_b": rng.uniform(5, 15, 100),
+                "feature_c": rng.poisson(15, 100),
+            }
+        )
         result = detector.detect(shifted)
         # At least one feature should drift
         assert result.drifted_count > 0
@@ -55,11 +59,13 @@ class TestDriftDetector:
         """Drift result should include a human-readable message."""
         detector = DriftDetector(reference_data)
         rng = np.random.RandomState(42)
-        shifted = pd.DataFrame({
-            "feature_a": rng.normal(5, 1, 100),
-            "feature_b": rng.uniform(5, 15, 100),
-            "feature_c": rng.poisson(15, 100),
-        })
+        shifted = pd.DataFrame(
+            {
+                "feature_a": rng.normal(5, 1, 100),
+                "feature_b": rng.uniform(5, 15, 100),
+                "feature_c": rng.poisson(15, 100),
+            }
+        )
         result = detector.detect(shifted)
         assert len(result.message) > 0
         assert result.has_drift == (result.drifted_count > 0)

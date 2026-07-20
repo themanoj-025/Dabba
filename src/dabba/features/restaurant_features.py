@@ -17,12 +17,36 @@ logger = logging.getLogger(__name__)
 
 # Canonical cuisine list — top 30 most frequent in the dataset
 TOP_CUISINES: List[str] = [
-    "North Indian", "Chinese", "South Indian", "Mughlai", "Cafe",
-    "Bakery", "Italian", "Fast Food", "Continental", "Desserts",
-    "Biryani", "Street Food", "Ice Cream", "Andhra", "Thai",
-    "Kerala", "Seafood", "Bengali", "Rajasthani", "Goan",
-    "Japanese", "Korean", "Mexican", "Mediterranean", "Lebanese",
-    "American", "French", "German", "Vietnamese", "Middle Eastern",
+    "North Indian",
+    "Chinese",
+    "South Indian",
+    "Mughlai",
+    "Cafe",
+    "Bakery",
+    "Italian",
+    "Fast Food",
+    "Continental",
+    "Desserts",
+    "Biryani",
+    "Street Food",
+    "Ice Cream",
+    "Andhra",
+    "Thai",
+    "Kerala",
+    "Seafood",
+    "Bengali",
+    "Rajasthani",
+    "Goan",
+    "Japanese",
+    "Korean",
+    "Mexican",
+    "Mediterranean",
+    "Lebanese",
+    "American",
+    "French",
+    "German",
+    "Vietnamese",
+    "Middle Eastern",
 ]
 
 
@@ -57,13 +81,17 @@ def encode_cuisines(df: pd.DataFrame, top_n: int = 30) -> pd.DataFrame:
 
     for cuisine in all_cuisines:
         col_name = f"cuisine_{cuisine.lower().replace(' ', '_')}"
-        df[col_name] = df["cuisines"].str.contains(cuisine, case=False, na=False).astype(int)
+        df[col_name] = (
+            df["cuisines"].str.contains(cuisine, case=False, na=False).astype(int)
+        )
 
     logger.info("Encoded %d cuisine binary columns", len(all_cuisines))
     return df
 
 
-def add_restaurant_features(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+def add_restaurant_features(
+    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+) -> pd.DataFrame:
     """Engineer features for the rating prediction model.
 
     Features created:
@@ -89,20 +117,24 @@ def add_restaurant_features(df: pd.DataFrame, config: Optional[DabbaConfig] = No
     if "cost_for_two" in df.columns:
         bins = [0, 200, 500, 1000, 2000, float("inf")]
         labels = ["budget", "affordable", "moderate", "premium", "luxury"]
-        df["cost_for_two_bucket"] = pd.cut(
-            df["cost_for_two"], bins=bins, labels=labels
-        )
+        df["cost_for_two_bucket"] = pd.cut(df["cost_for_two"], bins=bins, labels=labels)
 
     # Cuisine count
     if "cuisines" in df.columns:
-        df["cuisine_count"] = df["cuisines"].str.split(",").str.len().fillna(1).astype(int)
+        df["cuisine_count"] = (
+            df["cuisines"].str.split(",").str.len().fillna(1).astype(int)
+        )
 
     # Binary flags
     if "online_order" in df.columns:
-        df["online_order_binary"] = df["online_order"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        df["online_order_binary"] = (
+            df["online_order"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        )
 
     if "book_table" in df.columns:
-        df["book_table_binary"] = df["book_table"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        df["book_table_binary"] = (
+            df["book_table"].map({"Yes": 1, "No": 0}).fillna(0).astype(int)
+        )
 
     # Log-transformed votes
     if "votes" in df.columns:

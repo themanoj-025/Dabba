@@ -44,9 +44,9 @@ def show() -> None:
                     "I can help you find restaurants, check delivery ETAs, "
                     "or look up reliability scores.\n\n"
                     "Try asking me something like:\n"
-                    "- \"Find me something spicy under ₹400 near Koramangala\"\n"
-                    "- \"What's the most reliable restaurant in Indiranagar?\"\n"
-                    "- \"How long does delivery from Meghana Foods take?\""
+                    '- "Find me something spicy under ₹400 near Koramangala"\n'
+                    '- "What\'s the most reliable restaurant in Indiranagar?"\n'
+                    '- "How long does delivery from Meghana Foods take?"'
                 ),
             }
         ]
@@ -65,8 +65,12 @@ def show() -> None:
         chip_cols = st.columns(len(examples))
         for col, example in zip(chip_cols, examples):
             with col:
-                if st.button(f"💡 {example}", key=f"{PAGE_NAME}_chip_{example[:20]}",
-                             use_container_width=True, type="secondary"):
+                if st.button(
+                    f"💡 {example}",
+                    key=f"{PAGE_NAME}_chip_{example[:20]}",
+                    use_container_width=True,
+                    type="secondary",
+                ):
                     st.session_state[f"{PAGE_NAME}_input"] = example
                     st.rerun()
 

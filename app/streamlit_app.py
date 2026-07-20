@@ -65,7 +65,11 @@ with st.sidebar:
     st.markdown("---")
 
     config = get_config()
-    llm_status = "🟢 LLM Active" if config.llm_enabled and config.anthropic_api_key else "🟡 Rules-based"
+    llm_status = (
+        "🟢 LLM Active"
+        if config.llm_enabled and config.anthropic_api_key
+        else "🟡 Rules-based"
+    )
     st.markdown(
         f'<p style="font-size:0.75rem;color:#9ca3af;">{llm_status} mode</p>',
         unsafe_allow_html=True,
@@ -97,8 +101,7 @@ elif "💬" in page:
     concierge.show()
 else:
     st.title("🍛 Dabba — Restaurant Intelligence Platform")
-    st.markdown(
-        """
+    st.markdown("""
         Welcome to **Dabba**, an India-focused restaurant ranking and
         delivery-reliability platform built with rigorous ML experimentation.
 
@@ -115,6 +118,5 @@ else:
         ```
         A composite score combining restaurant quality, customer sentiment,
         and delivery reliability — powered by the winning ML models.
-        """
-    )
+        """)
     st.info("👈 Use the sidebar to navigate to a specific page.")

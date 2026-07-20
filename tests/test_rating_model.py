@@ -65,14 +65,16 @@ class TestTrainAndEvaluateRatingModels:
         """Create synthetic rating prediction data."""
         rng = np.random.RandomState(42)
         n = 200
-        df = pd.DataFrame({
-            "votes_log": rng.uniform(1, 8, n),
-            "cost_for_two": rng.uniform(100, 2000, n),
-            "online_order_binary": rng.choice([0, 1], n),
-            "book_table_binary": rng.choice([0, 1], n),
-            "cuisine_count": rng.randint(1, 8, n),
-            "avg_sentiment": rng.uniform(-1, 1, n),
-        })
+        df = pd.DataFrame(
+            {
+                "votes_log": rng.uniform(1, 8, n),
+                "cost_for_two": rng.uniform(100, 2000, n),
+                "online_order_binary": rng.choice([0, 1], n),
+                "book_table_binary": rng.choice([0, 1], n),
+                "cuisine_count": rng.randint(1, 8, n),
+                "avg_sentiment": rng.uniform(-1, 1, n),
+            }
+        )
         y = pd.Series(rng.uniform(2.5, 5.0, n))
         return df, y
 
@@ -109,11 +111,13 @@ class TestFitBestRatingModel:
         """Create synthetic data."""
         rng = np.random.RandomState(42)
         n = 200
-        df = pd.DataFrame({
-            "votes_log": rng.uniform(1, 8, n),
-            "cost_for_two": rng.uniform(100, 2000, n),
-            "online_order_binary": rng.choice([0, 1], n),
-        })
+        df = pd.DataFrame(
+            {
+                "votes_log": rng.uniform(1, 8, n),
+                "cost_for_two": rng.uniform(100, 2000, n),
+                "online_order_binary": rng.choice([0, 1], n),
+            }
+        )
         y = pd.Series(rng.uniform(2.5, 5.0, n))
         return df, y
 

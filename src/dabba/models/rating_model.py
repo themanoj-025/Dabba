@@ -54,8 +54,12 @@ def get_rating_models() -> Dict[str, Any]:
         "Ridge": Ridge(alpha=1.0),
         "Lasso": Lasso(alpha=0.1),
         "DecisionTree": DecisionTreeRegressor(max_depth=10, random_state=42),
-        "RandomForest": RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1),
-        "GradientBoosting": GradientBoostingRegressor(n_estimators=100, random_state=42),
+        "RandomForest": RandomForestRegressor(
+            n_estimators=100, random_state=42, n_jobs=-1
+        ),
+        "GradientBoosting": GradientBoostingRegressor(
+            n_estimators=100, random_state=42
+        ),
         "XGBoost": _get_xgboost(),
         "LightGBM": _get_lightgbm(),
         "CatBoost": _get_catboost(),
@@ -66,6 +70,7 @@ def get_rating_models() -> Dict[str, Any]:
 def _get_xgboost() -> Any:
     try:
         from xgboost import XGBRegressor
+
         return XGBRegressor(n_estimators=100, random_state=42, verbosity=0)
     except ImportError:
         logger.warning("XGBoost not installed — skipping")
@@ -75,6 +80,7 @@ def _get_xgboost() -> Any:
 def _get_lightgbm() -> Any:
     try:
         from lightgbm import LGBMRegressor
+
         return LGBMRegressor(n_estimators=100, random_state=42, verbosity=-1)
     except ImportError:
         logger.warning("LightGBM not installed — skipping")
@@ -84,8 +90,12 @@ def _get_lightgbm() -> Any:
 def _get_catboost() -> Any:
     try:
         from catboost import CatBoostRegressor
+
         return CatBoostRegressor(
-            n_estimators=100, random_state=42, verbose=0, allow_writing_files=False,
+            n_estimators=100,
+            random_state=42,
+            verbose=0,
+            allow_writing_files=False,
         )
     except ImportError:
         logger.warning("CatBoost not installed — skipping")
@@ -119,7 +129,11 @@ def train_and_evaluate_rating_models(
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", StandardScaler(), num_cols),
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_cols),
+            (
+                "cat",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                cat_cols,
+            ),
         ]
     )
 
@@ -128,19 +142,23 @@ def train_and_evaluate_rating_models(
     if use_mlflow:
         try:
             import os
+
             os.environ["MLFLOW_HTTP_REQUEST_TIMEOUT"] = "5"
             import mlflow
+
             mlflow.set_tracking_uri(config.mlflow_tracking_uri)
             mlflow.set_experiment(config.mlflow_experiment_name + "_rating")
             mlflow_run = mlflow.start_run(run_name="rating_comparison")
-            mlflow.log_params({
-                "task": "rating",
-                "cv_folds": config.cv_folds,
-                "test_size": config.test_size,
-                "random_seed": config.random_seed,
-                "n_features": X.shape[1],
-                "n_samples": len(X),
-            })
+            mlflow.log_params(
+                {
+                    "task": "rating",
+                    "cv_folds": config.cv_folds,
+                    "test_size": config.test_size,
+                    "random_seed": config.random_seed,
+                    "n_features": X.shape[1],
+                    "n_samples": len(X),
+                }
+            )
         except Exception as e:
             logger.warning("MLflow tracking disabled for rating: %s", e)
             mlflow_run = None
@@ -154,10 +172,12 @@ def train_and_evaluate_rating_models(
         logger.info("Training rating model: %s...", name)
         start = time.time()
 
-        pipe = Pipeline([
-            ("preprocessor", preprocessor),
-            ("model", model),
-        ])
+        pipe = Pipeline(
+            [
+                ("preprocessor", preprocessor),
+                ("model", model),
+            ]
+        )
 
         try:
             y_pred = cross_val_predict(pipe, X, y, cv=kf, method="predict")
@@ -175,30 +195,50 @@ def train_and_evaluate_rating_models(
         if mlflow_run:
             try:
                 import mlflow
+
                 with mlflow.start_run(nested=True, run_name=name) as child_run:
-                    mlflow.log_params({
-                        "model": name,
-                        "model_type": type(model).__name__,
-                    })
-                    mlflow.log_metrics({
-                        "mae": mae, "rmse": rmse, "r2": r2, "train_time_s": elapsed,
-                    })
+                    mlflow.log_params(
+                        {
+                            "model": name,
+                            "model_type": type(model).__name__,
+                        }
+                    )
+                    mlflow.log_metrics(
+                        {
+                            "mae": mae,
+                            "rmse": rmse,
+                            "r2": r2,
+                            "train_time_s": elapsed,
+                        }
+                    )
                     run_id = child_run.info.run_id
             except Exception as e:
                 logger.warning("MLflow logging failed for %s: %s", name, e)
 
         result = ModelResult(
-            name=name, mae=mae, rmse=rmse, r2=r2,
-            train_time=elapsed, predictions=y_pred, mlflow_run_id=run_id,
+            name=name,
+            mae=mae,
+            rmse=rmse,
+            r2=r2,
+            train_time=elapsed,
+            predictions=y_pred,
+            mlflow_run_id=run_id,
         )
         results.append(result)
-        logger.info("Rating %s — MAE: %.4f, RMSE: %.4f, R²: %.4f, Time: %.1fs",
-                    name, mae, rmse, r2, elapsed)
+        logger.info(
+            "Rating %s — MAE: %.4f, RMSE: %.4f, R²: %.4f, Time: %.1fs",
+            name,
+            mae,
+            rmse,
+            r2,
+            elapsed,
+        )
 
     if not results:
         if mlflow_run:
             try:
                 import mlflow
+
                 mlflow.end_run()
             except Exception:
                 pass
@@ -207,13 +247,18 @@ def train_and_evaluate_rating_models(
     metric = config.rating_metric
     key_fn = {"mae": lambda r: r.mae, "rmse": lambda r: r.rmse, "r2": lambda r: -r.r2}
     best = min(results, key=key_fn.get(metric, lambda r: r.mae))
-    logger.info("Best rating model: %s (%s=%.4f)", best.name, metric.upper(),
-                getattr(best, metric))
+    logger.info(
+        "Best rating model: %s (%s=%.4f)",
+        best.name,
+        metric.upper(),
+        getattr(best, metric),
+    )
 
     # Tag winning run in MLflow
     if mlflow_run and best.mlflow_run_id:
         try:
             import mlflow
+
             mlflow.set_tag("winning_model", best.name)
             mlflow.log_metrics({f"best_{metric}": getattr(best, metric)})
         except Exception:
@@ -222,6 +267,7 @@ def train_and_evaluate_rating_models(
     if mlflow_run:
         try:
             import mlflow
+
             mlflow.end_run()
         except Exception:
             pass
@@ -256,17 +302,24 @@ def fit_best_rating_model(
     preprocessor = ColumnTransformer(
         transformers=[
             ("num", StandardScaler(), num_cols),
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_cols),
+            (
+                "cat",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                cat_cols,
+            ),
         ]
     )
 
-    pipe = Pipeline([
-        ("preprocessor", preprocessor),
-        ("model", models[best_name]),
-    ])
+    pipe = Pipeline(
+        [
+            ("preprocessor", preprocessor),
+            ("model", models[best_name]),
+        ]
+    )
 
-    logger.info("Fitting best rating model '%s' on full data (%d samples)...",
-                best_name, len(X))
+    logger.info(
+        "Fitting best rating model '%s' on full data (%d samples)...", best_name, len(X)
+    )
     pipe.fit(X, y)
     save_model(pipe, save_path)
     return pipe
