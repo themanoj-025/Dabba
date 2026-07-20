@@ -77,8 +77,8 @@ with st.sidebar:
     st.markdown(
         """
         <p style="font-size:0.75rem;color:#9ca3af;margin-top:0.5rem;">
-        <b>Author:</b> <a href="https://linkedin.com/in/yourname" style="color:#ff8c42;">Your Name</a><br>
-        <b>GitHub:</b> <a href="https://github.com/yourname/dabba" style="color:#ff8c42;">github.com/yourname/dabba</a>
+        <b>Author:</b> <a href="https://linkedin.com/in/themanoj-025" style="color:#ff8c42;">Manoj Jana</a><br>
+        <b>GitHub:</b> <a href="https://github.com/themanoj-025/dabba" style="color:#ff8c42;">github.com/themanoj-025/dabba</a>
         </p>
         """,
         unsafe_allow_html=True,

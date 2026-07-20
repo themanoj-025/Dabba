@@ -1,9 +1,9 @@
 # 🍛 Dabba — Restaurant Intelligence Platform
 
-[![CI](https://github.com/yourname/dabba/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/dabba/actions)
+[![CI](https://github.com/themanoj-025/dabba/actions/workflows/ci.yml/badge.svg)](https://github.com/themanoj-025/dabba/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://yourname-dabba.streamlit.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-ff4b4b)](https://themanoj-025-dabba.streamlit.app)
 [![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2)](https://mlflow.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -17,8 +17,8 @@
 
 | Service | Link | Notes |
 |---------|------|-------|
-| **Streamlit Dashboard** | [dabba.streamlit.app](https://yourname-dabba.streamlit.app) | Full UI — Discover, Ops Monitor, Model Perf, Food Concierge |
-| **FastAPI** | [dabba-api.onrender.com](https://yourname-dabba-api.onrender.com) | REST API — recommend, predict-eta, chat, model-info |
+| **Streamlit Dashboard** | [dabba.streamlit.app](https://themanoj-025-dabba.streamlit.app) | Full UI — Discover, Ops Monitor, Model Perf, Food Concierge |
+| **FastAPI** | [dabba-api.onrender.com](https://themanoj-025-dabba-api.onrender.com) | REST API — recommend, predict-eta, chat, model-info |
 | **MLflow UI** | `http://localhost:5000` (docker-compose) | Experiment tracking |
 
 > ⚡ **Note:** If using a free-tier host, there may be a 10–30 second cold-start delay on first request after inactivity.
@@ -269,7 +269,7 @@ make run-mlflow
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourname/dabba.git
+git clone https://github.com/themanoj-025/dabba.git
 cd dabba
 make setup
 
@@ -383,9 +383,9 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## 👤 Author
 
-**Your Name**
-- [LinkedIn](https://linkedin.com/in/yourname)
-- [GitHub](https://github.com/yourname)
+**Manoj Jana**
+- [LinkedIn](https://linkedin.com/in/themanoj-025)
+- [GitHub](https://github.com/themanoj-025)
 
 ## 🤝 Contributing
 
