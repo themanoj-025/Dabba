@@ -15,7 +15,7 @@ import pandas as pd
 # Suppress FutureWarning from pandas fillna downcasting behavior
 pd.set_option('future.no_silent_downcasting', True)
 
-from dabba.config import DabbaConfig, get_config
+from dabba.config import DabbaConfig, get_config  # noqa: E402
 
 logger = logging.getLogger(__name__)
 

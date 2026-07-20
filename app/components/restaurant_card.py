@@ -38,7 +38,7 @@ def render_restaurant_card(
     cf_score = restaurant.get("cf_score", None)
 
     with st.container():
-        st.markdown(f'<div class="restaurant-card">', unsafe_allow_html=True)
+        st.markdown('<div class="restaurant-card">', unsafe_allow_html=True)
 
         # Row 1: Name + Scores
         cols = st.columns([3, 1, 1])
@@ -54,7 +54,7 @@ def render_restaurant_card(
                 )
             except (ValueError, TypeError):
                 st.markdown(
-                    f'<span class="badge badge-rating">⭐ N/A</span>',
+                    '<span class="badge badge-rating">⭐ N/A</span>',
                     unsafe_allow_html=True,
                 )
 
@@ -68,7 +68,7 @@ def render_restaurant_card(
                 )
             except (ValueError, TypeError):
                 st.markdown(
-                    f'<span class="badge badge-reliability">⚪ N/A</span>',
+                    '<span class="badge badge-reliability">⚪ N/A</span>',
                     unsafe_allow_html=True,
                 )
 
