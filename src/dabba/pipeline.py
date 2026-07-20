@@ -240,12 +240,17 @@ def main() -> None:
     df_zomato.to_csv(processed_path, index=False)
     logger.info("Saved processed restaurant data to %s", processed_path)
 
-    # Rating features
-    feature_cols = [c for c in df_zomato.columns if c.startswith("cuisine_")]
-    feature_cols += [c for c in [
-        "votes_log", "cost_for_two", "online_order_binary",
-        "book_table_binary", "cuisine_count", "avg_sentiment",
-    ] if c in df_zomato.columns]
+    # Rating features — deduplicated to avoid "columns are not unique" error
+    seen = set()
+    feature_cols = []
+    for c in df_zomato.columns:
+        if c.startswith("cuisine_") or c in [
+            "votes_log", "cost_for_two", "online_order_binary",
+            "book_table_binary", "cuisine_count", "avg_sentiment",
+        ]:
+            if c not in seen:
+                seen.add(c)
+                feature_cols.append(c)
 
     X_rating = df_zomato[feature_cols].fillna(0)
     y_rating = df_zomato["rate"]

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -189,8 +189,9 @@ class InteractionDataset(Dataset):
     """PyTorch Dataset for user-item interaction data."""
 
     def __init__(self, interactions: pd.DataFrame):
-        self.user_ids = torch.LongTensor(interactions["user_id"].values)
-        self.item_ids = torch.LongTensor(interactions["restaurant_id"].values)
+        # Use user_idx/item_idx (mapped to contiguous 0..N-1), not raw IDs
+        self.user_ids = torch.LongTensor(interactions["user_idx"].values)
+        self.item_ids = torch.LongTensor(interactions["item_idx"].values)
         self.ratings = torch.FloatTensor(interactions["rating"].values)
 
     def __len__(self) -> int:

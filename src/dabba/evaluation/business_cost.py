@@ -8,7 +8,7 @@ in business-interpretable terms, and the Reliability Score.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -64,10 +64,10 @@ def compute_sla_analysis(
     actual_late = y_true > threshold
     predicted_late = y_pred > threshold
 
-    tp = int((~actual_late) & (~predicted_late))
-    fp = int((actual_late) & (~predicted_late))
-    fn = int((~actual_late) & (predicted_late))
-    tn = int((actual_late) & (predicted_late))
+    tp = int(((~actual_late) & (~predicted_late)).sum())
+    fp = int(((actual_late) & (~predicted_late)).sum())
+    fn = int(((~actual_late) & (predicted_late)).sum())
+    tn = int(((actual_late) & (predicted_late)).sum())
 
     total = len(y_true)
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0

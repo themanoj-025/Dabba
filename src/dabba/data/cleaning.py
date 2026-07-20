@@ -125,13 +125,13 @@ def clean_zomato(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd.D
     for col in df.select_dtypes(include="object").columns:
         mode_val = df[col].mode()
         if len(mode_val) > 0:
-            df[col] = df[col].fillna(mode_val.iloc[0])
+            df[col] = df[col].fillna(mode_val.iloc[0]).infer_objects(copy=False)
         else:
-            df[col] = df[col].fillna("Unknown")
+            df[col] = df[col].fillna("Unknown").infer_objects(copy=False)
 
     for col in df.select_dtypes(include=np.number).columns:
         if df[col].isna().any():
-            df[col] = df[col].fillna(df[col].median())
+            df[col] = df[col].fillna(df[col].median()).infer_objects(copy=False)
 
     # 5. Normalize column names
     df.columns = (
@@ -227,13 +227,13 @@ def clean_delivery(df: pd.DataFrame, config: Optional[DabbaConfig] = None) -> pd
     for col in df.select_dtypes(include="object").columns:
         mode_val = df[col].mode()
         if len(mode_val) > 0:
-            df[col] = df[col].fillna(mode_val.iloc[0])
+            df[col] = df[col].fillna(mode_val.iloc[0]).infer_objects(copy=False)
         else:
-            df[col] = df[col].fillna("Unknown")
+            df[col] = df[col].fillna("Unknown").infer_objects(copy=False)
 
     for col in df.select_dtypes(include=np.number).columns:
         if df[col].isna().any():
-            df[col] = df[col].fillna(df[col].median())
+            df[col] = df[col].fillna(df[col].median()).infer_objects(copy=False)
 
     # 7. Normalize column names
     df.columns = (

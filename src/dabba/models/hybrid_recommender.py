@@ -9,19 +9,17 @@ recommendation strategies.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-import torch
 from sklearn.metrics.pairwise import cosine_similarity
 
 from dabba.config import DabbaConfig, get_config
-from dabba.models.recommender import RestaurantRecommender, bayesian_average
+from dabba.models.recommender import bayesian_average
 from dabba.models.collaborative_recommender import (
     MatrixFactorization,
     get_collaborative_scores,
-    load_collaborative_model,
 )
 
 logger = logging.getLogger(__name__)

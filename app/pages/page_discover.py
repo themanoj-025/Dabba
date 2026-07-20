@@ -5,9 +5,8 @@ LLM narration, "Find Similar" button, and prioritize toggle.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Optional
 
-import numpy as np
 import pandas as pd
 import streamlit as st
 

@@ -2,9 +2,7 @@
 model selection logic from silently breaking.
 """
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from dabba.models.model_selection import (
     comparison_to_dataframe,

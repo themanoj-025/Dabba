@@ -123,10 +123,12 @@ def train_and_evaluate_rating_models(
         ]
     )
 
-    # MLflow setup
+    # MLflow setup (with short timeout to avoid 4min delay if server is down)
     mlflow_run = None
     if use_mlflow:
         try:
+            import os
+            os.environ["MLFLOW_HTTP_REQUEST_TIMEOUT"] = "5"
             import mlflow
             mlflow.set_tracking_uri(config.mlflow_tracking_uri)
             mlflow.set_experiment(config.mlflow_experiment_name + "_rating")

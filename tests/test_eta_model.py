@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from dabba.models.eta_model import ETAModelResult, train_and_evaluate_eta_models
 

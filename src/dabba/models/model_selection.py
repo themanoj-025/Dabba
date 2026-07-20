@@ -11,12 +11,10 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
-import joblib
 import pandas as pd
 
-from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)
 

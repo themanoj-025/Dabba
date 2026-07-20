@@ -5,7 +5,6 @@ tool-use integration, and example prompt chips.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List
 
 import pandas as pd
 import streamlit as st

@@ -6,7 +6,6 @@ Provides functions to load raw CSV files with schema verification.
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Optional
 
 import pandas as pd

@@ -87,8 +87,8 @@ class TestInteractionDataset:
     def test_length(self):
         """Dataset length should match number of interactions."""
         df = pd.DataFrame({
-            "user_id": [0, 1, 2],
-            "restaurant_id": [0, 1, 2],
+            "user_idx": [0, 1, 2],
+            "item_idx": [0, 1, 2],
             "rating": [4.0, 3.5, 5.0],
         })
         dataset = InteractionDataset(df)
@@ -97,8 +97,8 @@ class TestInteractionDataset:
     def test_getitem(self):
         """Dataset should return user, item, rating tensors."""
         df = pd.DataFrame({
-            "user_id": [0],
-            "restaurant_id": [5],
+            "user_idx": [0],
+            "item_idx": [5],
             "rating": [4.5],
         })
         dataset = InteractionDataset(df)

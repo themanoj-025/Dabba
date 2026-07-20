@@ -7,13 +7,11 @@ delivery partners to orders minimizing total predicted delivery time.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
-from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)
 
