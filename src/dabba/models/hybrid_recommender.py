@@ -123,7 +123,6 @@ class HybridRecommender:
 
         # 1. Content-based similarity score
         if len(self.content_feature_cols) > 0 and len(candidates) > 0:
-            candidate_indices = candidates.index.values
             # Use mean features as query
             query_features = self.df[self.content_feature_cols].mean().values.reshape(1, -1)
             candidate_features = candidates[self.content_feature_cols].fillna(0).values

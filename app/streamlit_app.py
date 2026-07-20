@@ -82,11 +82,10 @@ with st.sidebar:
 
 # ─── Page routing ────────────────────────────────────────────────────
 
-# Import page modules
-from pages import page_discover as discover
-from pages import page_ops as ops
-from pages import page_model_performance as model_perf
-from pages import page_concierge as concierge
+from pages import page_discover as discover  # noqa: E402
+from pages import page_ops as ops  # noqa: E402
+from pages import page_model_performance as model_perf  # noqa: E402
+from pages import page_concierge as concierge  # noqa: E402
 
 if "🍽️" in page:
     discover.show()

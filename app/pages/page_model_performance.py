@@ -25,7 +25,6 @@ def show() -> None:
 
     # ─── Paths ────────────────────────────────────────────────────
     reports = Path("reports")
-    figures = reports / "figures"
 
     # ─── Rating Model Comparison ──────────────────────────────────
     st.header("🍽️ Rating Prediction")

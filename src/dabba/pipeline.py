@@ -362,7 +362,6 @@ def main() -> None:
 
     logger.info("--- Training matrix factorization model ---")
     n_users = int(interactions["user_id"].max()) + 1
-    n_items_map = {i: i for i in range(len(df_zomato))}  # map restaurant indices
 
     try:
         mf_model = train_matrix_factorization(

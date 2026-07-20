@@ -52,6 +52,11 @@ def render_restaurant_card(
                     f'<span class="badge badge-rating">⭐ {r:.1f}/5</span>',
                     unsafe_allow_html=True,
                 )
+            except (ValueError, TypeError):
+                st.markdown(
+                    f'<span class="badge badge-rating">⭐ N/A</span>',
+                    unsafe_allow_html=True,
+                )
 
         with cols[2]:
             try:
@@ -59,6 +64,11 @@ def render_restaurant_card(
                 emoji = "🟢" if rs >= 0.7 else "🟡" if rs >= 0.4 else "🔴"
                 st.markdown(
                     f'<span class="badge badge-reliability">{emoji} {rs:.2f}</span>',
+                    unsafe_allow_html=True,
+                )
+            except (ValueError, TypeError):
+                st.markdown(
+                    f'<span class="badge badge-reliability">⚪ N/A</span>',
                     unsafe_allow_html=True,
                 )
 

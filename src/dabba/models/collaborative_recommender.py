@@ -108,7 +108,6 @@ def generate_synthetic_interactions(
         for cuisine in preferred_cuisines:
             col = f"cuisine_{cuisine.lower().replace(' ', '_')}"
             if col in cuisine_cols:
-                c_idx = cuisine_cols.index(col)
                 affinity += restaurants_df[col].values * 0.5
 
         # Price alignment

@@ -107,7 +107,6 @@ def show() -> None:
         metrics_row = st.columns(4)
         chart_placeholder = st.empty()
         alert_placeholder = st.empty()
-        results_placeholder = st.empty()
         progress_bar = st.progress(0)
         status_text = st.empty()
 

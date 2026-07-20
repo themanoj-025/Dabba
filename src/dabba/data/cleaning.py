@@ -12,6 +12,9 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+# Suppress FutureWarning from pandas fillna downcasting behavior
+pd.set_option('future.no_silent_downcasting', True)
+
 from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)

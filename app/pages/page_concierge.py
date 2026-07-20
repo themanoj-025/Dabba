@@ -88,7 +88,6 @@ def show() -> None:
     # ─── Chat input ───────────────────────────────────────────────
     # Use text from example chips if set
     input_key = f"{PAGE_NAME}_input"
-    default_value = st.session_state.get(input_key, "")
 
     user_input = st.chat_input(
         "Ask about restaurants, ETAs, or reliability...",
