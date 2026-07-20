@@ -231,10 +231,10 @@ Uses the **Hungarian algorithm** (`scipy.optimize.linear_sum_assignment`) to opt
 
 | Strategy | Total Time | Improvement |
 |----------|-----------|-------------|
-| Naive (first-available) | ~35.4 min avg | baseline |
-| **Optimized (Hungarian)** | **~27.8 min avg** | **~21% better** |
+| Naive (first-available) | — | — |
+| **Optimized (Hungarian)** | — | **—** |
 
-> *Actual improvement depends on delivery volume; run `make train` to regenerate for your data.*
+> *Run `make train` to populate with actual numbers from your pipeline run.*
 
 ---
 

@@ -20,7 +20,7 @@ Dabba v3 is organized as follows:
 src/dabba/          # Core ML pipeline (data, features, models, LLM, monitoring, evaluation)
 app/                # Streamlit dashboard (4 pages + components + theme)
 api/                # FastAPI server (5 routes: recommend, predict-eta, chat, model-info, health)
-tests/              # 45+ pytest tests
+tests/              # 45 pytest tests
 notebooks/          # 6 EDA and prototyping notebooks
 data/               # Raw + processed datasets (gitignored)
 models/             # Saved model artifacts .pkl / .pt (gitignored)
@@ -65,7 +65,7 @@ make train          # Run full ML pipeline
 make run-app        # Start Streamlit dashboard (port 8501)
 make run-api        # Start FastAPI server (port 8000)
 make run-mlflow     # Start MLflow tracking UI (port 5000)
-make test           # Run 45+ tests with coverage
+make test           # Run 45 tests with coverage
 make lint           # Run ruff + black --check
 make format         # Auto-format code
 make clean          # Remove generated files
