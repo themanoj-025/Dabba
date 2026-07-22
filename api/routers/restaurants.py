@@ -82,7 +82,7 @@ async def get_restaurant(
     request: Request,
     restaurant_id: int,
     db: Session = Depends(get_db_generator),
-) -> Optional[RestaurantItem]:
+) -> RestaurantItem:
     """Get a single restaurant by ID.
 
     Args:
