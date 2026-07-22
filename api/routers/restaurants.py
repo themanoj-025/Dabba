@@ -74,7 +74,7 @@ async def list_restaurants(
     )
 
 
-@router.get("/{restaurant_id}", response_model=Optional[RestaurantItem])
+@router.get("/{restaurant_id}", response_model=RestaurantItem)
 @limiter.limit("60/minute")
 async def get_restaurant(
     request: Request,
