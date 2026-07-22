@@ -32,7 +32,7 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
 from dabba.config import DabbaConfig, get_config
-from src.dabba.database.models import Base
+from dabba.database.models import Base
 
 logger = logging.getLogger(__name__)
 

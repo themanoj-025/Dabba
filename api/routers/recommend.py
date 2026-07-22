@@ -10,6 +10,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException, Request
 
 from api.limiter import limiter
+from dabba.cache.redis_client import get_cache
 from dabba.config import get_config
 from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.models.hybrid_recommender import HybridRecommender
@@ -74,6 +75,17 @@ async def recommend(request: Request, body: RecommendRequest) -> RecommendRespon
     Returns:
         RecommendResponse with ranked recommendations.
     """
+    # Check cache first (skip for LLM-narrated requests since explanations vary)
+    cache = get_cache(config)
+    cache_key = cache.make_recommend_key(
+        {**body.model_dump(), "use_llm_narration": False}
+    )
+    if not body.use_llm_narration:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            logger.debug("Recommend cache hit for key=%s", cache_key)
+            return RecommendResponse(**cached)
+
     model = get_recommender()
     if model is None:
         raise HTTPException(
@@ -133,4 +145,14 @@ async def recommend(request: Request, body: RecommendRequest) -> RecommendRespon
         )
         recommendations.append(rec)
 
-    return RecommendResponse(recommendations=recommendations)
+    response = RecommendResponse(recommendations=recommendations)
+
+    # Cache the result (only non-LLM versions)
+    if not body.use_llm_narration:
+        cache.set(
+            cache_key,
+            response.model_dump(),
+            ttl_seconds=config.cache_recommend_ttl_seconds,
+        )
+
+    return response

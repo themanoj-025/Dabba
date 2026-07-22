@@ -2,13 +2,17 @@
 
 Renders a restaurant with name, cuisine tags, rating badge, sentiment
 badge, ETA chip, reliability score bar, and LLM explanation caption.
-"""
+
+Security note: all user-facing text fields from the CSV are escaped
+via ``html_escape`` to prevent XSS when rendered with ``unsafe_allow_html=True``."""
 
 from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
 import streamlit as st
+
+from app.utils.sanitize import html_escape
 
 
 def render_restaurant_card(
@@ -28,11 +32,11 @@ def render_restaurant_card(
         similar_callback: Callback for similar button (takes restaurant index).
         key_prefix: Unique key prefix for Streamlit components.
     """
-    name = restaurant.get("name", "Unknown")
+    name = html_escape(restaurant.get("name", "Unknown"))
     rating = restaurant.get("rate", "N/A")
     cost = restaurant.get("cost_for_two", "N/A")
-    location = restaurant.get("location", "N/A")
-    cuisines = restaurant.get("cuisines", "N/A")
+    location = html_escape(restaurant.get("location", "N/A"))
+    cuisines = html_escape(restaurant.get("cuisines", "N/A"))
     reliability = restaurant.get(
         "reliability_score_display", restaurant.get("reliability_score", 0.5)
     )
@@ -84,10 +88,11 @@ def render_restaurant_card(
             unsafe_allow_html=True,
         )
 
-        # Row 3: Explanation
+        # Row 3: Explanation (escape since it could contain user-crafted text)
         if explanation:
             st.markdown(
-                f'<p class="explanation">💬 {explanation}</p>', unsafe_allow_html=True
+                f'<p class="explanation">💬 {html_escape(explanation)}</p>',
+                unsafe_allow_html=True,
             )
 
         # Row 4: Similar button

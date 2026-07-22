@@ -29,7 +29,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import all models so Alembic can detect them
-from src.dabba.database.models import Base  # noqa: E402
+from dabba.database.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 

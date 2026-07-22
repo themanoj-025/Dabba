@@ -10,6 +10,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException, Request
 
 from api.limiter import limiter
+from dabba.cache.redis_client import get_cache
 from dabba.config import get_config
 from api.schemas import ETARequest, ETAResponse
 
@@ -54,6 +55,14 @@ async def predict_eta(request: Request, body: ETARequest) -> ETAResponse:
     Returns:
         ETAResponse with predicted minutes and SLA risk.
     """
+    # Check cache first
+    cache = get_cache(config)
+    cache_key = cache.make_eta_key(body.model_dump())
+    cached = cache.get(cache_key)
+    if cached is not None:
+        logger.debug("ETA cache hit for key=%s", cache_key)
+        return ETAResponse(**cached)
+
     model = get_eta_model()
     if model is None:
         raise HTTPException(
@@ -81,8 +90,13 @@ async def predict_eta(request: Request, body: ETARequest) -> ETAResponse:
 
     is_at_risk = prediction > config.sla_threshold_minutes
 
-    return ETAResponse(
+    response = ETAResponse(
         predicted_minutes=round(float(prediction), 1),
         is_at_risk=is_at_risk,
         sla_threshold=config.sla_threshold_minutes,
     )
+
+    # Cache the result
+    cache.set(cache_key, response.model_dump(), ttl_seconds=config.cache_eta_ttl_seconds)
+
+    return response

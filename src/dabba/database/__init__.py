@@ -8,14 +8,14 @@ Provides SQLAlchemy ORM models for structured storage of:
     - Drift logs (drift detection history with alerting)
 """
 
-from src.dabba.database.models import (
+from dabba.database.models import (
     Restaurant,
     Order,
     Prediction,
     ExperimentResult,
     DriftLog,
 )
-from src.dabba.database.session import get_db, init_db
+from dabba.database.session import get_db, init_db
 
 __all__ = [
     "Restaurant",

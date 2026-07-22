@@ -1,6 +1,5 @@
 """Page 4: Food Concierge — chat interface with styled bubbles,
-tool-use integration, and example prompt chips.
-"""
+tool-use integration, and example prompt chips."""
 
 from __future__ import annotations
 
@@ -9,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from app.utils.sanitize import html_escape
 from dabba.config import get_config
 from dabba.llm.food_concierge import ConciergeTools, get_concierge_response
 
@@ -78,14 +78,17 @@ def show() -> None:
     chat_container = st.container()
     with chat_container:
         for msg in st.session_state[f"{PAGE_NAME}_messages"]:
+            content = msg["content"]
             if msg["role"] == "user":
+                # User messages: ESCAPE all HTML to prevent XSS
                 st.markdown(
-                    f'<div class="chat-bubble-user">{msg["content"]}</div>',
+                    f'<div class="chat-bubble-user">{html_escape(content)}</div>',
                     unsafe_allow_html=True,
                 )
             else:
+                # Assistant messages: trusted (LLM/rules-generated), safe for Markdown
                 st.markdown(
-                    f'<div class="chat-bubble-assistant">{msg["content"]}</div>',
+                    f'<div class="chat-bubble-assistant">{content}</div>',
                     unsafe_allow_html=True,
                 )
 

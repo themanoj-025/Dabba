@@ -48,6 +48,8 @@ from dabba.models.rating_model import (
     train_and_evaluate_rating_models,
 )
 from dabba.nlp.sentiment import add_sentiment_scores
+from dabba.database.session import get_db, init_db
+from dabba.database.models import Restaurant, ExperimentResult
 
 logging.basicConfig(
     level=logging.INFO,
@@ -182,6 +184,111 @@ def generate_residual_plots(
     logger.info("Residual plots saved for %s task", task)
 
 
+def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
+    """Persist processed restaurant data to the database.
+
+    Upserts each restaurant row by name — existing rows are updated,
+    new rows are inserted. Runs inside its own session.
+    """
+    try:
+        init_db(config)
+        with get_db() as db:
+            # Column mapping from DataFrame columns to DB model fields
+            # Maps normalized CSV column names (after feature engineering)
+            # to the ORM model field names
+            col_map = {
+                "name": "name",
+                "rate": "rate",
+                "bayesian_rating": "bayesian_rating",
+                "cost_for_two": "cost_for_two",
+                "location": "location",
+                "cuisines": "cuisines",
+                "votes": "votes",
+                "votes_log": "votes_log",
+                "online_order": "online_order_binary",
+                "online_order_binary": "online_order_binary",
+                "book_table": "book_table_binary",
+                "book_table_binary": "book_table_binary",
+                "cuisine_count": "cuisine_count",
+                "avg_sentiment": "avg_sentiment",
+                "reliability_score": "reliability_score",
+            }
+            # Map lat/lon columns (multiple possible names)
+            lat_col = next(
+                (c for c in ["restaurant_latitude", "latitude", "lat"] if c in df.columns),
+                None,
+            )
+            lon_col = next(
+                (c for c in ["restaurant_longitude", "longitude", "lon", "lng"] if c in df.columns),
+                None,
+            )
+
+            count = 0
+            for _, row in df.iterrows():
+                name = row.get("name")
+                if pd.isna(name):
+                    continue
+
+                # Upsert by name
+                existing = db.query(Restaurant).filter(Restaurant.name == str(name)).first()
+                if existing:
+                    restaurant = existing
+                else:
+                    restaurant = Restaurant(name=str(name))
+                    db.add(restaurant)
+
+                # Update fields from row
+                for df_col, db_col in col_map.items():
+                    if df_col in row and not pd.isna(row[df_col]):
+                        setattr(restaurant, db_col, row[df_col])
+
+                if lat_col and lon_col:
+                    if not pd.isna(row.get(lat_col)) and not pd.isna(row.get(lon_col)):
+                        restaurant.latitude = float(row[lat_col])
+                        restaurant.longitude = float(row[lon_col])
+
+                count += 1
+
+                # Flush every 100 rows to avoid large transactions
+                if count % 100 == 0:
+                    db.flush()
+
+            logger.info("Saved/updated %d restaurants to database", count)
+    except Exception as e:
+        logger.warning("Database save skipped: %s", e)
+
+
+def _save_experiment_results(
+    results: list,
+    task: str,
+    config,
+    best_name: str | None = None,
+) -> None:
+    """Persist model comparison results to the database."""
+    try:
+        init_db(config)
+        with get_db() as db:
+            for r in results:
+                exp = ExperimentResult(
+                    task=task,
+                    model_name=r.name,
+                    mae=r.mae,
+                    rmse=r.rmse,
+                    r2=r.r2,
+                    train_time_s=r.train_time,
+                    mlflow_run_id=r.mlflow_run_id,
+                    is_winner=(best_name == r.name) if best_name else False,
+                )
+                db.add(exp)
+            logger.info(
+                "Saved %d experiment results for task '%s' to database",
+                len(results),
+                task,
+            )
+    except Exception as e:
+        logger.warning("Experiment results DB save skipped: %s", e)
+
+
 def compute_shap_explanations(
     model_pipeline,
     X: pd.DataFrame,
@@ -253,6 +360,9 @@ def main() -> None:
     df_zomato.to_csv(processed_path, index=False)
     logger.info("Saved processed restaurant data to %s", processed_path)
 
+    # Also persist to database
+    _save_restaurants_to_db(df_zomato, config)
+
     # Rating features — deduplicated to avoid "columns are not unique" error
     seen = set()
     feature_cols = []
@@ -289,6 +399,9 @@ def main() -> None:
             rating_results, metric=config.rating_metric, task="rating"
         )
         logger.info("🏆 Best rating model: %s", best_name)
+
+        # Persist experiment results to DB (with is_winner flag)
+        _save_experiment_results(rating_results, task="rating", config=config, best_name=best_name)
 
         if best_name:
             fitted_rating_model = fit_best_rating_model(
@@ -340,6 +453,9 @@ def main() -> None:
             eta_results, metric=config.eta_metric, task="eta"
         )
         logger.info("🏆 Best ETA model: %s", best_eta_name)
+
+        # Persist experiment results to DB
+        _save_experiment_results(eta_results, task="eta", config=config, best_name=best_eta_name)
 
         if best_eta_name:
             fitted_eta_model = fit_best_eta_model(
