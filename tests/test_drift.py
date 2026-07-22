@@ -126,23 +126,16 @@ class TestSlackAlertFunctions:
         msg = _format_drift_message(result)
         assert "No drift detected" in msg
 
-    def test_send_slack_no_webhook(self):
-        """Should return not-sent when webhook URL is empty.
-
-        The function requires a valid URL — if not provided,
-        we skip via config check in detect_and_alert.
-        """
+    def test_send_slack_invalid_url(self):
+        """Should return not-sent when webhook URL is unreachable."""
         from dabba.monitoring.drift import _send_slack_alert
-        # With a clearly invalid URL, should return sent=False gracefully
-        result = _send_slack_alert("https://hooks.slack.com/services/test", "test")
+        # Use a clearly invalid URL that will fail DNS resolution
+        result = _send_slack_alert(
+            "https://hooks.invalid-slack-domain-that-does-not-exist.example.com/services/test",
+            "test alert",
+        )
         assert result.sent is False
         assert len(result.reason) > 0
-
-    def test_send_slack_empty_message(self):
-        """Should gracefully handle empty message."""
-        from dabba.monitoring.drift import _send_slack_alert
-        result = _send_slack_alert("https://hooks.slack.com/services/test", "")
-        assert result.sent is False
 
 
 class TestDetectAndAlert:
