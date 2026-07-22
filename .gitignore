@@ -3,6 +3,7 @@ data/raw/
 data/processed/
 *.csv
 *.xlsx
+!data/processed/.gitkeep
 # Exception: track the README in data/raw/ for documentation
 !data/raw/README.md
 
@@ -87,6 +88,11 @@ htmlcov/
 .ruff_cache/
 .mypy_cache/
 .types_cache/
+
+# ─── Database files ──────────────────────────────────────────────────
+*.db
+*.sqlite3
+data/*.db
 
 # ─── Kaggle ──────────────────────────────────────────────────────────
 kaggle.json

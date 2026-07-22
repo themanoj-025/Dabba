@@ -50,7 +50,10 @@ app (no auth)
        ├── POST /v1/recommend       (30/min)  [Depends(get_recommender)]
        ├── POST /v1/predict-eta     (30/min)  [Depends(get_eta_model)]
        ├── POST /v1/chat            (10/min)  [Depends(get_tools)]
-       └── GET  /v1/model-info      (60/min)
+       ├── GET  /v1/model-info      (60/min)
+       ├── GET  /v1/restaurants     (60/min)  [Depends(get_db_generator)]
+       ├── GET  /v1/restaurants/{id}(60/min)  [Depends(get_db_generator)]
+       └── GET  /v1/restaurants/search/{q} (60/min) [Depends(get_db_generator)]
 ```
 
 ### Endpoint Table
@@ -62,6 +65,9 @@ app (no auth)
 | 3 | POST | `/v1/recommend` | `routers/recommend.py` | `X-API-Key` | 30/min | Hybrid recommendations, optional LLM narration |
 | 4 | POST | `/v1/predict-eta` | `routers/eta.py` | `X-API-Key` | 30/min | Delivery ETA using winning model |
 | 5 | POST | `/v1/chat` | `routers/chat.py` | `X-API-Key` | 10/min | Food concierge with tool-use |
+| 6 | GET | `/v1/restaurants` | `routers/restaurants.py` | `X-API-Key` | 60/min | List restaurants from database |
+| 7 | GET | `/v1/restaurants/{id}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Get restaurant by ID (404 if not found) |
+| 8 | GET | `/v1/restaurants/search/{q}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Search by name or cuisine |
 
 ### Authentication
 
@@ -78,6 +84,7 @@ app (no auth)
   - `POST /v1/recommend`: **30/minute** — moderate usage
   - `POST /v1/predict-eta`: **30/minute** — moderate usage
   - `GET /v1/model-info`: **60/minute** — lightweight reads
+  - `GET /v1/restaurants*`: **60/minute** — database reads
 - Rate-limited requests return `429 Too Many Requests`
 
 ### CORS Configuration
@@ -154,9 +161,21 @@ Fallback: rules-based intent matching when no API key configured
 Formatted response with styled chat bubbles
 ```
 
+### Restaurants Flow (CSV→DB Migration)
+```
+Raw CSVs → clean → feature engineer → sentiment → seed to DB
+    ↓
+API: GET /v1/restaurants → depends on get_db_generator
+    ↓
+repositories.py: get_all_restaurants() → Restaurant ORM → RestaurantItem schema
+    ↓
+Response: { restaurants: [...], total: N, limit: L, offset: O }
+```
+
 ### Model Loading (app.state)
 ```
 api/main.py startup:
+    init_database()  # Creates tables via Base.metadata.create_all()
     app.state.eta_model = eta._load_eta_model()
     app.state.hybrid_recommender = recommend._load_hybrid_recommender()
     app.state.concierge_tools = chat._load_concierge_tools()
@@ -165,4 +184,19 @@ Router endpoints access via Depends:
     model = Depends(get_eta_model)     # → request.app.state.eta_model
     rec   = Depends(get_recommender)   # → request.app.state.hybrid_recommender
     tools = Depends(get_tools)         # → request.app.state.concierge_tools
+    db    = Depends(get_db_generator)  # → SQLAlchemy Session (for restaurants endpoint)
+```
+
+### Database Migration (Alembic)
+```
+docker/entrypoint.sh:
+    alembic upgrade head  # Apply all pending migrations
+    exec uvicorn api.main:app --host 0.0.0.0 --port 8000
+
+Local dev:
+    make db-migrate      # alembic upgrade head
+    make db-import       # python -m dabba.database.seed --full-import
+    make db-rollback     # alembic downgrade -1
+    make db-history      # alembic history
+    make db-revision message="..."  # alembic revision --autogenerate
 ```
