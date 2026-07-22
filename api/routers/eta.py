@@ -1,17 +1,20 @@
-"""ETA Prediction router — delivery time estimation using winning model."""
+"""ETA Prediction router — delivery time estimation using winning model.
+
+Models are loaded at app startup and stored in ``app.state``,
+then injected via FastAPI ``Depends()`` — no module-level globals.
+"""
 
 from __future__ import annotations
 
 import logging
-import threading
 
 import joblib
 import pandas as pd
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
-from dabba.config import get_config
+from dabba.config import DabbaConfig, get_config
 from api.schemas import ETARequest, ETAResponse
 
 logger = logging.getLogger(__name__)
@@ -19,42 +22,65 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/predict-eta", tags=["eta"])
 
 config = get_config()
-_eta_model = None
-_eta_model_lock = threading.Lock()
 
 
-def load_eta_model() -> None:
-    """Load the winning ETA model from disk (thread-safe)."""
-    global _eta_model
-    with _eta_model_lock:
-        if _eta_model is not None:
-            return
-        try:
-            _eta_model = joblib.load(config.best_eta_model_path)
-            logger.info("Loaded ETA model from %s", config.best_eta_model_path)
-        except FileNotFoundError:
-            logger.warning("ETA model not found at %s", config.best_eta_model_path)
+def _load_eta_model() -> object | None:
+    """Load the winning ETA model from disk.
+
+    Called once at app startup by ``api.main``. Returns the model
+    or ``None`` if the artifact hasn't been trained yet.
+
+    Returns:
+        The fitted Pipeline (joblib-loaded), or None.
+    """
+    try:
+        model = joblib.load(config.best_eta_model_path)
+        logger.info("Loaded ETA model from %s", config.best_eta_model_path)
+        return model
+    except FileNotFoundError:
+        logger.warning("ETA model not found at %s", config.best_eta_model_path)
+        return None
 
 
-def get_eta_model():
-    """Thread-safe accessor for the loaded ETA model."""
-    global _eta_model
-    with _eta_model_lock:
-        return _eta_model
+def get_eta_model(request: Request) -> object | None:
+    """FastAPI dependency: return the ETA model from ``app.state``.
+
+    Usage:
+        .. code-block:: python
+
+            @router.post(...)
+            async def predict(body: ETARequest, model = Depends(get_eta_model)):
+                ...
+
+    Returns:
+        The loaded ETA model Pipeline, or ``None`` if not loaded.
+    """
+    return getattr(request.app.state, "eta_model", None)
 
 
 @router.post("", response_model=ETAResponse)
 @limiter.limit("30/minute")
-async def predict_eta(request: Request, body: ETARequest) -> ETAResponse:
+async def predict_eta(
+    request: Request,
+    body: ETARequest,
+    model: object | None = Depends(get_eta_model),
+) -> ETAResponse:
     """Predict delivery time for an order.
 
     Args:
         request: Incoming HTTP request (required by rate limiter).
         body: ETARequest with distance, traffic, festival, etc.
+        model: The loaded ETA model (injected via ``Depends``).
 
     Returns:
         ETAResponse with predicted minutes and SLA risk.
     """
+    if model is None:
+        raise HTTPException(
+            status_code=503,
+            detail="ETA model not loaded. Run `make train` first.",
+        )
+
     # Check cache first
     cache = get_cache(config)
     cache_key = cache.make_eta_key(body.model_dump())
@@ -62,13 +88,6 @@ async def predict_eta(request: Request, body: ETARequest) -> ETAResponse:
     if cached is not None:
         logger.debug("ETA cache hit for key=%s", cache_key)
         return ETAResponse(**cached)
-
-    model = get_eta_model()
-    if model is None:
-        raise HTTPException(
-            status_code=503,
-            detail="ETA model not loaded. Run `make train` first.",
-        )
 
     features = pd.DataFrame(
         [
