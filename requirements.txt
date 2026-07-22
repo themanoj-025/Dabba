@@ -66,3 +66,6 @@ redis>=5.0,<6.0
 
 # Environment
 python-dotenv>=1.0,<2.0
+
+# Hyperparameter Optimization
+optuna>=3.4,<5.0
