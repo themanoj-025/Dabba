@@ -85,6 +85,10 @@ class DabbaConfig(BaseSettings):
     llm_enabled: bool = False
     llm_model: str = "claude-sonnet-4-20250514"
     llm_max_tokens: int = 1000
+    llm_max_steps: int = Field(
+        default=4,
+        description="Maximum ReAct loop iterations for the concierge agent",
+    )
 
     # --- MLflow ---
     mlflow_tracking_uri: str = "http://localhost:5000"
