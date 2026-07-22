@@ -1,22 +1,32 @@
-# 📡 Dabba v3 — API Inventory
+# 📡 Dabba v4 — API Inventory
 
 **Base URL**: `http://localhost:8000` (configurable via docker-compose)
+
+**Authentication**: All `/v1/*` endpoints require `X-API-Key` header.
+See `routes.md` for dev-mode bypass behavior.
+
+**Rate Limiting**: All `/v1/*` endpoints are rate-limited per IP.
+429 responses include `Retry-After` header.
 
 ---
 
 ## Endpoints
 
+---
+
 ### 1. GET `/health`
 
-**Purpose**: Health check + model load status.
+**Auth**: None
+
+**Purpose**: Health check + model load status. Intentionally unauthenticated
+for load balancers, Docker health checks, and monitoring.
 
 **Response** (`HealthResponse`):
 ```json
 {
     "status": "ok",
     "rating_model_loaded": true,
-    "eta_model_loaded": true,
-    "version": "3.0.0"
+    "eta_model_loaded": true
 }
 ```
 
@@ -24,21 +34,25 @@
 
 ---
 
-### 2. GET `/model-info`
+### 2. GET `/v1/model-info`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 60/minute
 
 **Purpose**: Deployed model names and metrics — reads from comparison CSVs.
 
-**Response** (`ModelInfoResponse`):
+**Response**:
 ```json
 {
     "rating_model": {
-        "name": "RandomForest",
+        "model": "RandomForest",
         "mae": 0.0596,
         "rmse": 0.1267,
         "r2": 0.9172
     },
     "eta_model": {
-        "name": "GradientBoosting",
+        "model": "GradientBoosting",
         "mae": 5.7893,
         "rmse": 7.3641,
         "r2": 0.3837
@@ -50,9 +64,13 @@
 
 ---
 
-### 3. POST `/recommend`
+### 3. POST `/v1/recommend`
 
-**Purpose**: Generate hybrid restaurant recommendations.
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 30/minute
+
+**Purpose**: Generate hybrid restaurant recommendations with optional LLM narration.
 
 **Request** (`RecommendRequest`):
 ```json
@@ -76,22 +94,23 @@
             "cost_for_two": 400,
             "location": "Koramangala",
             "cuisines": "North Indian, Chinese",
-            "reliability_score": 0.85,
             "combined_score": 0.92,
             "explanation": "Highly rated with excellent reliability in your area"
         }
     ],
-    "message": "Found 5 restaurants matching your preferences"
+    "message": null
 }
 ```
 
-**Query Params**: `?use_llm_narration=true` optionally invokes the LLM narrator.
-
-**Dependencies**: `models/best_rating_model.pkl`, `models/best_collaborative_model.pt`, processed restaurant CSV.
+**Dependencies**: `models/best_rating_model.pkl`, processed restaurant CSV.
 
 ---
 
-### 4. POST `/predict-eta`
+### 4. POST `/v1/predict-eta`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 30/minute
 
 **Purpose**: Predict delivery time using the winning ETA model.
 
@@ -99,10 +118,10 @@
 ```json
 {
     "distance_km": 5.2,
-    "traffic_level": "Medium",
+    "traffic_level": 1,
     "is_festival": false,
     "delivery_person_age": 28,
-    "delivery_person_ratings": 4.5,
+    "delivery_person_rating": 4.5,
     "vehicle_condition": 2
 }
 ```
@@ -112,8 +131,7 @@
 {
     "predicted_minutes": 28.4,
     "is_at_risk": false,
-    "sla_threshold": 40,
-    "confidence_interval": [22.0, 34.8]
+    "sla_threshold": 40
 }
 ```
 
@@ -121,9 +139,13 @@
 
 ---
 
-### 5. POST `/chat`
+### 5. POST `/v1/chat`
 
-**Purpose**: Food concierge chat with tool-use.
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 10/minute (LLM calls are expensive)
+
+**Purpose**: Food concierge chat with tool-use and rules-based fallback.
 
 **Request** (`ChatRequest`):
 ```json
@@ -136,7 +158,7 @@
 **Response** (`ChatResponse`):
 ```json
 {
-    "reply": "I found several options! Meghana Foods (₹400, rating 4.8) tops the list with excellent reliability. Also try Anupam's Coast to Coast (₹350, rating 4.5) for spicy Andhra-style dishes."
+    "reply": "I found several options! Meghana Foods (₹400, rating 4.8) tops the list with excellent reliability."
 }
 ```
 
@@ -150,13 +172,23 @@
 
 | Schema | Endpoint | Fields |
 |--------|----------|--------|
-| `HealthResponse` | GET /health | status, rating_model_loaded, eta_model_loaded, version |
-| `ModelInfoResponse` | GET /model-info | rating_model (dict), eta_model (dict) |
-| `RecommendRequest` | POST /recommend | cuisine, budget, area, top_n, prioritize, use_llm_narration |
-| `Recommendation` | POST /recommend | name, rate, bayesian_rating, cost_for_two, location, cuisines, reliability_score, cf_score, combined_score, explanation |
-| `RecommendResponse` | POST /recommend | recommendations (list), message |
-| `ETARequest` | POST /predict-eta | distance_km, traffic_level, is_festival, delivery_person_age, delivery_person_ratings, vehicle_condition |
-| `ETAResponse` | POST /predict-eta | predicted_minutes, is_at_risk, sla_threshold |
-| `ChatMessage` | POST /chat | role, content |
-| `ChatRequest` | POST /chat | message, history (list of ChatMessage) |
-| `ChatResponse` | POST /chat | reply |
+| `HealthResponse` | GET /health | status, rating_model_loaded, eta_model_loaded |
+| `RecommendRequest` | POST /v1/recommend | cuisine, budget, area, top_n, prioritize, use_llm_narration |
+| `Recommendation` | POST /v1/recommend | name, rating, cost_for_two, location, cuisines, combined_score, explanation |
+| `RecommendResponse` | POST /v1/recommend | recommendations (list), message |
+| `ETARequest` | POST /v1/predict-eta | distance_km, traffic_level, is_festival, delivery_person_age, delivery_person_rating, vehicle_condition |
+| `ETAResponse` | POST /v1/predict-eta | predicted_minutes, is_at_risk, sla_threshold |
+| `ChatMessage` | POST /v1/chat | role, content |
+| `ChatRequest` | POST /v1/chat | message, history (list of ChatMessage) |
+| `ChatResponse` | POST /v1/chat | reply |
+
+---
+
+## Error Responses
+
+| Status | Meaning | Example |
+|--------|---------|---------|
+| 400 | Bad request (validation) | `{"detail":[{"loc":["body","distance_km"],"msg":"..."}]}` |
+| 401 | Missing/invalid API key | `{"detail":"Missing X-API-Key header"}` |
+| 429 | Rate limit exceeded | `{"detail":"Rate limit exceeded: 10/minute"}` |
+| 503 | Model/tools not loaded | `{"detail":"ETA model not loaded. Run `make train` first."}` |

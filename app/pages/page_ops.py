@@ -26,59 +26,58 @@ from dabba.monitoring.drift import DriftDetector
 PAGE_NAME = "ops"
 config = get_config()
 
-# ─── Cache for loaded model and reference data ───────────────────────
-
-_eta_model = None
-_ref_data = None
+# ─── Per-session order counter using Streamlit session state ───────
+# Avoids module-level global which persists across sessions.
 
 
-def _load_eta_model():
-    """Load the winning ETA model for realistic predictions."""
-    global _eta_model
-    if _eta_model is not None:
-        return _eta_model
+def _get_next_order_id() -> int:
+    """Return a monotonically increasing order ID scoped to session."""
+    key = f"{PAGE_NAME}_order_counter"
+    if key not in st.session_state:
+        st.session_state[key] = 0
+    st.session_state[key] += 1
+    return st.session_state[key]
+
+
+@st.cache_resource
+def _load_eta_model_cached():
+    """Load the winning ETA model (cached by Streamlit, not module-level global)."""
     model_path = config.best_eta_model_path
     if model_path.exists():
         try:
-            _eta_model = joblib.load(model_path)
+            model = joblib.load(model_path)
             st.caption(f"✅ Using trained model: {model_path.name}")
-            return _eta_model
+            return model
         except Exception as e:
             st.caption(f"⚠️ Model load failed ({e}), using formula fallback")
             return None
     return None
 
 
-def _build_reference_data() -> Optional[pd.DataFrame]:
-    """Build reference distribution from actual processed data."""
-    global _ref_data
-    if _ref_data is not None:
-        return _ref_data
-
+@st.cache_resource
+def _build_reference_data_cached() -> Optional[pd.DataFrame]:
+    """Build reference distribution (cached by Streamlit, not module-level global)."""
     data_path = Path("data/processed/restaurants_processed.csv")
     if not data_path.exists():
-        # Fallback: generate plausible reference data matching simulation shape
         rng = np.random.RandomState(42)
-        _ref_data = pd.DataFrame(
+        return pd.DataFrame(
             {
                 "predicted_min": rng.normal(30, 10, 500),
                 "actual_min": rng.normal(32, 12, 500),
                 "distance_km": rng.uniform(1, 15, 500),
             }
         )
-        return _ref_data
 
     df = pd.read_csv(data_path)
     rng = np.random.RandomState(42)
     n = min(500, len(df))
-    _ref_data = pd.DataFrame(
+    return pd.DataFrame(
         {
             "predicted_min": rng.normal(30, 10, n),
             "actual_min": rng.normal(32, 12, n),
             "distance_km": np.random.uniform(1, 15, n),
         }
     )
-    return _ref_data
 
 
 def show() -> None:
@@ -112,8 +111,8 @@ def show() -> None:
             key=f"{PAGE_NAME}_drift",
         )
 
-    model = _load_eta_model() if use_model else None
-    ref_data = _build_reference_data()
+    model = _load_eta_model_cached() if use_model else None
+    ref_data = _build_reference_data_cached()
     drift_detector = (
         DriftDetector(ref_data, config=config) if ref_data is not None else None
     )
@@ -193,7 +192,9 @@ def show() -> None:
                 )
                 chart_placeholder.plotly_chart(fig, use_container_width=True)
 
-            time.sleep(0.02)
+            # Brief yield to let Streamlit update UI — removed forced blocking
+            if i % 10 == 0:
+                time.sleep(0.005)
 
         progress_bar.empty()
         status_text.success(f"✅ Simulation complete — {n_orders} orders processed")
@@ -252,7 +253,10 @@ def _simulate_order(
     inject_drift: bool = False,
     model=None,
 ) -> Dict[str, Any]:
-    """Simulate a single delivery order, optionally using the trained model."""
+    """Simulate a single delivery order, optionally using the trained model.
+
+    Returns a dict with a unique, monotonically increasing order_id.
+    """
     shift = 2.0 if inject_drift else 0.0
     distance = random.uniform(1, 15)
     traffic = random.choice([0, 1, 2, 3])
@@ -282,7 +286,7 @@ def _simulate_order(
     actual_time = max(10, base_time + random.gauss(0, 8))
 
     return {
-        "order_id": 0,
+        "order_id": _get_next_order_id(),
         "distance_km": round(distance, 1),
         "traffic": ["Low", "Medium", "High", "Jam"][traffic],
         "predicted_min": round(predicted_time, 1),

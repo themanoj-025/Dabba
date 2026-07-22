@@ -13,6 +13,8 @@ services:
     environment:
       - DABBA_LOG_LEVEL=INFO
       - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
+      # Uncomment to enable API key authentication:
+      # - DABBA_API_KEY=${DABBA_API_KEY:-}
 
   streamlit:
     build: .

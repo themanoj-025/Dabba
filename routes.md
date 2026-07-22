@@ -1,13 +1,12 @@
-# 🗺️ Dabba v3 — Routing Map
+# 🗺️ Dabba v4 — Routing Map
 
 ## Streamlit Routing
 
-Dabba v3 uses **custom radio navigation** (not Streamlit multi-page auto-discovery).
+Dabba v4 uses **custom radio navigation** (not Streamlit multi-page auto-discovery).
 
 **How it works:**
 1. `app/streamlit_app.py` renders a `st.radio` in the sidebar with 4 page options
 2. Based on the selected radio value, the appropriate page module is called
-3. Old `1_customer_view.py`, `2_ops_view.py`, `3_model_info.py` files are deleted
 
 ### Streamlit Pages
 
@@ -40,17 +39,46 @@ streamlit_app.py (entry point)
 
 ## FastAPI Routing
 
-Dabba v3 uses separate router modules under `api/routers/` for clean separation.
+Dabba v4 uses **versioned API routing** under `/v1` with API key authentication and rate limiting.
 
-### Router Table
+### Router Architecture
 
-| # | Method | Route | Module | Purpose | Auth |
-|---|--------|-------|--------|---------|------|
-| 1 | GET | `/health` | `api/main.py` (inline) | Health check + model load status | No |
-| 2 | GET | `/model-info` | `routers/model_info.py` | Deployed model names & metrics from CSVs | No |
-| 3 | POST | `/recommend` | `routers/recommend.py` | Hybrid recommendations, optional LLM narration | No |
-| 4 | POST | `/predict-eta` | `routers/eta.py` | Delivery ETA using winning model | No |
-| 5 | POST | `/chat` | `routers/chat.py` | Food concierge with tool-use | No |
+```
+app (no auth)
+  └── GET /health
+  └── v1_router (auth + rate limit)
+       ├── POST /v1/recommend       (30/min)
+       ├── POST /v1/predict-eta     (30/min)
+       ├── POST /v1/chat            (10/min)
+       └── GET  /v1/model-info      (60/min)
+```
+
+### Endpoint Table
+
+| # | Method | Route | Module | Auth | Rate Limit | Purpose |
+|---|--------|-------|--------|------|------------|---------|
+| 1 | GET | `/health` | `api/main.py` (inline) | No | No | Health check + model load status |
+| 2 | GET | `/v1/model-info` | `routers/model_info.py` | `X-API-Key` | 60/min | Deployed model names & metrics |
+| 3 | POST | `/v1/recommend` | `routers/recommend.py` | `X-API-Key` | 30/min | Hybrid recommendations, optional LLM narration |
+| 4 | POST | `/v1/predict-eta` | `routers/eta.py` | `X-API-Key` | 30/min | Delivery ETA using winning model |
+| 5 | POST | `/v1/chat` | `routers/chat.py` | `X-API-Key` | 10/min | Food concierge with tool-use |
+
+### Authentication
+
+- All `/v1/*` endpoints require an `X-API-Key` header
+- Configure via `DABBA_API_KEY` environment variable (or `.env` file)
+- **Dev mode:** If `DABBA_API_KEY` is not set, authentication is skipped — the API works without a key for local development
+- The `/health` endpoint is intentionally unauthenticated for monitoring/load balancer access
+
+### Rate Limiting
+
+- Uses `slowapi` with IP-based key function (`get_remote_address`)
+- Limits applied per endpoint type:
+  - `POST /v1/chat`: **10/minute** — LLM calls are expensive
+  - `POST /v1/recommend`: **30/minute** — moderate usage
+  - `POST /v1/predict-eta`: **30/minute** — moderate usage
+  - `GET /v1/model-info`: **60/minute** — lightweight reads
+- Rate-limited requests return `429 Too Many Requests`
 
 ### CORS Configuration
 
@@ -65,16 +93,15 @@ origins = [
 
 Allows the Streamlit dashboard (port 8501) to call the API (port 8000).
 
-### API Setup
+### Security Headers
 
-```python
-app = FastAPI(title="Dabba API", version="3.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=origins, ...)
-app.include_router(recommend_router)
-app.include_router(eta_router)
-app.include_router(chat_router)
-app.include_router(model_info_router)
-```
+All responses include:
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `X-XSS-Protection: 0`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()`
+- `Content-Security-Policy: default-src 'none'; frame-ancestors 'none';`
 
 ---
 
@@ -93,11 +120,11 @@ narrate_recommendation() generates explanation (LLM or rules)
 render_restaurant_card() displays styled card with explanation
 ```
 
-### ETA Flow  
+### ETA Flow
 ```
 User enters delivery details
     ↓
-POST /predict-eta → ETARequest schema
+POST /v1/predict-eta → ETARequest schema (X-API-Key required)
     ↓
 joblib.load('best_eta_model.pkl') → predict()
     ↓
@@ -109,6 +136,8 @@ ETAResponse schema returned
 ### Chat Flow
 ```
 User types message in Food Concierge
+    ↓
+POST /v1/chat → ChatRequest schema (X-API-Key required, 10/min)
     ↓
 get_concierge_response() with ConciergeTools
     ↓

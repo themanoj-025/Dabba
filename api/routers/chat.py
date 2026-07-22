@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Optional
 
 import pandas as pd
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
+from api.limiter import limiter
 from dabba.config import get_config
 from dabba.llm.food_concierge import ConciergeTools, get_concierge_response
 from api.schemas import ChatRequest, ChatResponse
@@ -19,33 +21,47 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 config = get_config()
 
 _tools: Optional[ConciergeTools] = None
+_tools_lock = threading.Lock()
 
 
 def load_concierge_tools() -> None:
-    """Load restaurant data for concierge tools."""
+    """Load restaurant data for concierge tools (thread-safe)."""
     global _tools
-    data_path = config.data_processed_dir / "restaurants_processed.csv"
-    if not data_path.exists():
-        logger.warning("Processed data not found for concierge")
-        _tools = ConciergeTools(pd.DataFrame(), config=config)
-        return
+    with _tools_lock:
+        if _tools is not None:
+            return
+        data_path = config.data_processed_dir / "restaurants_processed.csv"
+        if not data_path.exists():
+            logger.warning("Processed data not found for concierge")
+            _tools = ConciergeTools(pd.DataFrame(), config=config)
+            return
 
-    df = pd.read_csv(data_path)
-    _tools = ConciergeTools(df, config=config)
-    logger.info("Concierge tools loaded with %d restaurants", len(df))
+        df = pd.read_csv(data_path)
+        _tools = ConciergeTools(df, config=config)
+        logger.info("Concierge tools loaded with %d restaurants", len(df))
+
+
+def get_tools() -> Optional[ConciergeTools]:
+    """Thread-safe accessor for concierge tools."""
+    global _tools
+    with _tools_lock:
+        return _tools
 
 
 @router.post("", response_model=ChatResponse)
-async def chat(request: ChatRequest) -> ChatResponse:
+@limiter.limit("10/minute")
+async def chat(request: Request, body: ChatRequest) -> ChatResponse:
     """Send a message to the Food Concierge.
 
     Args:
-        request: ChatRequest with message and conversation history.
+        request: Incoming HTTP request (required by rate limiter).
+        body: ChatRequest with message and conversation history.
 
     Returns:
         ChatResponse with the concierge's reply.
     """
-    if _tools is None:
+    tools = get_tools()
+    if tools is None:
         raise HTTPException(
             status_code=503,
             detail="Concierge tools not loaded. Run `make train` first.",
@@ -53,13 +69,13 @@ async def chat(request: ChatRequest) -> ChatResponse:
 
     # Format conversation history
     history = []
-    for msg in request.history or []:
+    for msg in body.history or []:
         history.append({"role": msg.role, "content": msg.content})
 
     response = get_concierge_response(
-        request.message,
+        body.message,
         history,
-        _tools,
+        tools,
         config=config,
     )
 

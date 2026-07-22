@@ -77,6 +77,9 @@ class DabbaConfig(BaseSettings):
     hybrid_weight_collaborative: float = 0.3
     hybrid_weight_reliability: float = 0.3
 
+    # --- API Auth ---
+    api_key: Optional[str] = Field(default=None)
+
     # --- LLM Settings ---
     anthropic_api_key: Optional[str] = Field(default=None)
     llm_enabled: bool = False
@@ -86,6 +89,26 @@ class DabbaConfig(BaseSettings):
     # --- MLflow ---
     mlflow_tracking_uri: str = "http://localhost:5000"
     mlflow_experiment_name: str = "dabba"
+
+    # --- Database ---
+    database_url: str = Field(
+        default="sqlite:///data/dabba.db",
+        description="SQLAlchemy database URL (SQLite for dev, Postgres for prod)",
+    )
+
+    # --- Cache ---
+    redis_url: str = Field(
+        default="redis://localhost:6379/0",
+        description="Redis URL for caching hot predictions",
+    )
+    cache_eta_ttl_seconds: int = Field(
+        default=300,
+        description="TTL for ETA prediction cache entries (seconds)",
+    )
+    cache_recommend_ttl_seconds: int = Field(
+        default=600,
+        description="TTL for recommendation cache entries (seconds)",
+    )
 
     # --- Drift Detection ---
     drift_ks_threshold: float = 0.05  # p-value threshold for KS test

@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 
 import pandas as pd
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
+from api.limiter import limiter
 from dabba.config import get_config
 
 logger = logging.getLogger(__name__)
@@ -17,8 +18,16 @@ config = get_config()
 
 
 @router.get("")
-async def model_info():
-    """Return which models are deployed and their metrics."""
+@limiter.limit("60/minute")
+async def model_info(request: Request):
+    """Return which models are deployed and their metrics.
+
+    Args:
+        request: Incoming HTTP request (required by rate limiter).
+
+    Returns:
+        Dict with rating_model and eta_model info.
+    """
     rating_winner = None
     eta_winner = None
 
