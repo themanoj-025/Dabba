@@ -139,7 +139,9 @@ class TestBuildModelFromParams:
         params = {"n_estimators": 300, "max_depth": 8, "learning_rate": 0.03}
         model = _build_model_from_params("CatBoost", params)
         assert isinstance(model, CatBoostRegressor)
-        assert model.n_estimators == 300
+        # CatBoost stores params via get_params()
+        assert model.get_params()["n_estimators"] == 300
+        assert model.get_params()["max_depth"] == 8
 
     def test_build_gradientboosting(self):
         """Should build a GradientBoostingRegressor from tuned params."""
