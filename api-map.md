@@ -170,6 +170,106 @@ for load balancers, Docker health checks, and monitoring.
 
 ---
 
+### 6. GET `/v1/restaurants`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 60/minute
+
+**Purpose**: List restaurants from the database (proves CSV→DB migration).
+
+**Query Parameters**:
+- `limit` (int, 1-200, default 50) — Max results per page
+- `offset` (int, default 0) — Pagination offset
+
+**Response** (`RestaurantListResponse`):
+```json
+{
+    "restaurants": [
+        {
+            "id": 1,
+            "name": "Meghana Foods",
+            "rate": 4.8,
+            "bayesian_rating": 4.75,
+            "cost_for_two": 400,
+            "location": "Koramangala",
+            "cuisines": "North Indian, Chinese",
+            "votes": 500,
+            "reliability_score": 0.88
+        }
+    ],
+    "total": 4268,
+    "limit": 50,
+    "offset": 0
+}
+```
+
+**Dependencies**: Database (SQLite/Postgres) via `get_db_generator` DI.
+
+---
+
+### 7. GET `/v1/restaurants/{restaurant_id}`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 60/minute
+
+**Purpose**: Get a single restaurant by ID.
+
+**Path Parameters**:
+- `restaurant_id` (int) — Restaurant primary key
+
+**Response** (`RestaurantItem`):
+```json
+{
+    "id": 1,
+    "name": "Meghana Foods",
+    "rate": 4.8,
+    "bayesian_rating": 4.75,
+    "cost_for_two": 400,
+    "location": "Koramangala",
+    "cuisines": "North Indian, Chinese",
+    "votes": 500,
+    "reliability_score": 0.88
+}
+```
+
+**Error Responses**:
+- `404` — Restaurant not found
+- `503` — Database not available
+
+---
+
+### 8. GET `/v1/restaurants/search/{query}`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 60/minute
+
+**Purpose**: Search restaurants by name or cuisine.
+
+**Path Parameters**:
+- `query` (str) — Search term (matches name or cuisine)
+
+**Query Parameters**:
+- `limit` (int, 1-100, default 20) — Max results
+
+**Response** (`RestaurantListResponse`):
+```json
+{
+    "restaurants": [...],
+    "total": 3,
+    "limit": 20,
+    "offset": 0
+}
+```
+
+**Error Responses**:
+- `404` — No restaurants found matching query
+- `503` — Database not available
+
+---
+
 ## Schema Summary
 
 | Schema | Endpoint | Fields |
@@ -183,6 +283,8 @@ for load balancers, Docker health checks, and monitoring.
 | `ChatMessage` | POST /v1/chat | role, content |
 | `ChatRequest` | POST /v1/chat | message, history (list of ChatMessage) |
 | `ChatResponse` | POST /v1/chat | reply |
+| `RestaurantItem` | GET /v1/restaurants/* | id, name, rate, bayesian_rating, cost_for_two, location, cuisines, votes, reliability_score |
+| `RestaurantListResponse` | GET /v1/restaurants | restaurants (list), total, limit, offset |
 
 ---
 
@@ -192,5 +294,6 @@ for load balancers, Docker health checks, and monitoring.
 |--------|---------|---------|
 | 400 | Bad request (validation) | `{"detail":[{"loc":["body","distance_km"],"msg":"..."}]}` |
 | 401 | Missing/invalid API key | `{"detail":"Missing X-API-Key header"}` |
+| 404 | Resource not found | `{"detail":"Restaurant not found"}` |
 | 429 | Rate limit exceeded | `{"detail":"Rate limit exceeded: 10/minute"}` |
 | 503 | Model/tools not loaded | `{"detail":"ETA model not loaded. Run `make train` first."}` |
