@@ -1,13 +1,16 @@
-"""Recommendation router — hybrid recommendations with optional LLM narration."""
+"""Recommendation router — hybrid recommendations with optional LLM narration.
+
+Models are loaded at app startup and stored in ``app.state``,
+then injected via FastAPI ``Depends()`` — no module-level globals.
+"""
 
 from __future__ import annotations
 
 import logging
-import threading
 from typing import List, Optional
 
 import pandas as pd
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
@@ -22,59 +25,80 @@ router = APIRouter(prefix="/recommend", tags=["recommend"])
 
 config = get_config()
 
-_hybrid_recommender: Optional[HybridRecommender] = None
-_hybrid_recommender_lock = threading.Lock()
 
+def _load_hybrid_recommender() -> Optional[HybridRecommender]:
+    """Build and return the hybrid recommender from processed data.
 
-def load_recommender() -> None:
-    """Load or reload the hybrid recommender (thread-safe)."""
-    global _hybrid_recommender
-    with _hybrid_recommender_lock:
-        if _hybrid_recommender is not None:
-            return
-        data_path = config.data_processed_dir / "restaurants_processed.csv"
-        if not data_path.exists():
-            logger.warning("Processed data not found at %s", data_path)
-            return
+    Called once at app startup by ``api.main``. Returns ``None`` if
+    the processed restaurant data hasn't been generated yet.
 
-        df = pd.read_csv(data_path)
-        feature_cols = [c for c in df.columns if c.startswith("cuisine_")]
-        feature_cols += [
-            c
-            for c in [
-                "votes_log",
-                "cost_for_two",
-                "online_order_binary",
-                "book_table_binary",
-                "cuisine_count",
-                "avg_sentiment",
-            ]
-            if c in df.columns
+    Returns:
+        HybridRecommender instance, or None.
+    """
+    data_path = config.data_processed_dir / "restaurants_processed.csv"
+    if not data_path.exists():
+        logger.warning("Processed data not found at %s", data_path)
+        return None
+
+    df = pd.read_csv(data_path)
+    feature_cols = [c for c in df.columns if c.startswith("cuisine_")]
+    feature_cols += [
+        c
+        for c in [
+            "votes_log",
+            "cost_for_two",
+            "online_order_binary",
+            "book_table_binary",
+            "cuisine_count",
+            "avg_sentiment",
         ]
+        if c in df.columns
+    ]
 
-        _hybrid_recommender = HybridRecommender(df, feature_cols, config=config)
-        logger.info("Hybrid recommender loaded with %d restaurants", len(df))
+    recommender = HybridRecommender(df, feature_cols, config=config)
+    logger.info("Hybrid recommender loaded with %d restaurants", len(df))
+    return recommender
 
 
-def get_recommender() -> Optional[HybridRecommender]:
-    """Thread-safe accessor for the hybrid recommender."""
-    global _hybrid_recommender
-    with _hybrid_recommender_lock:
-        return _hybrid_recommender
+def get_recommender(request: Request) -> Optional[HybridRecommender]:
+    """FastAPI dependency: return the hybrid recommender from ``app.state``.
+
+    Usage:
+        .. code-block:: python
+
+            @router.post(...)
+            async def recommend(body: Request, recommender = Depends(get_recommender)):
+                ...
+
+    Returns:
+        The HybridRecommender instance, or ``None`` if not loaded.
+    """
+    return getattr(request.app.state, "hybrid_recommender", None)
 
 
 @router.post("", response_model=RecommendResponse)
 @limiter.limit("30/minute")
-async def recommend(request: Request, body: RecommendRequest) -> RecommendResponse:
+async def recommend(
+    request: Request,
+    body: RecommendRequest,
+    recommender: Optional[HybridRecommender] = Depends(get_recommender),
+) -> RecommendResponse:
     """Get hybrid restaurant recommendations with optional LLM narration.
 
     Args:
         request: Incoming HTTP request (required by rate limiter).
         body: RecommendRequest with cuisine, budget, area, top_n, etc.
+        recommender: The hybrid recommender (injected via ``Depends``).
 
     Returns:
         RecommendResponse with ranked recommendations.
     """
+    if recommender is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Recommender not loaded. Run `make train` first.",
+        )
+
     # Check cache first (skip for LLM-narrated requests since explanations vary)
     cache = get_cache(config)
     cache_key = cache.make_recommend_key(
@@ -86,14 +110,7 @@ async def recommend(request: Request, body: RecommendRequest) -> RecommendRespon
             logger.debug("Recommend cache hit for key=%s", cache_key)
             return RecommendResponse(**cached)
 
-    model = get_recommender()
-    if model is None:
-        raise HTTPException(
-            status_code=503,
-            detail="Recommender not loaded. Run `make train` first.",
-        )
-
-    results = model.recommend(
+    results = recommender.recommend(
         cuisine=body.cuisine,
         budget=body.budget,
         area=body.area,
