@@ -9,6 +9,9 @@ Validates that:
 
 from __future__ import annotations
 
+import os
+from typing import Dict
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -17,6 +20,31 @@ from sqlalchemy.orm import sessionmaker
 
 from dabba.database.models import Base, Order, Restaurant, RESTAURANT_COL_MAP
 from dabba.database.seed import seed_orders, seed_restaurants
+
+
+# ─── API test fixtures (shared with test_api.py) ─────────────────────
+
+
+@pytest.fixture
+def client():
+    """Create a test client for the FastAPI app."""
+    from api.main import app
+    from fastapi.testclient import TestClient
+
+    return TestClient(app)
+
+
+@pytest.fixture
+def api_key() -> str:
+    """Return a test API key or None if not configured."""
+    return os.environ.get("DABBA_API_KEY")
+
+
+def auth_headers(api_key: str | None) -> Dict[str, str]:
+    """Return auth headers if an API key is configured."""
+    if api_key:
+        return {"X-API-Key": api_key}
+    return {}
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────
