@@ -7,6 +7,7 @@ then injected via FastAPI ``Depends()`` — no module-level globals.
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 import joblib
 import pandas as pd
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/predict-eta", tags=["eta"])
 config = get_config()
 
 
-def _load_eta_model() -> object | None:
+def _load_eta_model() -> Optional[object]:
     """Load the winning ETA model from disk.
 
     Called once at app startup by ``api.main``. Returns the model
@@ -42,7 +43,7 @@ def _load_eta_model() -> object | None:
         return None
 
 
-def get_eta_model(request: Request) -> object | None:
+def get_eta_model(request: Request) -> Optional[object]:
     """FastAPI dependency: return the ETA model from ``app.state``.
 
     Usage:
@@ -63,7 +64,7 @@ def get_eta_model(request: Request) -> object | None:
 async def predict_eta(
     request: Request,
     body: ETARequest,
-    model: object | None = Depends(get_eta_model),
+    model: Optional[object] = Depends(get_eta_model),
 ) -> ETAResponse:
     """Predict delivery time for an order.
 
