@@ -8,23 +8,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Optuna hyperparameter optimization for 5 ensemble models (XGBoost, LightGBM,
-  CatBoost, RandomForest, GradientBoosting) with configurable search spaces and trials
-- Multi-step ReAct loop for the Food Concierge (max 4 steps, tool results fed back
-  to the LLM for chained reasoning)
-- Separate Dockerfiles per service (`docker/api.Dockerfile`, `docker/streamlit.Dockerfile`,
-  `docker/mlflow.Dockerfile`) with healthchecks on all services
-- `llm_max_steps` config field for controlling ReAct loop iterations
-- Integration and end-to-end test directories
-- `skorch` dependency pinned in requirements.txt
+- **CSV→Postgres migration path**: `python -m dabba.database.seed --full-import` runs the
+  complete pipeline (load raw CSV → clean → feature engineer → sentiment → seed to DB)
+- **Database-backed data loaders**: `load_zomato_from_db()` and `load_delivery_from_db()`
+  in `loaders.py` with `use_db=True` flag on existing loaders for DB-first with CSV fallback
+- **REST API for restaurants from DB**: `/v1/restaurants` (list, get by ID with 404, search
+  by name/cuisine) — reads from Postgres/SQLite via `get_db_generator` dependency injection
+- **Restaurant API schemas**: `RestaurantItem` and `RestaurantListResponse` Pydantic models
+- **Docker entrypoint**: `docker/entrypoint.sh` runs `alembic upgrade head` before starting
+  uvicorn — schema always up-to-date on container start
+- **Makefile DB targets**: `db-import`, `db-migrate`, `db-shell`, `db-rollback`, `db-history`,
+  `db-revision` for common database operations
+- **Slack drift alerting**: `_send_slack_alert()`, `detect_and_alert()` with cooldown management
+  and database persistence via `DriftLog` table
+- **11 new ETA features**: `is_rush_hour`, `hour_sin/cos`, `dow_sin/cos`, `city_zone`,
+  `weather_encoded`, `distance_traffic_interaction`, `distance_festival_interaction`
+- **Pre-existing bug fix**: `order_hour_bucket` was silently dropped from training (dead
+  `startswith("order_hour_bucket_")` code in pipeline.py)
+- **Integration tests**: `tests/integration/test_concierge.py` (27 tests), `tests/e2e/test_workflow.py`
+  (6 tests), `tests/test_database.py` (16 tests), `tests/test_db_loaders.py` (11 tests)
+- **Community files**: SECURITY.md, CHANGELOG.md, CODE_OF_CONDUCT.md, .github/ISSUE_TEMPLATE/
+  (bug_report.md, feature_request.md), .github/PULL_REQUEST_TEMPLATE.md
+- **Postgres + Redis services** in docker-compose.yml with healthchecks
+- **Optuna HPO** for 5 ensemble models with configurable search spaces and trials
+- **Multi-step ReAct loop** for the Food Concierge (max 4 steps)
+- **Separate Dockerfiles** per service with healthchecks
+- **`skorch` dependency** pinned in requirements.txt
+- **`RESTAURANT_COL_MAP`** shared constant in models.py (eliminates duplication between
+  seed.py and pipeline.py)
+- **`full_import()`** with CSV existence check before clearing DB, sentiment scores,
+  FileNotFoundError handling, and delivery CSV fallback
 
 ### Changed
+- Module-level globals → FastAPI `app.state` + `Depends()` DI in all API routers
 - `_llm_concierge_response` rewritten from single-turn tool append to full ReAct loop
 - docker-compose.yml replaced mono-image with per-service Dockerfiles + healthchecks
-- `.dockerignore` updated to exclude `docker/` directory
+- `get_eta_estimate()` now checks restaurant existence BEFORE `eta_model is None`
+- Intent matching: `re.match` → selective `re.search` for budget/cuisine/reliability patterns
+- `_INTENT_PATTERNS` reordered (budget/cuisine before search) for correct intent priority
+- ETA regex handles "delivery from X take?" patterns
+- `seed.py`: `clear_all()` uses single transaction (was two separate blocks)
+- `loaders.py`: ORM attributes accessed inside session block (fixes DetachedInstanceError)
+- `get_restaurant` endpoint raises `HTTPException(404)` instead of returning None
+- SQLite `pool_size`/`max_overflow` only passed for non-SQLite dialects
+- All markdown files updated with new architecture, API routes, and DB migration docs
 
 ### Fixed
 - `skorch` dependency ghost — was referenced in `eta_model.py` but missing from `requirements.txt`
+- Intent matching: "Find cheap restaurants" now correctly matches `budget_search` (not `search`)
+- "What's the reliability score for X?" now correctly matches reliability intent
+- `get_eta_estimate()` no longer returns fake ETAs for non-existent restaurants
+- `order_hour_bucket` no longer silently dropped from ETA training
+- `load_delivery_from_db()` handles None `actual_eta` with fallback to `predicted_eta`
 
 ## [0.2.0] - 2026-06-01
 
