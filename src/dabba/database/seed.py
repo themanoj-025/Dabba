@@ -181,22 +181,43 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
     It runs the entire data processing pipeline and persists the
     results to the database, ready for API queries and model training.
 
+    Existing data is cleared before importing to avoid duplicate rows.
+
     Args:
         config: Project configuration.
     """
     config = config or get_config()
     logger.info("=== Full CSV→DB Import ===")
 
-    from dabba.data.cleaning import clean_delivery, clean_zomato
-    from dabba.data.loaders import load_delivery, load_zomato
-    from dabba.features.delivery_features import add_delivery_features
-    from dabba.features.restaurant_features import add_restaurant_features
+    try:
+        from dabba.data.cleaning import clean_delivery, clean_zomato
+        from dabba.data.loaders import load_delivery, load_zomato
+        from dabba.features.delivery_features import add_delivery_features
+        from dabba.features.restaurant_features import add_restaurant_features
+        from dabba.nlp.sentiment import add_sentiment_scores
+    except ImportError as e:
+        logger.error("Missing dependency for import: %s", e)
+        return
 
-    # Restaurants: load → clean → feature engineer → seed
+    # Clear existing data to avoid duplicates on re-run
+    clear_all(config)
+
+    # Restaurants: load → clean → feature engineer → sentiment → seed
     logger.info("--- Restaurants ---")
-    df_zomato = load_zomato(config)
+    try:
+        df_zomato = load_zomato(config)
+    except FileNotFoundError:
+        logger.error(
+            "Raw Zomato CSV not found at %s — cannot run full import.\n"
+            "  Download the dataset first (see README), or use"
+            " 'python -m dabba.database.seed' with processed CSVs.",
+            config.zomato_path,
+        )
+        return
+
     df_zomato = clean_zomato(df_zomato, config)
     df_zomato = add_restaurant_features(df_zomato)
+    df_zomato = add_sentiment_scores(df_zomato, config=config)
 
     n_rest = seed_restaurants(df_zomato, config)
     logger.info("✅ %d restaurants seeded to database", n_rest)
@@ -221,8 +242,10 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
         del_path = config.data_processed_dir / "delivery_processed.csv"
         df_delivery.to_csv(del_path, index=False)
         logger.info("Saved processed delivery data to %s", del_path)
+    except FileNotFoundError:
+        logger.warning("Delivery CSV not found — skipping delivery import")
     except Exception as e:
-        logger.warning("Delivery import skipped: %s", e)
+        logger.warning("Delivery import failed: %s", e)
 
     logger.info("=== Full Import Complete ===")
 

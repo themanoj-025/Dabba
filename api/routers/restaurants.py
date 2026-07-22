@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
 from api.limiter import limiter
@@ -91,11 +91,14 @@ async def get_restaurant(
         db: Database session.
 
     Returns:
-        Restaurant item or None.
+        RestaurantItem for the requested restaurant.
+
+    Raises:
+        HTTPException 404: Restaurant not found.
     """
     r = get_restaurant_by_id(db, restaurant_id)
     if r is None:
-        return None
+        raise HTTPException(status_code=404, detail="Restaurant not found")
 
     return RestaurantItem(
         id=r.id,
@@ -152,6 +155,9 @@ async def search_restaurants(
         )
 
     by_cuisine = get_restaurants_by_cuisine(db, query, limit=limit)
+    if not by_cuisine:
+        raise HTTPException(status_code=404, detail=f"No restaurants found matching '{query}'")
+
     return RestaurantListResponse(
         restaurants=[
             RestaurantItem(
