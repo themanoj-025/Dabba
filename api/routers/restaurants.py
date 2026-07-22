@@ -9,8 +9,6 @@ instead of the raw CSV files.
 from __future__ import annotations
 
 import logging
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
