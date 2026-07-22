@@ -1,13 +1,17 @@
-"""Food Concierge chat router — LLM-powered with rules-based fallback."""
+"""Food Concierge chat router — LLM-powered with rules-based fallback.
+
+Tools (ConciergeTools) are loaded at app startup and stored in
+``app.state``, then injected via FastAPI ``Depends()`` —
+no module-level globals.
+"""
 
 from __future__ import annotations
 
 import logging
-import threading
 from typing import Optional
 
 import pandas as pd
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.config import get_config
@@ -20,47 +24,60 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 config = get_config()
 
-_tools: Optional[ConciergeTools] = None
-_tools_lock = threading.Lock()
+
+def _load_concierge_tools() -> Optional[ConciergeTools]:
+    """Build and return ConciergeTools from processed data.
+
+    Called once at app startup by ``api.main``. Returns an empty
+    ConciergeTools if data hasn't been generated yet.
+
+    Returns:
+        ConciergeTools instance (never None — uses empty DF as fallback).
+    """
+    data_path = config.data_processed_dir / "restaurants_processed.csv"
+    if not data_path.exists():
+        logger.warning("Processed data not found for concierge")
+        return ConciergeTools(pd.DataFrame(), config=config)
+
+    df = pd.read_csv(data_path)
+    tools = ConciergeTools(df, config=config)
+    logger.info("Concierge tools loaded with %d restaurants", len(df))
+    return tools
 
 
-def load_concierge_tools() -> None:
-    """Load restaurant data for concierge tools (thread-safe)."""
-    global _tools
-    with _tools_lock:
-        if _tools is not None:
-            return
-        data_path = config.data_processed_dir / "restaurants_processed.csv"
-        if not data_path.exists():
-            logger.warning("Processed data not found for concierge")
-            _tools = ConciergeTools(pd.DataFrame(), config=config)
-            return
+def get_tools(request: Request) -> Optional[ConciergeTools]:
+    """FastAPI dependency: return ConciergeTools from ``app.state``.
 
-        df = pd.read_csv(data_path)
-        _tools = ConciergeTools(df, config=config)
-        logger.info("Concierge tools loaded with %d restaurants", len(df))
+    Usage:
+        .. code-block:: python
 
+            @router.post(...)
+            async def chat(body: ChatRequest, tools = Depends(get_tools)):
+                ...
 
-def get_tools() -> Optional[ConciergeTools]:
-    """Thread-safe accessor for concierge tools."""
-    global _tools
-    with _tools_lock:
-        return _tools
+    Returns:
+        ConciergeTools instance, or ``None`` if not loaded.
+    """
+    return getattr(request.app.state, "concierge_tools", None)
 
 
 @router.post("", response_model=ChatResponse)
 @limiter.limit("10/minute")
-async def chat(request: Request, body: ChatRequest) -> ChatResponse:
+async def chat(
+    request: Request,
+    body: ChatRequest,
+    tools: Optional[ConciergeTools] = Depends(get_tools),
+) -> ChatResponse:
     """Send a message to the Food Concierge.
 
     Args:
         request: Incoming HTTP request (required by rate limiter).
         body: ChatRequest with message and conversation history.
+        tools: ConciergeTools (injected via ``Depends``).
 
     Returns:
         ChatResponse with the concierge's reply.
     """
-    tools = get_tools()
     if tools is None:
         raise HTTPException(
             status_code=503,
