@@ -382,8 +382,12 @@ def main() -> None:
     X_rating = df_zomato[feature_cols].fillna(0)
     y_rating = df_zomato["rate"]
 
-    # Rating model comparison (now with CatBoost + MLflow)
-    logger.info("--- Rating model comparison ---")
+    # Rating model comparison (now with CatBoost + MLflow + Optuna HPO)
+    if config.optuna_enabled:
+        logger.info("--- [HPO] Running Optuna hyperparameter tuning for rating models ---")
+    else:
+        logger.info("--- [HPO] Skipped (disabled in config) ---")
+
     rating_results, rating_best = train_and_evaluate_rating_models(
         X_rating, y_rating, config
     )
@@ -439,7 +443,12 @@ def main() -> None:
     X_eta = df_delivery[eta_feature_cols].fillna(0)
     y_eta = df_delivery["time_taken_min"]
 
-    logger.info("--- ETA model comparison (including CatBoost) ---")
+    if config.optuna_enabled:
+        logger.info("--- [HPO] Running Optuna hyperparameter tuning for ETA models ---")
+    else:
+        logger.info("--- [HPO] Skipped (disabled in config) ---")
+
+    logger.info("--- ETA model comparison (including CatBoost + Optuna HPO) ---")
     eta_results, eta_best = train_and_evaluate_eta_models(X_eta, y_eta, config)
 
     fitted_eta_model = None
