@@ -9,13 +9,18 @@ Routing structure:
         POST /v1/predict-eta       — delivery ETA prediction
         POST /v1/chat              — food concierge chat
         GET  /v1/model-info        — deployed model info
+
+State management:
+    All models/tools are loaded at startup and stored in ``app.state``
+    rather than module-level globals. Router endpoints access them
+    via FastAPI ``Depends()`` instead of ``get_*()`` accessors.
 """
 
 from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -24,8 +29,6 @@ from dabba.config import get_config
 from api.auth import verify_api_key
 from api.limiter import limiter
 from api.routers import recommend, eta, chat, model_info
-from api.routers.eta import get_eta_model
-from api.routers.recommend import get_recommender
 from api.schemas import HealthResponse
 
 logger = logging.getLogger(__name__)
@@ -92,20 +95,31 @@ app.include_router(v1_router)
 # ─── Startup ─────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup() -> None:
-    """Load models and tools on startup."""
+    """Load models and tools into ``app.state`` on startup.
+
+    All models are stored in ``app.state`` and accessed via
+    FastAPI ``Depends()`` in the router endpoints — no module-level
+    globals, no threading locks needed.
+    """
     config.models_dir.mkdir(parents=True, exist_ok=True)
 
-    eta.load_eta_model()
-    recommend.load_recommender()
-    chat.load_concierge_tools()
+    # Load each model and store in app.state
+    app.state.eta_model = eta._load_eta_model()
+    app.state.hybrid_recommender = recommend._load_hybrid_recommender()
+    app.state.concierge_tools = chat._load_concierge_tools()
 
-    logger.info("Dabba API v0.4.0 started")
+    logger.info(
+        "Dabba API started — ETA=%s, Recommender=%s, Concierge=%s",
+        "loaded" if app.state.eta_model is not None else "missing",
+        "loaded" if app.state.hybrid_recommender is not None else "missing",
+        "loaded" if app.state.concierge_tools is not None else "empty",
+    )
 
 
 # ─── Health check (no auth) ──────────────────────────────────────────
 @app.get("/health", response_model=HealthResponse)
-async def health() -> HealthResponse:
-    """Health check endpoint — reports model load status.
+async def health(request: Request) -> HealthResponse:
+    """Health check endpoint — reports model load status from ``app.state``.
 
     This endpoint is intentionally unauthenticated so that
     load balancers, Docker health checks, and monitoring
@@ -113,6 +127,10 @@ async def health() -> HealthResponse:
     """
     return HealthResponse(
         status="ok",
-        rating_model_loaded=get_recommender() is not None,
-        eta_model_loaded=get_eta_model() is not None,
+        rating_model_loaded=(
+            getattr(request.app.state, "hybrid_recommender", None) is not None
+        ),
+        eta_model_loaded=(
+            getattr(request.app.state, "eta_model", None) is not None
+        ),
     )
