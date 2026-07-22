@@ -20,6 +20,9 @@ architecture.md
 api-map.md
 database-map.md
 dependency-graph.md
+CHANGELOG.md
+SECURITY.md
+CODE_OF_CONDUCT.md
 
 # Large data files (downloaded at runtime)
 data/raw/
@@ -51,8 +54,9 @@ kaggle.json
 .vscode/
 .idea/
 
-# Service-specific Dockerfiles (not part of any single build context)
-docker/
+# Exclude other service Dockerfiles (keep entrypoint.sh for API build)
+docker/streamlit.Dockerfile
+docker/mlflow.Dockerfile
 
 # OS
 .DS_Store
