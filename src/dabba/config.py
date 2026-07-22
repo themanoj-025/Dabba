@@ -114,6 +114,24 @@ class DabbaConfig(BaseSettings):
     drift_ks_threshold: float = 0.05  # p-value threshold for KS test
     drift_feature_sample: int = 100  # samples to use for drift detection
 
+    # --- Optuna Hyperparameter Optimization ---
+    optuna_enabled: bool = Field(
+        default=True,
+        description="Whether to run Optuna hyperparameter tuning before model comparison",
+    )
+    optuna_n_trials: int = Field(
+        default=50,
+        description="Number of Optuna trials per model during hyperparameter tuning",
+    )
+    optuna_timeout_minutes: Optional[int] = Field(
+        default=None,
+        description="Optional timeout per model tuning in minutes (None = no limit)",
+    )
+    optuna_models_to_tune: list[str] = Field(
+        default=["XGBoost", "LightGBM", "CatBoost", "RandomForest", "GradientBoosting"],
+        description="Which ensemble models to run Optuna tuning on",
+    )
+
     # --- Logging ---
     log_level: str = "INFO"
 
