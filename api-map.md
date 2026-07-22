@@ -145,12 +145,12 @@ for load balancers, Docker health checks, and monitoring.
 
 **Rate Limit**: 10/minute (LLM calls are expensive)
 
-**Purpose**: Food concierge chat with tool-use and rules-based fallback.
+**Purpose**: Food concierge chat with **ReAct tool loop** (max 4 steps) and rules-based fallback.
 
 **Request** (`ChatRequest`):
 ```json
 {
-    "message": "Find me something spicy under 400 rupees near Koramangala",
+    "message": "Find me something spicy under 400 rupees near Koramangala, check the ETA and reliability of the top pick",
     "history": []
 }
 ```
@@ -158,13 +158,15 @@ for load balancers, Docker health checks, and monitoring.
 **Response** (`ChatResponse`):
 ```json
 {
-    "reply": "I found several options! Meghana Foods (₹400, rating 4.8) tops the list with excellent reliability."
+    "reply": "I found Meghana Foods (₹400, rating 4.8) in Koramangala. Delivery ETA is ~28 min and reliability score is 0.88/1.0 — highly recommended!"
 }
 ```
 
+**ReAct Loop**: The concierge can chain multiple tool calls per user message — search → check ETA → check reliability → summarize. Tool results are fed back to the LLM for multi-step reasoning.
+
 **Fallback**: Rules-based intent matching when no API key is configured.
 
-**Dependencies**: `dabba.llm.food_concierge` (rules-based without API key, LLM-powered with Anthropic key).
+**Dependencies**: `dabba.llm.food_concierge` (ReAct loop with LLM, rules-based fallback without API key). Models loaded via `app.state` DI.
 
 ---
 

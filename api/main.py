@@ -28,8 +28,9 @@ from slowapi.errors import RateLimitExceeded
 from dabba.config import get_config
 from api.auth import verify_api_key
 from api.limiter import limiter
-from api.routers import recommend, eta, chat, model_info
+from api.routers import recommend, eta, chat, model_info, restaurants
 from api.schemas import HealthResponse
+from dabba.database.session import init_db as init_database
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ v1_router.include_router(recommend.router)
 v1_router.include_router(eta.router)
 v1_router.include_router(chat.router)
 v1_router.include_router(model_info.router)
+v1_router.include_router(restaurants.router)
 
 app.include_router(v1_router)
 
@@ -102,6 +104,13 @@ async def startup() -> None:
     globals, no threading locks needed.
     """
     config.models_dir.mkdir(parents=True, exist_ok=True)
+
+    # Initialize database (creates tables if they don't exist)
+    try:
+        init_database()
+        logger.info("Database initialized")
+    except Exception as e:
+        logger.warning("Database init failed (non-fatal): %s", e)
 
     # Load each model and store in app.state
     app.state.eta_model = eta._load_eta_model()

@@ -33,11 +33,11 @@ Dabba solves this by:
 
 1. **Mining** Zomato restaurant data for ratings, cuisine diversity, and cost signals
 2. **Analyzing** customer sentiment from reviews using VADER NLP
-3. **Predicting** delivery ETA with a rigorously selected ML model (9 algorithms compared)
+3. **Predicting** delivery ETA with a rigorously selected ML model (9+ algorithms compared, **Optuna HPO** tuned)
 4. **Synthesizing** everything into a proprietary **Reliability Score**
 5. **Adding collaborative filtering** (PyTorch matrix factorization on synthetic interaction data)
-6. **Wrapping it all with an LLM layer** — natural-language explanations, RAG similar-restaurant retrieval, and a chat copilot
-7. **Monitoring for drift** in production — KS-test-based drift detection wired into the Ops Monitor UI
+6. **Wrapping it all with an LLM layer** — natural-language explanations, RAG similar-restaurant retrieval, and a ReAct-powered chat copilot with multi-step tool chaining
+7. **Monitoring for drift** in production — KS-test-based drift detection wired into the Ops Monitor UI with **Slack/email alerting**
 
 ---
 
@@ -47,38 +47,47 @@ Dabba solves this by:
 Kaggle Datasets (Zomato + Delivery)
     │
     ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   DATA PIPELINE (src/dabba/)                         │
-│                                                                      │
-│  loaders.py → cleaning.py → feature engineering → sentiment (VADER) │
-│       │              │                    │              │           │
-│       ▼              ▼                    ▼              ▼           │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │ Rating    │  │ ETA      │  │ Collaborative │  │ Geographic   │     │
-│  │ Model     │  │ Model    │  │ Filtering     │  │ Clustering   │     │
-│  │ (9 algos) │  │ (10 algos)│  │ (PyTorch MF)  │  │ (KMeans etc)│     │
-│  └────┬─────┘  └────┬─────┘  └──────┬───────┘  └──────────────┘     │
-│       │             │               │                                │
-│       └─────────────┼───────────────┘                                │
-│                     │                                                │
-│                     ▼                                                │
-│          ┌──────────────────────┐                                    │
-│          │  Hybrid Recommender   │  Content + CF + Reliability Score  │
-│          │  + LLM Narrator      │  + A/B weight scenarios            │
-│          └──────────┬───────────┘                                    │
-│                     │                                                │
-│                     ▼                                                │
-│          ┌──────────────────────┐                                    │
-│          │  Reliability Score   │  w1*rating + w2*sentiment          │
-│          │  + A/B Scenarios    │  - w3*delay_risk                   │
-│          └──────────────────────┘                                    │
-└─────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    DATA PIPELINE (src/dabba/) ─── Optuna HPO             │
+│                                                                          │
+│  loaders.py → cleaning.py → feature engineering → sentiment (VADER)     │
+│       │              │                    │              │               │
+│       ▼              ▼                    ▼              ▼               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌──────────────┐         │
+│  │ Rating    │  │ ETA      │  │ Collaborative │  │ Geographic   │         │
+│  │ Model     │  │ Model    │  │ Filtering     │  │ Clustering   │         │
+│  │ (9 algos) │  │ (10+ algos)│  │ (PyTorch MF)│  │ (KMeans etc) │         │
+│  │+ Optuna   │  │+ Optuna  │  │               │  │               │         │
+│  └────┬─────┘  └────┬─────┘  └──────┬───────┘  └──────────────┘         │
+│       │             │               │                                    │
+│       └─────────────┼───────────────┘                                    │
+│                     │                                                    │
+│                     ▼                                                    │
+│          ┌──────────────────────┐                                        │
+│          │  Hybrid Recommender   │  Content + CF + Reliability Score      │
+│          │  + LLM Narrator      │  + A/B weight scenarios                │
+│          └──────────┬───────────┘                                        │
+│                     │                                                    │
+│                     ▼                                                    │
+│          ┌──────────────────────┐                                        │
+│          │  Reliability Score   │  w1*rating + w2*sentiment              │
+│          │  + A/B Scenarios    │  - w3*delay_risk                       │
+│          └──────────┬───────────┘                                        │
+│                     │                                                    │
+│                     ▼                                                    │
+│          ┌──────────────────────┐                                        │
+│          │  Drift Detection     │  KS-test + Slack webhook alerting      │
+│          │  + Cooldown Mgmt    │  + DB persistence via DriftLog          │
+│          └──────────────────────┘                                        │
+└─────────────────────────────────────────────────────────────────────────┘
            │                     │                     │
            ▼                     ▼                     ▼
     ┌──────────┐         ┌──────────┐          ┌──────────┐
     │ Streamlit│         │  FastAPI  │          │  MLflow  │
     │ Dashboard│         │  REST API │          │ Tracking │
     │ (4 pages)│         │ (5 routes)│          │ (Docker) │
+    │          │         │ Models in │          │ Port 5000│
+    │          │         │ app.state │          │          │
     └──────────┘         └──────────┘          └──────────┘
 ```
 
@@ -90,7 +99,7 @@ The LLM (Anthropic Claude) is used as a **natural-language interface over determ
 |-----------|-------------|----------|
 | **Recommendation Narrator** | Generates plain-English "why this restaurant" explanations | Template-based rules |
 | **RAG Similar-Restaurant Retrieval** | FAISS + cosine similarity for "find me more like this" | sklearn cosine similarity |
-| **Food Concierge Chat** | Tool-use chat over real `search_restaurants()`, `get_eta_estimate()`, `get_reliability_score()` | Rules-based intent matching |
+| **Food Concierge Chat** | ReAct-powered multi-step tool chain (max 4 steps) over `search_restaurants()`, `get_eta_estimate()`, `get_reliability_score()` | Rules-based intent matching |
 
 This is the same hybrid pattern used in production ML+LLM systems: **deterministic computation, conversational explanation.** The app never breaks without an API key — every LLM feature has a graceful fallback.
 
@@ -135,6 +144,20 @@ This is the centerpiece — **multiple algorithms rigorously compared with ident
 > **Winner: GradientBoosting** with MAE=5.79 min — barely edging LightGBM by 0.0008.
 > 10 architectures compared via 5-fold CV on 41,522 deliveries.
 > NeuralNet_MLP requires `skorch` — optional comparison point.
+
+### Hyperparameter Tuning (Optuna)
+
+Dabba uses **Optuna** (TPE sampler) to tune hyperparameters for ensemble models before comparison, replacing hardcoded defaults:
+
+| Model | Params Tuned | Search Space |
+|-------|-------------|--------------|
+| **XGBoost** | 9 | `n_estimators: 50-500`, `max_depth: 3-12`, `learning_rate: 0.001-0.3`, `subsample`, `colsample_bytree`, `min_child_weight`, `gamma`, `reg_lambda`, `reg_alpha` |
+| **LightGBM** | 9 | `n_estimators: 50-500`, `max_depth: 3-12`, `learning_rate: 0.001-0.3`, `num_leaves: 15-127`, `subsample`, `colsample_bytree`, `min_child_samples`, `reg_lambda`, `reg_alpha` |
+| **CatBoost** | 7 | `n_estimators: 50-500`, `max_depth: 3-10`, `learning_rate: 0.001-0.3`, `l2_leaf_reg`, `bagging_temperature`, `random_strength`, `border_count` |
+| **RandomForest** | 5 | `n_estimators: 50-500`, `max_depth: 3-30`, `min_samples_split`, `min_samples_leaf`, `max_features` |
+| **GradientBoosting** | 7 | `n_estimators: 50-500`, `max_depth: 3-12`, `learning_rate: 0.001-0.3`, `subsample`, `min_samples_split`, `min_samples_leaf`, `max_features` |
+
+Configured via `config.optuna_n_trials` (default: 50) and `config.optuna_models_to_tune`.
 
 ### Interactive Charts
 
@@ -252,14 +275,17 @@ make run-mlflow
 # Open http://localhost:5000 to view
 ```
 
-### Drift Detection
+### Drift Detection + Slack Alerting
 
 **Wired into the Ops Monitor UI** — not just present as an unused script:
 
 1. Reference distribution is built from the training data at pipeline run
 2. During simulation, each batch is compared against the reference using **KS two-sample tests** (`scipy.stats.ks_2samp`)
-3. If any feature drifts beyond the p-value threshold (default: 0.05), a **red alert banner** appears in the UI with the affected features listed
+3. If any feature drifts beyond the p-value threshold (default: 0.05), a **red alert banner** appears in the UI
 4. The **"Inject Drift" checkbox** intentionally shifts the data distribution to verify the detector fires
+5. **Slack alerting**: When drift is detected and `DABBA_SLACK_WEBHOOK_URL` is configured, a formatted message is sent to Slack via Incoming Webhook with per-feature details (p-value, KS statistic)
+6. **Cooldown management**: Alerts for the same feature are suppressed for 24 hours (configurable via `drift_alert_cooldown_hours`) to prevent notification fatigue
+7. **Database persistence**: Each drift event is logged to the `DriftLog` table (SQLite/Postgres) with the `alerted` flag tracking notification status
 
 ---
 
@@ -291,17 +317,19 @@ make run-api
 make run-mlflow
 ```
 
-### Docker
+### Docker (Per-Service Containers)
 
 ```bash
 docker-compose up --build
 ```
 
-| Service | URL |
-|---------|-----|
-| Dashboard | http://localhost:8501 |
-| API | http://localhost:8000 |
-| MLflow UI | http://localhost:5000 |
+| Service | Dockerfile | URL | Healthcheck |
+|---------|-----------|-----|-------------|
+| **Streamlit** | `docker/streamlit.Dockerfile` | http://localhost:8501 | `curl -f http://localhost:8501/` |
+| **FastAPI** | `docker/api.Dockerfile` | http://localhost:8000 | `curl -f http://localhost:8000/health` |
+| **MLflow** | `docker/mlflow.Dockerfile` | http://localhost:5000 | `curl -f http://localhost:5000/api/2.0/mlflow/experiments/list` |
+
+Each service has its own Dockerfile with independent health checks, proper startup ordering (`depends_on: condition: service_healthy`), and `restart: unless-stopped` policy.
 
 ### LLM Features (Optional)
 
@@ -320,7 +348,7 @@ Without this, all LLM features fall back to **rules-based behavior** — the app
 ## 🧪 Testing
 
 ```bash
-make test        # Run pytest with coverage (45 tests)
+make test        # Run pytest with coverage (100+ tests)
 make lint        # Run ruff, black, isort
 make format      # Auto-format code
 ```
@@ -342,6 +370,8 @@ make format      # Auto-format code
 | **API** | FastAPI, Pydantic |
 | **Experiment Tracking** | MLflow |
 | **Monitoring** | scipy.stats.ks_2samp (drift detection) |
+| **HPO** | Optuna (TPE sampler) |
+| **Alerting** | Slack Incoming Webhooks |
 | **Testing** | pytest, pytest-cov |
 | **Linting** | Ruff, Black, isort, pre-commit |
 | **CI/CD** | GitHub Actions |

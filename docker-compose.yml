@@ -13,10 +13,16 @@ services:
     environment:
       - DABBA_LOG_LEVEL=INFO
       - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
+      - DABBA_DATABASE_URL=postgresql://dabba:dabba@postgres:5432/dabba
+      - DABBA_REDIS_URL=redis://redis:6379/0
       # Uncomment to enable API key authentication:
       # - DABBA_API_KEY=${DABBA_API_KEY:-}
     depends_on:
       mlflow:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -40,6 +46,8 @@ services:
     environment:
       - DABBA_LOG_LEVEL=INFO
       - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
+      - DABBA_DATABASE_URL=postgresql://dabba:dabba@postgres:5432/dabba
+      - DABBA_REDIS_URL=redis://redis:6379/0
     depends_on:
       api:
         condition: service_healthy
@@ -71,5 +79,39 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dabba
+      POSTGRES_PASSWORD: dabba
+      POSTGRES_DB: dabba
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dabba -d dabba"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
 volumes:
   mlflow_data:
+  postgres_data:
+  redis_data:

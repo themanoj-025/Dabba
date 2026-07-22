@@ -49,7 +49,7 @@ from dabba.models.rating_model import (
 )
 from dabba.nlp.sentiment import add_sentiment_scores
 from dabba.database.session import get_db, init_db
-from dabba.database.models import Restaurant, ExperimentResult
+from dabba.database.models import Restaurant, ExperimentResult, RESTAURANT_COL_MAP
 
 logging.basicConfig(
     level=logging.INFO,
@@ -193,26 +193,7 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
     try:
         init_db(config)
         with get_db() as db:
-            # Column mapping from DataFrame columns to DB model fields
-            # Maps normalized CSV column names (after feature engineering)
-            # to the ORM model field names
-            col_map = {
-                "name": "name",
-                "rate": "rate",
-                "bayesian_rating": "bayesian_rating",
-                "cost_for_two": "cost_for_two",
-                "location": "location",
-                "cuisines": "cuisines",
-                "votes": "votes",
-                "votes_log": "votes_log",
-                "online_order": "online_order_binary",
-                "online_order_binary": "online_order_binary",
-                "book_table": "book_table_binary",
-                "book_table_binary": "book_table_binary",
-                "cuisine_count": "cuisine_count",
-                "avg_sentiment": "avg_sentiment",
-                "reliability_score": "reliability_score",
-            }
+            col_map = RESTAURANT_COL_MAP
             # Map lat/lon columns (multiple possible names)
             lat_col = next(
                 (c for c in ["restaurant_latitude", "latitude", "lat"] if c in df.columns),
@@ -428,16 +409,33 @@ def main() -> None:
         for c in df_delivery.columns
         if c
         in [
+            # Spatial
             "haversine_distance_km",
+            "city_zone",  # string → one-hot encoded by ColumnTransformer
+            # Temporal — existing but were never added to training before
+            "order_hour",
+            "day_of_week",
+            "is_weekend",
+            # Temporal — new
+            "is_rush_hour",
+            "hour_sin",
+            "hour_cos",
+            "dow_sin",
+            "dow_cos",
+            "order_hour_bucket",  # string → one-hot; fixes pre-existing bug where this was silently dropped
+            # Environmental
             "traffic_ordinal",
             "is_festival",
+            "weather_encoded",
+            # Interactions
+            "distance_traffic_interaction",
+            "distance_festival_interaction",
+            # Profile
             "delivery_person_age",
             "delivery_person_ratings",
             "vehicle_condition",
+            "delivery_person_age_bucket",  # string → one-hot
         ]
-    ]
-    eta_feature_cols += [
-        c for c in df_delivery.columns if c.startswith("order_hour_bucket_")
     ]
 
     X_eta = df_delivery[eta_feature_cols].fillna(0)

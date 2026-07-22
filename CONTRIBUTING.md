@@ -20,11 +20,12 @@ Dabba v3 is organized as follows:
 src/dabba/          # Core ML pipeline (data, features, models, LLM, monitoring, evaluation)
 app/                # Streamlit dashboard (4 pages + components + theme)
 api/                # FastAPI server (5 routes: recommend, predict-eta, chat, model-info, health)
-tests/              # 45 pytest tests
+tests/              # 100+ pytest tests (unit, integration, e2e)
 notebooks/          # 6 EDA and prototyping notebooks
 data/               # Raw + processed datasets (gitignored)
 models/             # Saved model artifacts .pkl / .pt (gitignored)
 reports/            # Comparison CSVs, charts, SHAP plots (gitignored)
+docker/             # Per-service Dockerfiles (api, streamlit, mlflow)
 ```
 
 ## Code Style

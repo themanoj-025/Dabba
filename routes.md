@@ -45,11 +45,11 @@ Dabba v4 uses **versioned API routing** under `/v1` with API key authentication 
 
 ```
 app (no auth)
-  └── GET /health
-  └── v1_router (auth + rate limit)
-       ├── POST /v1/recommend       (30/min)
-       ├── POST /v1/predict-eta     (30/min)
-       ├── POST /v1/chat            (10/min)
+  └── GET /health  [reads from app.state via request parameter]
+  └── v1_router (auth + rate limit, models via Depends DI)
+       ├── POST /v1/recommend       (30/min)  [Depends(get_recommender)]
+       ├── POST /v1/predict-eta     (30/min)  [Depends(get_eta_model)]
+       ├── POST /v1/chat            (10/min)  [Depends(get_tools)]
        └── GET  /v1/model-info      (60/min)
 ```
 
@@ -133,17 +133,36 @@ Compare with SLA threshold → is_at_risk flag
 ETAResponse schema returned
 ```
 
-### Chat Flow
+### Chat Flow (ReAct Loop)
 ```
 User types message in Food Concierge
     ↓
 POST /v1/chat → ChatRequest schema (X-API-Key required, 10/min)
     ↓
-get_concierge_response() with ConciergeTools
+ConciergeTools loaded via app.state (Depends DI, no module globals)
     ↓
-LLM or rules-based intent matching → tool calls
+LLM: ReAct loop (max 4 steps, config.llm_max_steps):
+    ├── Step 1: LLM returns tool_use call(s) + optional text
+    ├── Step 2: Execute tool(s) → tool_result fed back to conversation
+    ├── Step 3: LLM analyzes results, decides: more tools or final answer
+    └── Step 4: Final summarization (or max_steps reached)
     ↓
-search_restaurants() / get_eta_estimate() / get_reliability_score()
+Tool calls available: search_restaurants() / get_eta_estimate() / get_reliability_score()
+    ↓
+Fallback: rules-based intent matching when no API key configured
     ↓
 Formatted response with styled chat bubbles
+```
+
+### Model Loading (app.state)
+```
+api/main.py startup:
+    app.state.eta_model = eta._load_eta_model()
+    app.state.hybrid_recommender = recommend._load_hybrid_recommender()
+    app.state.concierge_tools = chat._load_concierge_tools()
+
+Router endpoints access via Depends:
+    model = Depends(get_eta_model)     # → request.app.state.eta_model
+    rec   = Depends(get_recommender)   # → request.app.state.hybrid_recommender
+    tools = Depends(get_tools)         # → request.app.state.concierge_tools
 ```

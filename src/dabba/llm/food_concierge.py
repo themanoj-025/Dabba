@@ -90,15 +90,16 @@ class ConciergeTools:
         Returns:
             Dict with predicted_minutes and is_at_risk, or None.
         """
-        if self.eta_model is None:
-            return {"predicted_minutes": 30, "is_at_risk": False, "note": "approximate"}
-
-        # Look up restaurant features (mean if not found)
+        # Check restaurant existence FIRST — never return a fake estimate
+        # for a restaurant that doesn't exist, even if no model is loaded.
         matches = self.df[
             self.df["name"].str.contains(restaurant_name, case=False, na=False)
         ]
         if matches.empty:
             return None
+
+        if self.eta_model is None:
+            return {"predicted_minutes": 30, "is_at_risk": False, "note": "approximate"}
 
         # Use restaurant-level features + mean delivery features
         # In production, this would use actual delivery data per restaurant
@@ -388,20 +389,24 @@ def _llm_concierge_response(
 # ─── Rules-based fallback concierge ─────────────────────────────────────
 
 _INTENT_PATTERNS = [
+    # Budget/cuisine keywords checked BEFORE search so "find cheap..."
+    # matches budget_search, not search.
+    (r"(?:cheap|budget|affordable|under\s+₹?\d+)", "budget_search"),
+    (r"(?:spicy|spice|hot)", "cuisine_search"),
     (
         r"(?:find|search|look|show|get|recommend|suggest)\s+(?:me\s+)?(?:some\s+)?(.+?)(?:\s+(?:in|near|at)\s+(.+))?$",
         "search",
     ),
     (
-        r"(?:how\s+long|eta|delivery\s+time|when)\s+(?:for|does|will)\s+(.+?)(?:\?)?$",
+        # Handles: "How long does [delivery from] X take?" / "ETA for X" / etc.
+        r"(?:how\s+long|eta|delivery\s+time|when)\s+(?:for|does|will)\s+(?:delivery\s+)?"
+        r"(?:from\s+)?(.+?)(?:\s+take)?(?:\?)?$",
         "eta",
     ),
     (
         r"(?:reliability|reliable|trust|score|rating)\s+(?:of|for|score)?\s*(.+?)(?:\?)?$",
         "reliability",
     ),
-    (r"(?:cheap|budget|affordable|under\s+₹?\d+)", "budget_search"),
-    (r"(?:spicy|spice|hot)", "cuisine_search"),
     (r"(?:hello|hi|hey|namaste)", "greeting"),
 ]
 
@@ -416,7 +421,12 @@ def _match_intent(user_input: str) -> Tuple[str, Dict[str, str]]:
     params: Dict[str, str] = {}
 
     for pattern, intent in _INTENT_PATTERNS:
-        match = re.match(pattern, text, re.IGNORECASE)
+        # Patterns that should match anywhere in the text use re.search;
+        # patterns that require a keyword at the start use re.match.
+        if intent in ("budget_search", "cuisine_search", "reliability"):
+            match = re.search(pattern, text, re.IGNORECASE)
+        else:
+            match = re.match(pattern, text, re.IGNORECASE)
         if match:
             groups = match.groups()
             if intent == "search" and groups[0]:

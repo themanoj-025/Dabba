@@ -33,6 +33,29 @@ class Base(DeclarativeBase):
     pass
 
 
+# ─── Shared column mapping ───────────────────────────────────────────
+# Maps processed DataFrame column names to Restaurant ORM field names.
+# Used by both seed.py and pipeline.py to avoid duplicating this dict.
+
+RESTAURANT_COL_MAP: dict[str, str] = {
+    "name": "name",
+    "rate": "rate",
+    "bayesian_rating": "bayesian_rating",
+    "cost_for_two": "cost_for_two",
+    "location": "location",
+    "cuisines": "cuisines",
+    "votes": "votes",
+    "votes_log": "votes_log",
+    "online_order": "online_order_binary",
+    "online_order_binary": "online_order_binary",
+    "book_table": "book_table_binary",
+    "book_table_binary": "book_table_binary",
+    "cuisine_count": "cuisine_count",
+    "avg_sentiment": "avg_sentiment",
+    "reliability_score": "reliability_score",
+}
+
+
 # ─── Restaurants ──────────────────────────────────────────────────────
 
 

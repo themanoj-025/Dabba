@@ -115,6 +115,29 @@ class ChatRequest(BaseModel):
     )
 
 
+class RestaurantItem(BaseModel):
+    """A single restaurant returned from the database."""
+
+    id: int
+    name: str
+    rate: Optional[float] = None
+    bayesian_rating: Optional[float] = None
+    cost_for_two: Optional[float] = None
+    location: Optional[str] = None
+    cuisines: Optional[str] = None
+    votes: Optional[int] = None
+    reliability_score: Optional[float] = None
+
+
+class RestaurantListResponse(BaseModel):
+    """Paginated list of restaurants from the database."""
+
+    restaurants: List[RestaurantItem] = []
+    total: int = 0
+    limit: int = 50
+    offset: int = 0
+
+
 class ChatResponse(BaseModel):
     """Food Concierge chat response."""
 
