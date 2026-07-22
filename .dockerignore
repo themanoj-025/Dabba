@@ -13,16 +13,6 @@ pyproject.toml
 setup_kaggle.py
 requirements.txt
 .pre-commit-config.yaml
-CONTRIBUTING.md
-memory.md
-routes.md
-architecture.md
-api-map.md
-database-map.md
-dependency-graph.md
-CHANGELOG.md
-SECURITY.md
-CODE_OF_CONDUCT.md
 
 # Large data files (downloaded at runtime)
 data/raw/
@@ -49,6 +39,10 @@ env/
 kaggle.json
 *.pem
 *.key
+
+# Database files (consistent with .gitignore)
+*.db
+*.sqlite3
 
 # IDE
 .vscode/
