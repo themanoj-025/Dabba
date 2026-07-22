@@ -48,7 +48,8 @@ kaggle.json
 .vscode/
 .idea/
 
-# Exclude other service Dockerfiles (keep entrypoint.sh for API build)
+# Exclude service Dockerfiles (keep entrypoint.sh for API build)
+docker/api.Dockerfile
 docker/streamlit.Dockerfile
 docker/mlflow.Dockerfile
 
