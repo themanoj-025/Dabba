@@ -118,6 +118,20 @@ class DabbaConfig(BaseSettings):
     drift_ks_threshold: float = 0.05  # p-value threshold for KS test
     drift_feature_sample: int = 100  # samples to use for drift detection
 
+    # --- Slack Alerting ---
+    slack_webhook_url: Optional[str] = Field(
+        default=None,
+        description="Slack Incoming Webhook URL for drift alerts",
+    )
+    slack_alert_channel: str = Field(
+        default="#dabba-drift",
+        description="Slack channel for drift notifications",
+    )
+    drift_alert_cooldown_hours: int = Field(
+        default=24,
+        description="Minimum hours between alerts for the same feature",
+    )
+
     # --- Optuna Hyperparameter Optimization ---
     optuna_enabled: bool = Field(
         default=True,
