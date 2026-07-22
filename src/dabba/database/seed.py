@@ -199,14 +199,8 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
         logger.error("Missing dependency for import: %s", e)
         return
 
-    # Clear existing data to avoid duplicates on re-run
-    clear_all(config)
-
-    # Restaurants: load → clean → feature engineer → sentiment → seed
-    logger.info("--- Restaurants ---")
-    try:
-        df_zomato = load_zomato(config)
-    except FileNotFoundError:
+    # Check that raw data exists BEFORE clearing the database
+    if not config.zomato_path.exists():
         logger.error(
             "Raw Zomato CSV not found at %s — cannot run full import.\n"
             "  Download the dataset first (see README), or use"
@@ -215,7 +209,13 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
         )
         return
 
-    df_zomato = clean_zomato(df_zomato, config)
+    # Only clear after confirming raw data exists — avoids emptying
+    # the database when the CSV is missing.
+    clear_all(config)
+
+    # Restaurants: load → clean → feature engineer → sentiment → seed
+    logger.info("--- Restaurants ---")
+    df_zomato = load_zomato(config)
     df_zomato = add_restaurant_features(df_zomato)
     df_zomato = add_sentiment_scores(df_zomato, config=config)
 
