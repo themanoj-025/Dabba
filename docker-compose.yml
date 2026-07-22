@@ -1,9 +1,9 @@
-version: "3.8"
-
 services:
   api:
-    build: .
-    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
     volumes:
@@ -15,9 +15,21 @@ services:
       - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
       # Uncomment to enable API key authentication:
       # - DABBA_API_KEY=${DABBA_API_KEY:-}
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   streamlit:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/streamlit.Dockerfile
     command: streamlit run app/streamlit_app.py --server.port 8501
     ports:
       - "8501:8501"
@@ -28,16 +40,36 @@ services:
     environment:
       - DABBA_LOG_LEVEL=INFO
       - DABBA_MLFLOW_TRACKING_URI=http://mlflow:5000
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
 
   mlflow:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/mlflow.Dockerfile
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlflow/mlruns
     ports:
       - "5000:5000"
     volumes:
       - mlflow_data:/mlflow
     environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_TRACKING_URI=http://localhost:5000
+    healthcheck:
+      # Probing the MLflow API list endpoint — more robust than the UI root
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/2.0/mlflow/experiments/list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
 
 volumes:
   mlflow_data:

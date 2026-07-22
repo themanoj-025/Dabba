@@ -51,6 +51,9 @@ kaggle.json
 .vscode/
 .idea/
 
+# Service-specific Dockerfiles (not part of any single build context)
+docker/
+
 # OS
 .DS_Store
 Thumbs.db

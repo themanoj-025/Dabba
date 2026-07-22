@@ -387,9 +387,15 @@ def tune_hyperparameters(
         best_params,
     )
 
-    # Log to MLflow
+    # Log to MLflow — start own run if none active (HPO runs before parent train run)
     try:
         import mlflow
+
+        active = mlflow.active_run()
+        if active is None:
+            hpo_run = mlflow.start_run(run_name=f"hpo_{model_name}")
+        else:
+            hpo_run = active
 
         mlflow.log_params({f"hpo_{model_name}_{k}": v for k, v in best_params.items()})
         mlflow.log_metrics(
@@ -399,6 +405,9 @@ def tune_hyperparameters(
                 f"hpo_{model_name}_n_trials": n_trials,
             }
         )
+
+        if active is None:
+            mlflow.end_run()
     except Exception:
         pass
 
@@ -500,12 +509,6 @@ def tune_all_models(
             config=config,
         )
         tuned_models[model_name] = tuned
-
-        if tuned is None:
-            logger.warning(
-                "⚠️  Tuning for %s returned None — defaults will be used",
-                model_name,
-            )
 
     return tuned_models
 

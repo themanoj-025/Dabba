@@ -98,7 +98,8 @@ def get_tuned_rating_models(
         Dict mapping model name to (possibly tuned) regressor instance.
         Falls back to default models for any that fail tuning.
     """
-    config = config or DabbaConfig()
+    from dabba.config import get_config as _get_config
+    config = config or _get_config()
 
     # Start with defaults
     models = get_rating_models()

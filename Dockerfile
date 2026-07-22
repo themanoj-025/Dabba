@@ -1,3 +1,12 @@
+# ─── Legacy combined Dockerfile ─────────────────────────────────────
+# This file is retained for backward compatibility.
+# The project now uses per-service Dockerfiles in docker/
+#   - docker/api.Dockerfile
+#   - docker/streamlit.Dockerfile
+#   - docker/mlflow.Dockerfile
+#
+# See docker-compose.yml for the recommended way to run all services.
+
 FROM python:3.11-slim
 
 WORKDIR /app
