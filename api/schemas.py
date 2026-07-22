@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class HealthResponse(BaseModel):
@@ -22,15 +22,22 @@ class RecommendRequest(BaseModel):
     """Restaurant recommendation request."""
 
     cuisine: Optional[str] = Field(None, description="Preferred cuisine")
-    budget: Optional[float] = Field(None, description="Max cost for two (INR)")
+    budget: Optional[float] = Field(None, ge=0, description="Max cost for two (INR)")
     area: Optional[str] = Field(None, description="Area/neighborhood")
-    top_n: int = Field(5, description="Number of recommendations")
+    top_n: int = Field(5, ge=1, le=50, description="Number of recommendations")
     prioritize: Optional[str] = Field(
         "balanced", description="'balanced', 'speed', or 'quality'"
     )
     use_llm_narration: bool = Field(
         False, description="Generate LLM-powered explanation"
     )
+
+    @field_validator("prioritize")
+    @classmethod
+    def validate_prioritize(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v not in ("balanced", "speed", "quality"):
+            raise ValueError("prioritize must be 'balanced', 'speed', or 'quality'")
+        return v
 
 
 class Recommendation(BaseModel):
@@ -57,17 +64,21 @@ class RecommendResponse(BaseModel):
 class ETARequest(BaseModel):
     """Delivery ETA prediction request."""
 
-    distance_km: float = Field(..., description="Haversine distance in km")
-    traffic_level: int = Field(1, description="Traffic density (0=Low, 3=Jam)")
+    distance_km: float = Field(
+        ..., gt=0, le=100, description="Haversine distance in km (0-100)"
+    )
+    traffic_level: int = Field(
+        1, ge=0, le=3, description="Traffic density (0=Low, 1=Medium, 2=High, 3=Jam)"
+    )
     is_festival: bool = Field(False, description="Whether it's a festival day")
     delivery_person_age: Optional[float] = Field(
-        None, description="Delivery person age"
+        None, ge=18, le=70, description="Delivery person age (18-70)"
     )
     delivery_person_rating: Optional[float] = Field(
-        None, description="Delivery person rating"
+        None, ge=1.0, le=5.0, description="Delivery person rating (1.0-5.0)"
     )
     vehicle_condition: Optional[int] = Field(
-        None, description="Vehicle condition score"
+        None, ge=0, le=3, description="Vehicle condition score (0-3)"
     )
 
 
@@ -85,11 +96,20 @@ class ChatMessage(BaseModel):
     role: str = Field(..., description="'user' or 'assistant'")
     content: str = Field(..., description="Message content")
 
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: str) -> str:
+        if v not in ("user", "assistant"):
+            raise ValueError("role must be 'user' or 'assistant'")
+        return v
+
 
 class ChatRequest(BaseModel):
     """Food Concierge chat request."""
 
-    message: str = Field(..., description="User's message")
+    message: str = Field(
+        ..., min_length=1, max_length=2000, description="User's message (1-2000 chars)"
+    )
     history: Optional[List[ChatMessage]] = Field(
         default_factory=list, description="Conversation history"
     )

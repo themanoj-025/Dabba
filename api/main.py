@@ -1,11 +1,11 @@
 """FastAPI application v3 — Dabba ML endpoints.
 
 Routers:
-    POST /recommend       — hybrid restaurant recommendations
-    POST /predict-eta      — delivery ETA prediction
-    POST /chat              — food concierge chat
-    GET  /model-info        — deployed model info
-    GET  /health            — health check
+    POST /v1/recommend       — hybrid restaurant recommendations
+    POST /v1/predict-eta      — delivery ETA prediction
+    POST /v1/chat              — food concierge chat
+    GET  /v1/model-info        — deployed model info
+    GET  /health               — health check
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="Dabba API",
     description="India-focused restaurant recommendation and delivery ETA API",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 # ─── CORS ────────────────────────────────────────────────────────────
@@ -78,10 +78,14 @@ async def startup() -> None:
     recommend.load_recommender()
     chat.load_concierge_tools()
 
-    logger.info("Dabba API v0.2.0 started")
+    logger.info("Dabba API v0.3.0 started")
 
 
 @app.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    """Health check endpoint."""
-    return HealthResponse(status="ok")
+    """Health check endpoint — reports model load status."""
+    return HealthResponse(
+        status="ok",
+        rating_model_loaded=recommend._hybrid_recommender is not None,
+        eta_model_loaded=eta._eta_model is not None,
+    )
