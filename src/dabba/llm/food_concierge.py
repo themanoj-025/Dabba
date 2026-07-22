@@ -1,13 +1,26 @@
 """Food Concierge Copilot — a natural-language chat interface for
-restaurant discovery.
+restaurant discovery with a ReAct tool-use loop.
 
-ARCHITECTURE: LLM as a natural-language interface over deterministic
-ML/business logic. The LLM receives tool definitions it can call
-(search_restaurants, get_eta_estimate, get_reliability_score) and
-returns computed answers, not hallucinations.
+ARCHITECTURE:
+    Multi-step ReAct agent (max 4 steps, configurable via
+    ``DabbaConfig.llm_max_steps``). The LLM receives tool definitions
+    it can call (search_restaurants, get_eta_estimate,
+    get_reliability_score), and tool results are fed back into the
+    conversation so the LLM can reason over them and decide whether
+    to call more tools or give a final answer.
 
-FALLBACK: Rules-based intent matching when the LLM is unavailable —
-the app never breaks without a key.
+FLOW (per user message):
+    1. Send conversation + user input (+ tool results from previous
+       step) to Claude with tool definitions
+    2. Claude returns text blocks (accumulated into final answer)
+       and/or tool_use blocks
+    3. If tool_use → execute tool → add tool_result to conversation
+       → loop back to step 1 (max N steps)
+    4. If no tool_use → break, return accumulated text
+
+FALLBACK:
+    Rules-based intent matching when the LLM is unavailable —
+    the app never breaks without a key.
 """
 
 from __future__ import annotations
@@ -114,7 +127,71 @@ class ConciergeTools:
         return float(matches.iloc[0].get("reliability_score", 0.5))
 
 
-# ─── LLM-powered concierge ──────────────────────────────────────────────
+# ─── Tool execution helpers ──────────────────────────────────────────
+
+
+def _execute_tool(tool_name: str, tool_input: Dict[str, Any], tools: ConciergeTools) -> str:
+    """Execute a concierge tool and format the result as structured text for the LLM.
+
+    The returned string is passed back to the LLM as a ``tool_result``
+    content block, so it should be structured for machine reading
+    (the LLM will rephrase it naturally).
+
+    Args:
+        tool_name: Name of the tool to execute.
+        tool_input: Arguments dict for the tool.
+        tools: ConciergeTools instance with data and models.
+
+    Returns:
+        Structured text result for the LLM to consume.
+    """
+    if tool_name == "search_restaurants":
+        results = tools.search_restaurants(**tool_input)
+        if not results:
+            return "No restaurants found matching the criteria."
+        lines = [f"Found {len(results)} restaurants:"]
+        for r in results[:10]:
+            name = r.get("name", "Unknown")
+            rating = r.get("rate", "N/A")
+            cost = r.get("cost_for_two", "N/A")
+            cuisines = r.get("cuisines", "")
+            location = r.get("location", "")
+            lines.append(
+                f"- {name} | Rating: {rating}/5 | ₹{cost} | {cuisines} | {location}"
+            )
+        return "\n".join(lines)
+
+    elif tool_name == "get_eta_estimate":
+        result = tools.get_eta_estimate(**tool_input)
+        if result is None:
+            return (
+                f"Restaurant '{tool_input.get('restaurant_name', '')}' not found."
+            )
+        risk = "at risk of exceeding SLA" if result.get("is_at_risk") else "on track"
+        note = result.get("note", "")
+        eta = result.get("predicted_minutes", "?")
+        return (
+            f"ETA for {tool_input.get('restaurant_name', '')}: "
+            f"~{eta} min ({risk}). {note}"
+        )
+
+    elif tool_name == "get_reliability_score":
+        score = tools.get_reliability_score(**tool_input)
+        if score is None:
+            return (
+                f"Reliability data not found for "
+                f"'{tool_input.get('restaurant_name', '')}'."
+            )
+        return (
+            f"Reliability score for {tool_input.get('restaurant_name', '')}: "
+            f"{score:.2f}/1.0"
+        )
+
+    logger.warning("Unknown tool called: %s", tool_name)
+    return f"Error: unknown tool '{tool_name}'."
+
+
+# ─── LLM-powered concierge (ReAct loop) ─────────────────────────────
 
 _anthropic_client = None
 
@@ -186,60 +263,126 @@ def _llm_concierge_response(
     tools: ConciergeTools,
     config: DabbaConfig,
 ) -> Optional[str]:
-    """Generate a concierge response using Anthropic Claude with tool-use."""
+    """Generate a concierge response using Anthropic Claude with a ReAct tool loop.
+
+    The ReAct loop works as follows:
+
+        1. Send the accumulated conversation (including any tool results
+           from previous steps) to Claude with tool definitions.
+        2. Claude returns ``text`` blocks (accumulated into final answer)
+           and/or ``tool_use`` blocks.
+        3. If any ``tool_use`` → execute each tool → add a ``tool_result``
+           content block to the conversation → loop back to step 1.
+        4. If no ``tool_use`` → break, return accumulated text.
+
+    The loop runs at most ``config.llm_max_steps`` iterations.
+
+    Args:
+        messages: Conversation history as list of
+            ``{"role": str, "content": str}`` dicts.
+        tools: ConciergeTools instance with restaurant data.
+        config: Project configuration.
+
+    Returns:
+        The final response text, or ``None`` if the LLM call completely
+        failed (triggers fallback in caller).
+    """
     client = _get_llm_client(config)
     if client is None:
         return None
 
-    # Build the system prompt
     system_prompt = (
         "You are Dabba's Food Concierge — a friendly, knowledgeable assistant "
         "for discovering restaurants in Bangalore. You have access to tools "
         "for searching restaurants, checking delivery ETAs, and getting "
-        "reliability scores. Be concise, helpful, and enthusiastic about food. "
-        "When you use a tool, explain what you found in natural language."
+        "reliability scores. Be concise, helpful, and enthusiastic about food.\n\n"
+        "You can use MULTIPLE tools in sequence to answer complex questions. "
+        "For example: first search for restaurants, then check the ETA and "
+        "reliability of the top result. After you receive tool results, "
+        "summarise them naturally for the user.\n\n"
+        "When you use a tool, explain what you found. If the user's request "
+        "needs multiple pieces of information, use the tools one at a time."
     )
 
-    # Convert messages to Anthropic format
-    anthropic_messages = []
+    # Build initial Anthropic messages from conversation history
+    anthropic_messages: List[Dict[str, Any]] = []
     for msg in messages:
         role = "user" if msg["role"] == "user" else "assistant"
         anthropic_messages.append({"role": role, "content": msg["content"]})
 
-    try:
-        response = client.messages.create(
-            model=config.llm_model,
-            max_tokens=config.llm_max_tokens,
-            system=system_prompt,
-            messages=anthropic_messages,
-            tools=TOOL_DEFINITIONS,
-        )
+    max_steps = config.llm_max_steps
+    final_text_parts: List[str] = []
 
-        # Process response and tool calls
-        final_text = ""
+    for step in range(1, max_steps + 1):
+        logger.debug("Concierge ReAct step %d/%d", step, max_steps)
+
+        try:
+            response = client.messages.create(
+                model=config.llm_model,
+                max_tokens=config.llm_max_tokens,
+                system=system_prompt,
+                messages=anthropic_messages,
+                tools=TOOL_DEFINITIONS,
+            )
+        except Exception as e:
+            logger.warning("LLM call failed at ReAct step %d: %s", step, e)
+            break
+
+        # Collect assistant content blocks (text + tool_use)
+        assistant_content: List[Dict[str, Any]] = []
+        tool_calls: List[Any] = []
+        has_tool_use = False
+
         for block in response.content:
             if block.type == "text":
-                final_text += block.text
+                final_text_parts.append(block.text)
+                assistant_content.append({"type": "text", "text": block.text})
             elif block.type == "tool_use":
-                tool_name = block.name
-                tool_input = block.input
-                if tool_name == "search_restaurants":
-                    results = tools.search_restaurants(**tool_input)
-                    final_text += f"\n\n_I found {len(results)} restaurants matching your criteria._"
-                elif tool_name == "get_eta_estimate":
-                    result = tools.get_eta_estimate(**tool_input)
-                    if result:
-                        final_text += f"\n\n_Estimated delivery: ~{result.get('predicted_minutes', '?')} min._"
-                elif tool_name == "get_reliability_score":
-                    score = tools.get_reliability_score(**tool_input)
-                    if score is not None:
-                        final_text += f"\n\n_Reliability score: {score:.2f}/1.0._"
+                has_tool_use = True
+                assistant_content.append(
+                    {
+                        "type": "tool_use",
+                        "id": block.id,
+                        "name": block.name,
+                        "input": block.input,
+                    }
+                )
+                tool_calls.append(block)
 
-        return final_text.strip()
+        # Add the assistant's response (text + tool_use blocks) to conversation
+        if assistant_content:
+            anthropic_messages.append(
+                {"role": "assistant", "content": assistant_content}
+            )
 
-    except Exception as e:
-        logger.warning("LLM concierge failed: %s", e)
+        # If no tool was used, this is the final answer — break
+        if not has_tool_use:
+            break
+
+        # Execute each tool and add tool_result content blocks
+        tool_results: List[Dict[str, Any]] = []
+        for block in tool_calls:
+            result_text = _execute_tool(block.name, block.input, tools)
+            tool_results.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": result_text,
+                }
+            )
+
+        # Tool results are sent as a user message with tool_result blocks
+        anthropic_messages.append({"role": "user", "content": tool_results})
+
+        if step >= max_steps:
+            logger.info(
+                "Reached max ReAct steps (%d) for concierge", max_steps
+            )
+
+    if not final_text_parts:
         return None
+
+    return "\n".join(final_text_parts).strip()
 
 
 # ─── Rules-based fallback concierge ─────────────────────────────────────
