@@ -82,15 +82,14 @@ def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
 
     config = config or get_config()
 
+    # Convert to dicts INSIDE the session to avoid DetachedInstanceError
+    # (ORM objects lose their session binding after the context manager exits).
     with get_db() as db:
         if count_restaurants(db) == 0:
             raise ValueError("No restaurants found in database — run seed first")
 
         restaurants = get_all_restaurants(db, limit=10000)
-
-    records = []
-    for r in restaurants:
-        records.append(
+        records = [
             {
                 "name": r.name,
                 "rate": r.rate,
@@ -108,7 +107,8 @@ def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
                 "latitude": r.latitude,
                 "longitude": r.longitude,
             }
-        )
+            for r in restaurants
+        ]
 
     df = pd.DataFrame(records)
     logger.info(
@@ -182,17 +182,13 @@ def load_delivery_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
 
     config = config or get_config()
 
+    # Convert to dicts INSIDE the session to avoid DetachedInstanceError
     with get_db() as db:
         orders = get_all_orders(db, limit=50000)
+        if not orders:
+            raise ValueError("No orders found in database — run seed first")
 
-    if not orders:
-        raise ValueError("No orders found in database — run seed first")
-
-    records = []
-    for o in orders:
-        # actual_eta may be None for newly-seeded orders without outcomes
-        time_taken = o.actual_eta if o.actual_eta is not None else o.predicted_eta
-        records.append(
+        records = [
             {
                 "haversine_distance_km": o.distance_km,
                 "traffic_ordinal": o.traffic_level,
@@ -200,10 +196,12 @@ def load_delivery_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
                 "delivery_person_age": o.delivery_person_age,
                 "delivery_person_ratings": o.delivery_person_rating,
                 "vehicle_condition": o.vehicle_condition,
-                "time_taken_min": time_taken,
+                # actual_eta may be None for newly-seeded orders without outcomes
+                "time_taken_min": o.actual_eta if o.actual_eta is not None else o.predicted_eta,
                 "predicted_eta": o.predicted_eta,
             }
-        )
+            for o in orders
+        ]
 
     df = pd.DataFrame(records)
     logger.info(
