@@ -18,7 +18,7 @@
 | Service | Link | Notes |
 |---------|------|-------|
 | **Streamlit Dashboard** | [dabba.streamlit.app](https://themanoj-025-dabba.streamlit.app) | Full UI — Discover, Ops Monitor, Model Perf, Food Concierge |
-| **FastAPI** | [dabba-api.onrender.com](https://themanoj-025-dabba-api.onrender.com) | REST API — recommend, predict-eta, chat, model-info |
+| **FastAPI** | [dabba-api.onrender.com](https://themanoj-025-dabba-api.onrender.com) | REST API — 8 endpoints (recommend, predict-eta, chat, model-info, restaurants CRUD) |
 | **MLflow UI** | `http://localhost:5000` (docker-compose) | Experiment tracking |
 
 > ⚡ **Note:** If using a free-tier host, there may be a 10–30 second cold-start delay on first request after inactivity.
@@ -85,7 +85,7 @@ Kaggle Datasets (Zomato + Delivery)
     ┌──────────┐         ┌──────────┐          ┌──────────┐
     │ Streamlit│         │  FastAPI  │          │  MLflow  │
     │ Dashboard│         │  REST API │          │ Tracking │
-    │ (4 pages)│         │ (5 routes)│          │ (Docker) │
+    │ (4 pages)│         │ (8 routes)│          │ (Docker) │
     │          │         │ Models in │          │ Port 5000│
     │          │         │ app.state │          │          │
     └──────────┘         └──────────┘          └──────────┘
@@ -351,6 +351,12 @@ Without this, all LLM features fall back to **rules-based behavior** — the app
 make test        # Run pytest with coverage (100+ tests)
 make lint        # Run ruff, black, isort
 make format      # Auto-format code
+
+# Database operations
+make db-import       # Full CSV→DB import
+make db-migrate      # Run Alembic migrations
+make db-rollback     # Rollback last migration
+make db-history      # Show migration history
 ```
 
 ---
@@ -396,12 +402,26 @@ make format      # Auto-format code
 
 ## 📋 What I'd Do Next
 
+### 🔴 High Priority
+- **Fix ETA endpoint feature mismatch** — the `POST /v1/predict-eta` route sends only 6 features but the model was trained on ~20+ features (cyclical encoding, rush hour, interaction features). The feature sets need to be aligned.
+- **Fill the concierge ETA stub** — `ConciergeTools.get_eta_estimate()` returns a hardcoded 30-min estimate instead of using the loaded ETA model
 - **Real user-interaction data** instead of synthetic for collaborative filtering
 - **Real-time traffic API integration** (Google Maps, OSRM) for dynamic ETA
+
+### 🟡 Medium Priority
+- **Add missing unit tests** — `recommendation_narrator.py`, `rag_similar_restaurants.py`, `optimizer.py`, `cache/redis_client.py`, evaluation modules, and Streamlit pages all lack dedicated test coverage
 - **Fine-tuned small model** instead of API calls for the narrator at scale (e.g., fine-tuned BART or T5)
 - **Multi-city expansion** beyond Bangalore
-- **Mobile app** with React Native for on-the-go recommendations
 - **A/B testing framework** for recommendation algorithm variants in production
+- **Hindi/English code-switched sentiment** — VADER is English-only
+- **Production hardening** — dedicated test DB, secrets management, structured logging, Prometheus metrics
+
+### 🔵 Low Priority
+- **Mobile app** with React Native for on-the-go recommendations
+- **Add `/v1/explain/{prediction_id}`** endpoint (schema already exists in `models.py`)
+- **Model auto-retraining** — CI/CD-triggered retraining pipeline
+- **PWA support** for Streamlit dashboard
+- **Kubernetes manifests** for zero-downtime deployment
 
 ---
 

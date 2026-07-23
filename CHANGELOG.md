@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Comprehensive project analysis**: Full inventory of all ~60 modules across data pipeline,
+  ML models, LLM layer, API, dashboard, testing, CI/CD, and documentation
+- **Gaps/remaining work documentation**: Detailed 3-tier priority list (High/Medium/Low)
+  with 20+ actionable items documented across all markdown files
+- **Doc consistency audit**: All 8 markdown files (`README.md`, `architecture.md`, `api-map.md`,
+  `database-map.md`, `dependency-graph.md`, `routes.md`, `memory.md`, `CHANGELOG.md`)
+  updated to reflect v0.4.0 project state with consistent version numbers, route counts,
+  test counts, and architecture descriptions
 - **CSV→Postgres migration path**: `python -m dabba.database.seed --full-import` runs the
   complete pipeline (load raw CSV → clean → feature engineer → sentiment → seed to DB)
 - **Database-backed data loaders**: `load_zomato_from_db()` and `load_delivery_from_db()`
