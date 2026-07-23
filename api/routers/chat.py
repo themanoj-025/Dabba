@@ -3,6 +3,9 @@
 Tools (ConciergeTools) are loaded at app startup and stored in
 ``app.state``, then injected via FastAPI ``Depends()`` —
 no module-level globals.
+
+Data is loaded from the database via repositories (not CSVs) — the
+CSV→DB migration ensures the serving path never reads raw CSV files.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.config import get_config
+from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.food_concierge import ConciergeTools, get_concierge_response
 from api.schemas import ChatRequest, ChatResponse
 
@@ -28,13 +32,13 @@ config = get_config()
 def _load_concierge_tools(
     eta_model: Any = None,
 ) -> Optional[ConciergeTools]:
-    """Build and return ConciergeTools from processed data.
+    """Build and return ConciergeTools from the database.
 
-    Called once at app startup by ``api.main``. Passes the loaded
-    ETA model so the concierge's ``get_eta_estimate()`` can make
-    real predictions instead of returning a hardcoded stub.
+    Called once at app startup by ``api.main``. Uses the repository
+    layer to read restaurant data from Postgres/SQLite (not CSVs)
+    and passes it to ConciergeTools for search/ETA/reliability tools.
 
-    Returns an empty ConciergeTools if data hasn't been generated yet.
+    Returns an empty ConciergeTools if the database has no data yet.
 
     Args:
         eta_model: The loaded ETA model pipeline (optional).
@@ -42,15 +46,22 @@ def _load_concierge_tools(
     Returns:
         ConciergeTools instance (never None — uses empty DF as fallback).
     """
-    data_path = config.data_processed_dir / "restaurants_processed.csv"
-    if not data_path.exists():
-        logger.warning("Processed data not found for concierge")
+    from dabba.database.session import get_db
+
+    try:
+        with get_db() as db:
+            df = get_all_restaurants_as_df(db, with_cuisine_features=False)
+    except Exception as e:
+        logger.warning("Failed to load restaurant data from DB: %s", e)
+        df = pd.DataFrame()
+
+    if df.empty:
+        logger.warning("No restaurant data found in database for concierge")
         return ConciergeTools(pd.DataFrame(), eta_model=eta_model, config=config)
 
-    df = pd.read_csv(data_path)
     tools = ConciergeTools(df, eta_model=eta_model, config=config)
     logger.info(
-        "Concierge tools loaded with %d restaurants (ETA model: %s)",
+        "Concierge tools loaded from DB with %d restaurants (ETA model: %s)",
         len(df),
         "loaded" if eta_model is not None else "missing",
     )

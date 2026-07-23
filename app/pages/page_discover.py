@@ -4,7 +4,6 @@ LLM narration, "Find Similar" button, and prioritize toggle.
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -12,6 +11,7 @@ import streamlit as st
 
 from app.components.restaurant_card import render_restaurant_card
 from dabba.config import get_config
+from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.llm.rag_similar_restaurants import (
     build_restaurant_embeddings,
@@ -96,10 +96,10 @@ def show() -> None:
             key=f"{PAGE_NAME}_llm",
         )
 
-    # ─── Load data ────────────────────────────────────────────────
+    # ─── Load data from database ──────────────────────────────────
     df = _load_data()
-    if df is None:
-        st.warning("⚠️ Processed data not found. Run `make train` first.")
+    if df is None or df.empty:
+        st.warning("⚠️ Restaurant data not found. Run `make train` first.")
         return
 
     # ─── Build recommender ────────────────────────────────────────
@@ -216,10 +216,18 @@ def show() -> None:
         )
 
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def _load_data() -> Optional[pd.DataFrame]:
-    """Load processed restaurant data with caching."""
-    data_path = Path("data/processed/restaurants_processed.csv")
-    if data_path.exists():
-        return pd.read_csv(data_path)
-    return None
+    """Load restaurant data from the database with Streamlit caching.
+
+    Uses the repository layer to read from Postgres/SQLite instead of
+    reading CSVs directly. Cached for 5 minutes to avoid DB hammering.
+    """
+    try:
+        from dabba.database.session import get_db
+
+        with get_db() as db:
+            return get_all_restaurants_as_df(db, with_cuisine_features=True)
+    except Exception as e:
+        st.warning(f"Could not load restaurant data from database: {e}")
+        return None
