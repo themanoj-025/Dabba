@@ -308,3 +308,113 @@ def add_delivery_features(
 
     logger.info("Delivery features complete — output shape: %s", df.shape)
     return df.reset_index(drop=True)
+
+
+# ─── Feature builder for API requests ─────────────────────────────────
+
+def build_eta_features_for_api(
+    *,
+    distance_km: float,
+    traffic_level: int = 1,
+    is_festival: bool = False,
+    delivery_person_age: float = 30.0,
+    delivery_person_rating: float = 4.0,
+    vehicle_condition: int = 1,
+    order_hour: Optional[int] = None,
+    day_of_week: Optional[int] = None,
+    weather_encoded: int = 1,
+    city_zone: str = "unknown",
+    config: Optional[DabbaConfig] = None,
+) -> pd.DataFrame:
+    """Build the full ETA feature vector from API-level inputs.
+
+    Constructs all features that the winning ETA model expects
+    (including derived temporal, interaction, and categorical features)
+    from the limited set of fields available via API requests.
+
+    Temporal fields (``order_hour``, ``day_of_week``) default to the
+    current time if not provided, so the API works without requiring
+    the caller to specify them.
+
+    Args:
+        distance_km: Haversine distance in km.
+        traffic_level: Traffic ordinal (0=Low, 1=Medium, 2=High, 3=Jam).
+        is_festival: Whether it's a festival day.
+        delivery_person_age: Delivery person age.
+        delivery_person_rating: Delivery person rating (1-5).
+        vehicle_condition: Vehicle condition score (0-3).
+        order_hour: Hour of day (0-23). If None, uses current hour.
+        day_of_week: Day of week (0=Monday, 6=Sunday). If None, uses today.
+        weather_encoded: Weather ordinal (0=sunny, 1=cloudy, ..., 4=stormy).
+        city_zone: Bangalore zone string.
+        config: Project configuration.
+
+    Returns:
+        pd.DataFrame: Single-row DataFrame with all model-required columns.
+    """
+    config = config or get_config()
+    import datetime
+
+    now = datetime.datetime.now()
+    hour = order_hour if order_hour is not None else now.hour
+    dow = day_of_week if day_of_week is not None else now.weekday()
+
+    hour_sin, hour_cos = cyclical_encode(np.array([hour]), period=24)
+    dow_sin, dow_cos = cyclical_encode(np.array([dow]), period=7)
+
+    is_festival_int = int(is_festival)
+    festival_flag = 1 if is_festival else 0  # For interaction
+
+    data = {
+        "haversine_distance_km": distance_km,
+        "city_zone": city_zone,
+        "order_hour": hour,
+        "day_of_week": dow,
+        "is_weekend": 1 if dow >= 5 else 0,
+        "is_rush_hour": 1 if hour in {8, 9, 10, 13, 14, 18, 19, 20} else 0,
+        "hour_sin": float(hour_sin[0]),
+        "hour_cos": float(hour_cos[0]),
+        "dow_sin": float(dow_sin[0]),
+        "dow_cos": float(dow_cos[0]),
+        "order_hour_bucket": _hour_bucket(hour),
+        "traffic_ordinal": traffic_level,
+        "is_festival": is_festival_int,
+        "weather_encoded": weather_encoded,
+        "distance_traffic_interaction": distance_km * (traffic_level + 1),
+        "distance_festival_interaction": distance_km * festival_flag,
+        "delivery_person_age": delivery_person_age,
+        "delivery_person_ratings": delivery_person_rating,
+        "vehicle_condition": vehicle_condition,
+        "delivery_person_age_bucket": _age_bucket(delivery_person_age),
+    }
+
+    return pd.DataFrame([data])
+
+
+ETA_FEATURE_COLS: list[str] = [
+    # Spatial
+    "haversine_distance_km",
+    "city_zone",  # string → one-hot encoded by ColumnTransformer
+    # Temporal
+    "order_hour",
+    "day_of_week",
+    "is_weekend",
+    "is_rush_hour",
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "order_hour_bucket",  # string → one-hot
+    # Environmental
+    "traffic_ordinal",
+    "is_festival",
+    "weather_encoded",
+    # Interactions
+    "distance_traffic_interaction",
+    "distance_festival_interaction",
+    # Profile
+    "delivery_person_age",
+    "delivery_person_ratings",
+    "vehicle_condition",
+    "delivery_person_age_bucket",  # string → one-hot
+]
