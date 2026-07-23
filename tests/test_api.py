@@ -5,6 +5,7 @@ endpoints. When DABBA_API_KEY is not set, auth is skipped in dev mode.
 """
 
 import os
+from pathlib import Path
 from typing import Dict
 
 import pytest

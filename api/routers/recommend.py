@@ -14,7 +14,6 @@ from typing import List, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
