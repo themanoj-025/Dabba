@@ -193,3 +193,106 @@ class TestAuthBehavior:
         if response.status_code == 200:
             data = response.json()
             assert "rating_model" in data
+
+
+# ─── CSV-read prohibition tests (P0 migration) ───────────────────────
+
+
+@pytest.mark.parametrize(
+    "rel_path",
+    [
+        "api/routers/model_info.py",
+        "api/routers/recommend.py",
+        "api/routers/chat.py",
+    ],
+)
+def test_api_routers_no_csv_reads(rel_path: str) -> None:
+    """Assert that API routers do not import pd.read_csv directly.
+
+    After the CSV→DB migration, the serving path should read from
+    the database, not from CSV files. CSV reads are only allowed in
+    ``database/seed.py`` (the import pipeline).
+    """
+    import ast
+
+    root = Path(__file__).resolve().parent.parent
+    file_path = root / rel_path
+    if not file_path.exists():
+        pytest.skip(f"{rel_path} not found")
+
+    with open(file_path) as f:
+        source = f.read()
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        pytest.skip(f"Cannot parse {rel_path}")
+
+    violations = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Attribute):
+                if node.func.attr == "read_csv":
+                    if isinstance(node.func.value, ast.Name) and node.func.value.id in (
+                        "pd",
+                        "pandas",
+                    ):
+                        violations.append(
+                            f"  Line {node.lineno}: direct pd.read_csv() call"
+                        )
+
+    assert not violations, (
+        f"{rel_path} still contains pd.read_csv() calls:\n"
+        + "\n".join(violations)
+        + "\nMigrate to repository functions (database/repositories.py)."
+    )
+
+
+@pytest.mark.parametrize(
+    "rel_path",
+    [
+        "app/pages/page_discover.py",
+        "app/pages/page_model_performance.py",
+        "app/pages/page_ops.py",
+        "app/pages/page_concierge.py",
+    ],
+)
+def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
+    """Assert that Streamlit pages do not import pd.read_csv directly.
+
+    After the CSV→DB migration, Streamlit pages should read from
+    the database via repository functions, not from CSV files.
+    """
+    import ast
+
+    root = Path(__file__).resolve().parent.parent
+    file_path = root / rel_path
+    if not file_path.exists():
+        pytest.skip(f"{rel_path} not found")
+
+    with open(file_path) as f:
+        source = f.read()
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        pytest.skip(f"Cannot parse {rel_path}")
+
+    violations = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Attribute):
+                if node.func.attr == "read_csv":
+                    if isinstance(node.func.value, ast.Name) and node.func.value.id in (
+                        "pd",
+                        "pandas",
+                    ):
+                        violations.append(
+                            f"  Line {node.lineno}: direct pd.read_csv() call"
+                        )
+
+    assert not violations, (
+        f"{rel_path} still contains pd.read_csv() calls:\n"
+        + "\n".join(violations)
+        + "\nMigrate to repository functions (database/repositories.py)."
+    )
