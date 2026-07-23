@@ -2,6 +2,9 @@
 
 Models are loaded at app startup and stored in ``app.state``,
 then injected via FastAPI ``Depends()`` — no module-level globals.
+
+Data is loaded from the database via repositories (not CSVs) — the
+CSV→DB migration ensures the serving path never reads raw CSV files.
 """
 
 from __future__ import annotations
@@ -11,10 +14,12 @@ from typing import List, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
 from dabba.config import get_config
+from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.models.hybrid_recommender import HybridRecommender
 from api.schemas import RecommendRequest, RecommendResponse, Recommendation
@@ -27,20 +32,28 @@ config = get_config()
 
 
 def _load_hybrid_recommender() -> Optional[HybridRecommender]:
-    """Build and return the hybrid recommender from processed data.
+    """Build and return the hybrid recommender from the database.
 
-    Called once at app startup by ``api.main``. Returns ``None`` if
-    the processed restaurant data hasn't been generated yet.
+    Called once at app startup by ``api.main``. Uses the repository
+    layer to read restaurant data from Postgres/SQLite (not CSVs)
+    and builds feature columns with cuisine one-hot encoding.
 
     Returns:
-        HybridRecommender instance, or None.
+        HybridRecommender instance, or None if DB has no data.
     """
-    data_path = config.data_processed_dir / "restaurants_processed.csv"
-    if not data_path.exists():
-        logger.warning("Processed data not found at %s", data_path)
+    from dabba.database.session import get_db
+
+    try:
+        with get_db() as db:
+            df = get_all_restaurants_as_df(db, with_cuisine_features=True)
+    except Exception as e:
+        logger.warning("Failed to load restaurant data from DB: %s", e)
         return None
 
-    df = pd.read_csv(data_path)
+    if df.empty:
+        logger.warning("No restaurant data found in database")
+        return None
+
     feature_cols = [c for c in df.columns if c.startswith("cuisine_")]
     feature_cols += [
         c
@@ -56,7 +69,7 @@ def _load_hybrid_recommender() -> Optional[HybridRecommender]:
     ]
 
     recommender = HybridRecommender(df, feature_cols, config=config)
-    logger.info("Hybrid recommender loaded with %d restaurants", len(df))
+    logger.info("Hybrid recommender loaded from DB with %d restaurants", len(df))
     return recommender
 
 
