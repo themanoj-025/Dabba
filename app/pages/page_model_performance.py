@@ -1,5 +1,8 @@
 """Page 3: Model Performance — interactive Plotly charts, comparison
 tables, SHAP plots, and delivery-optimizer visualization.
+
+Data is loaded from the database via repositories (not CSVs),
+completing the CSV→DB migration for the Streamlit dashboard.
 """
 
 from __future__ import annotations
@@ -12,6 +15,8 @@ import plotly.express as px
 import plotly.io as pio
 import streamlit as st
 
+from dabba.database.repositories import get_all_experiment_results
+
 PAGE_NAME = "model"
 
 
@@ -23,16 +28,12 @@ def show() -> None:
         "Charts update automatically when models are retrained."
     )
 
-    # ─── Paths ────────────────────────────────────────────────────
-    reports = Path("reports")
-
     # ─── Rating Model Comparison ──────────────────────────────────
     st.header("🍽️ Rating Prediction")
 
-    rating_csv = reports / "model_comparison_rating.csv"
-    if rating_csv.exists():
-        rating_df = pd.read_csv(rating_csv)
-        _show_model_section(rating_df, "rating")
+    rating_results = _load_experiment_results("rating")
+    if rating_results is not None and not rating_results.empty:
+        _show_model_section(rating_results, "rating")
     else:
         st.warning("Rating comparison not found. Run `make train` first.")
 
@@ -41,10 +42,9 @@ def show() -> None:
     # ─── ETA Model Comparison ─────────────────────────────────────
     st.header("🚀 Delivery ETA Prediction")
 
-    eta_csv = reports / "model_comparison_eta.csv"
-    if eta_csv.exists():
-        eta_df = pd.read_csv(eta_csv)
-        _show_model_section(eta_df, "eta")
+    eta_results = _load_experiment_results("eta")
+    if eta_results is not None and not eta_results.empty:
+        _show_model_section(eta_results, "eta")
     else:
         st.warning("ETA comparison not found. Run `make train` first.")
 
@@ -78,15 +78,56 @@ def show() -> None:
         """)
 
 
+def _load_experiment_results(task: str):
+    """Load experiment results from the database.
+
+    Args:
+        task: 'rating' or 'eta'.
+
+    Returns:
+        DataFrame with model, mae, rmse, r2, train_time_s columns,
+        or None if the DB query fails.
+    """
+    try:
+        from dabba.database.session import get_db
+
+        with get_db() as db:
+            results = get_all_experiment_results(db, task=task)
+            if not results:
+                return None
+            rows = []
+            for r in results:
+                rows.append(
+                    {
+                        "model": r.model_name,
+                        "mae": r.mae,
+                        "rmse": r.rmse,
+                        "r2": r.r2,
+                        "train_time_s": r.train_time_s,
+                        "is_winner": r.is_winner,
+                    }
+                )
+            return pd.DataFrame(rows)
+    except Exception:
+        return None
+
+
 def _show_model_section(df: pd.DataFrame, task: str) -> None:
     """Display winner callout, comparison table, and interactive charts."""
     required_cols = {"model", "mae", "rmse", "r2"}
     if not required_cols.issubset(df.columns):
-        st.error(f"{task.title()} CSV has unexpected format.")
+        st.error(f"{task.title()} experiment data has unexpected format.")
         return
 
     # Winner callout
-    best = df.sort_values("mae").iloc[0]
+    if "is_winner" in df.columns:
+        winner_rows = df[df["is_winner"] == True]
+        if not winner_rows.empty:
+            best = winner_rows.iloc[0]
+        else:
+            best = df.sort_values("mae").iloc[0]
+    else:
+        best = df.sort_values("mae").iloc[0]
     st.success(
         f"🏆 **Winner: {best['model']}** — "
         f"MAE: {best['mae']:.4f} | "

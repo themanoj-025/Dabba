@@ -56,21 +56,28 @@ def _load_eta_model_cached():
 
 @st.cache_resource
 def _build_reference_data_cached() -> Optional[pd.DataFrame]:
-    """Build reference distribution (cached by Streamlit, not module-level global)."""
-    data_path = Path("data/processed/restaurants_processed.csv")
-    if not data_path.exists():
-        rng = np.random.RandomState(42)
-        return pd.DataFrame(
-            {
-                "predicted_min": rng.normal(30, 10, 500),
-                "actual_min": rng.normal(32, 12, 500),
-                "distance_km": rng.uniform(1, 15, 500),
-            }
-        )
+    """Build reference distribution from the database (cached by Streamlit).
 
-    df = pd.read_csv(data_path)
+    Uses restaurant count and distance stats from the DB to build a
+    synthetic reference distribution for drift detection. Falls back
+    to a purely synthetic distribution if the DB is empty.
+    """
     rng = np.random.RandomState(42)
-    n = min(500, len(df))
+
+    try:
+        from dabba.database.session import get_db
+        from dabba.database.repositories import count_restaurants, get_all_restaurants_as_df
+
+        with get_db() as db:
+            n_restaurants = count_restaurants(db)
+            if n_restaurants > 0:
+                rest_df = get_all_restaurants_as_df(db, with_cuisine_features=False)
+                n = min(500, len(rest_df))
+            else:
+                n = 500
+    except Exception:
+        n = 500
+
     return pd.DataFrame(
         {
             "predicted_min": rng.normal(30, 10, n),
