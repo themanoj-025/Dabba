@@ -28,7 +28,7 @@ from slowapi.errors import RateLimitExceeded
 from dabba.config import get_config
 from api.auth import verify_api_key
 from api.limiter import limiter
-from api.routers import recommend, eta, chat, model_info, restaurants
+from api.routers import recommend, eta, chat, explain, model_info, restaurants
 from api.schemas import HealthResponse
 from dabba.database.session import init_db as init_database
 
@@ -89,6 +89,7 @@ v1_router.include_router(recommend.router)
 v1_router.include_router(eta.router)
 v1_router.include_router(chat.router)
 v1_router.include_router(model_info.router)
+v1_router.include_router(explain.router)
 v1_router.include_router(restaurants.router)
 
 app.include_router(v1_router)
