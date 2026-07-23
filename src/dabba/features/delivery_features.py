@@ -41,6 +41,48 @@ logger = logging.getLogger(__name__)
 # Cyclical encoding helpers (exported for reuse)
 
 
+def _hour_bucket(h: int) -> str:
+    """Assign an order hour to a meal-time bucket.
+
+    Args:
+        h: Hour of day (0-23).
+
+    Returns:
+        Bucket name string.
+    """
+    if pd.isna(h):
+        return "unknown"
+    if 5 <= h < 11:
+        return "breakfast"
+    elif 11 <= h < 16:
+        return "lunch"
+    elif 16 <= h < 21:
+        return "evening"
+    else:
+        return "late_night"
+
+
+def _age_bucket(age: float) -> str:
+    """Assign a delivery person age to an age group bucket.
+
+    Args:
+        age: Age in years.
+
+    Returns:
+        Bucket label string.
+    """
+    if pd.isna(age) or age <= 0:
+        return "mid"
+    if age <= 25:
+        return "young"
+    elif age <= 35:
+        return "mid"
+    elif age <= 45:
+        return "senior"
+    else:
+        return "veteran"
+
+
 def cyclical_encode(hours: np.ndarray, period: int = 24) -> tuple[np.ndarray, np.ndarray]:
     """Convert a cyclical feature (hour, day) to sin/cos components.
 
@@ -190,18 +232,6 @@ def add_delivery_features(
         df["dow_cos"] = dow_cos
 
         # Hour buckets for one-hot (preserves existing pipeline behavior)
-        def _hour_bucket(h: int) -> str:
-            if pd.isna(h):
-                return "unknown"
-            if 5 <= h < 11:
-                return "breakfast"
-            elif 11 <= h < 16:
-                return "lunch"
-            elif 16 <= h < 21:
-                return "evening"
-            else:
-                return "late_night"
-
         df["order_hour_bucket"] = df["order_hour"].map(_hour_bucket)
 
     # ── 3. Environmental features ───────────────────────────────────
@@ -259,11 +289,7 @@ def add_delivery_features(
         df["delivery_person_age"] = pd.to_numeric(
             df["delivery_person_age"], errors="coerce"
         )
-        bins = [0, 25, 35, 45, 100]
-        labels = ["young", "mid", "senior", "veteran"]
-        df["delivery_person_age_bucket"] = pd.cut(
-            df["delivery_person_age"], bins=bins, labels=labels
-        )
+        df["delivery_person_age_bucket"] = df["delivery_person_age"].apply(_age_bucket)
 
     # ── 6. Speed for outlier detection (informational) ──────────────
     if "haversine_distance_km" in df.columns and "time_taken_min" in df.columns:
