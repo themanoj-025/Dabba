@@ -135,7 +135,8 @@ api/main.py (FastAPI — models stored in app.state)
  ├── config.py
  ├── api/schemas.py → pydantic
  ├── api/auth.py → config.py (API key verification)
- ├── api/limiter.py → slowapi├── routers/recommend.py → schemas, hybrid_recommender, llm, Depends(app.state)
+ ├── api/limiter.py → slowapi
+├── routers/recommend.py → schemas, hybrid_recommender, llm, Depends(app.state)
 ├── routers/eta.py → schemas, config, Depends(app.state)
 ├── routers/chat.py → schemas, llm/food_concierge, Depends(app.state)
 ├── routers/model_info.py → schemas, config

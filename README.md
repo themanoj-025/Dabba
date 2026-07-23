@@ -461,7 +461,7 @@ Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
 > ✅ **Drift detection** (KS test) genuinely wired into the Ops Monitor UI, not just sitting in the repo
 > ✅ **MLflow** tracking every experiment run
 > ✅ **4-page Streamlit dashboard** with a warm food-tech design system and Plotly charts
-> ✅ **FastAPI** with 5 endpoints, Docker, CI/CD
+> ✅ **FastAPI** with 8 endpoints, Docker, CI/CD
 >
 > **Architecture choice I'm most proud of:** LLM as a *natural-language interface over deterministic ML* — not for ranking or prediction. The same pattern I used in my fraud-detection project. Consistent, defensible, production-minded.
 >
