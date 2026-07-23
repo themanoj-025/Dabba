@@ -100,19 +100,10 @@ All models (ETA, recommender, concierge tools) are loaded at startup and stored 
 Ensemble models (XGBoost, LightGBM, CatBoost, RandomForest, GradientBoosting) are tuned with Optuna (TPE sampler, 50 trials default) before comparison, replacing hardcoded defaults.
 
 ### LLM Concierge: ReAct Loop
-The food concierge now uses a proper ReAct loop (max 4 steps) where tool results are fed back to the LLM for multi-step reasoning chains (e.g., search → filter → check ETA → summarize).
+The food concierge uses a proper ReAct loop (max 4 steps, configurable via `llm_max_steps`) where tool results are fed back to the LLM for multi-step reasoning chains (e.g., search → filter → check ETA → summarize). Falls back to rules-based intent matching when no API key is configured.
 
 ### Docker: Per-Service Containers
-Each service (API, Streamlit, MLflow) has its own Dockerfile with independent health checks and proper startup ordering via `depends_on: condition: service_healthy`.
-
-### Redis Caching
-Hot predictions (ETA, recommendations) are cached with configurable TTL. Falls back to `fakeredis` (in-memory) when no Redis server is available — development works without it.
-
-### Database: SQLAlchemy + Alembic
-5 ORM tables (Restaurant, Order, Prediction, ExperimentResult, DriftLog) managed via Alembic migrations. The `docker/entrypoint.sh` runs `alembic upgrade head` before starting uvicorn.
-
-### LLM Concierge: ReAct Loop
-The food concierge uses a proper ReAct loop (max 4 steps) where tool results are fed back to the LLM for multi-step reasoning chains (e.g., search → filter → check ETA → summarize). Falls back to rules-based intent matching when no API key is configured.
+Each service (API, Streamlit, MLflow) has its own Dockerfile with independent health checks and proper startup ordering via `depends_on: condition: service_healthy`. The API container runs `alembic upgrade head` on startup via `entrypoint.sh` to always apply the latest DB migrations.
 
 ### Authentication + Rate Limiting
 All `/v1/*` endpoints require `X-API-Key` header. Dev mode bypasses auth when no key is configured. Rate limiting via `slowapi` (10-60 req/min per endpoint). Security headers (CSP, XFO, HSTS) on all responses.
@@ -144,22 +135,33 @@ api/main.py (FastAPI — models stored in app.state)
  ├── config.py
  ├── api/schemas.py → pydantic
  ├── api/auth.py → config.py (API key verification)
- ├── api/limiter.py → slowapi
- ├── routers/recommend.py → schemas, hybrid_recommender, llm, Depends(app.state)
- ├── routers/eta.py → schemas, config, Depends(app.state)
- ├── routers/chat.py → schemas, llm/food_concierge, Depends(app.state)
- └── routers/model_info.py → schemas, config
+ ├── api/limiter.py → slowapi├── routers/recommend.py → schemas, hybrid_recommender, llm, Depends(app.state)
+├── routers/eta.py → schemas, config, Depends(app.state)
+├── routers/chat.py → schemas, llm/food_concierge, Depends(app.state)
+├── routers/model_info.py → schemas, config
+└── routers/restaurants.py → schemas, repositories, database.session
 
 app/streamlit_app.py (Dashboard)
+ ├── assets/theme.css → custom food-tech design system
  ├── pages/page_discover.py → dabba.models, dabba.llm
  ├── pages/page_ops.py → dabba.monitoring, app.components
  ├── pages/page_model_performance.py → pandas, plotly
- └── pages/page_concierge.py → dabba.llm (ReAct loop concierge)
+ ├── pages/page_concierge.py → dabba.llm.food_concierge (ReAct loop)
+ └── utils/sanitize.py → html_escape (XSS prevention)
+
+Additional modules:
+ ├── database/session.py → config.py, sqlalchemy (engine, session factory)
+ ├── database/models.py → sqlalchemy (5 ORM tables)
+ ├── database/seed.py → config.py, models (CSV→DB import)
+ ├── database/repositories.py → models (12+ read functions)
+ ├── cache/redis_client.py → config.py, redis/fakeredis
+ └── monitoring/drift.py → config.py, scipy.stats (KS-test + Slack)
 
 docker/
- ├── api.Dockerfile        → FastAPI + uvicorn + healthcheck
+ ├── api.Dockerfile        → FastAPI + uvicorn + healthcheck + entrypoint.sh
  ├── streamlit.Dockerfile  → Streamlit dashboard + healthcheck
- └── mlflow.Dockerfile     → MLflow tracking server + healthcheck
+ ├── mlflow.Dockerfile     → MLflow tracking server + healthcheck
+ └── entrypoint.sh         → alembic upgrade head + exec uvicorn
 ```
 
 ## Deployment Architecture
@@ -183,9 +185,28 @@ docker/
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Authentication
+## Authentication + Security
 
 - **All `/v1/*` endpoints**: Require `X-API-Key` header (via `api/auth.py`)
 - **Dev mode**: No key configured → auth skipped for local development
 - **Rate limiting**: Via `slowapi` — different limits per endpoint (10-60 req/min)
 - **Health endpoint**: `/health` intentionally unauthenticated for monitoring
+- **Security headers**: CSP (`default-src 'none'`), X-Content-Type-Options, X-Frame-Options (DENY), Permissions-Policy on all responses via FastAPI middleware
+
+## Testing Infrastructure
+
+| Test File | Tests | What It Covers |
+|-----------|-------|----------------|
+| `test_api.py` | 7 | FastAPI smoke tests (health, model-info, ETA, recommend, chat, auth) |
+| `test_features.py` | 18 | Cyclical encoding, city zone, rush hour, interaction features |
+| `test_drift.py` | 13 | KS-test detection, Slack alerting, cooldown management |
+| `test_database.py` | 16 | Seed functions, repository queries, in-memory SQLite |
+| `test_db_loaders.py` | 11 | DB-backed loaders with CSV fallback |
+| `test_optuna_tuning.py` | ~25 | HPO search spaces, trial sampling, MLflow integration |
+| `test_collaborative_recommender.py` | — | Matrix factorization training |
+| `test_rating_model.py` | — | Rating model pipeline |
+| `test_eta_model.py` | — | ETA model pipeline |
+| `test_recommender.py` | — | Content-based recommender |
+| `test_cleaning.py` | — | Data cleaning |
+| `integration/test_concierge.py` | 27 | ReAct loop, intent matching, tool execution |
+| `e2e/test_workflow.py` | 6 | Full pipeline end-to-end |
