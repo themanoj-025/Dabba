@@ -1,10 +1,10 @@
-# 🏗️ Dabba v3 — System Architecture
+# 🏗️ Dabba v4 — System Architecture
 
 ## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                          DABBA v3 SYSTEM ARCHITECTURE                    │
+│                          DABBA v4 SYSTEM ARCHITECTURE                    │
 └─────────────────────────────────────────────────────────────────────────┘
 
  ┌─────────────────────────────────────────────────────────────────────┐
@@ -61,9 +61,11 @@
      ┌──────────┐         ┌──────────┐          ┌──────────┐
      │ Streamlit│         │  FastAPI  │          │  MLflow  │
      │ Dashboard│         │  REST API │          │ Tracking │
-     │ (4 pages)│         │ Models in │          │ (Docker) │
-     │ Custom   │         │ app.state │          │ Port 5000│
-     │ Radio Nav│         │ via DI    │          │          │
+     │ (4 pages)│         │ (8 routes)│          │ (Docker) │
+     │ Custom   │         │ Models in │          │ Port 5000│
+     │ Radio Nav│         │ app.state │          │          │
+     │ Redis    │         │ via Depends│          │          │
+     │ caching  │         │ DI        │          │          │
      └──────────┘         └──────────┘          └──────────┘
             │                     │
             ▼                     ▼
@@ -78,6 +80,15 @@
      │  └────────────┴──────────┴─────────┘  │
      │  Rules-based fallback (no API key)     │
      └──────────────────────────────────────┘
+            │                     │
+            ▼                     ▼
+     ┌──────────┐         ┌──────────┐
+     │ SQLite   │         │  Redis   │
+     │ (dev) /  │         │  Cache   │
+     │ Postgres │         │(fakeredis│
+     │ (prod)   │         │ fallback)│
+     │ Alembic  │         │          │
+     └──────────┘         └──────────┘
 ```
 
 ## Key Architectural Decisions
@@ -94,8 +105,17 @@ The food concierge now uses a proper ReAct loop (max 4 steps) where tool results
 ### Docker: Per-Service Containers
 Each service (API, Streamlit, MLflow) has its own Dockerfile with independent health checks and proper startup ordering via `depends_on: condition: service_healthy`.
 
-### Drift Detection: Slack Alerting + Cooldown
-When drift is detected, the system can send formatted Slack webhook messages with per-feature details. Duplicate alerts are rate-limited via configurable cooldown to prevent notification fatigue.
+### Redis Caching
+Hot predictions (ETA, recommendations) are cached with configurable TTL. Falls back to `fakeredis` (in-memory) when no Redis server is available — development works without it.
+
+### Database: SQLAlchemy + Alembic
+5 ORM tables (Restaurant, Order, Prediction, ExperimentResult, DriftLog) managed via Alembic migrations. The `docker/entrypoint.sh` runs `alembic upgrade head` before starting uvicorn.
+
+### LLM Concierge: ReAct Loop
+The food concierge uses a proper ReAct loop (max 4 steps) where tool results are fed back to the LLM for multi-step reasoning chains (e.g., search → filter → check ETA → summarize). Falls back to rules-based intent matching when no API key is configured.
+
+### Authentication + Rate Limiting
+All `/v1/*` endpoints require `X-API-Key` header. Dev mode bypasses auth when no key is configured. Rate limiting via `slowapi` (10-60 req/min per endpoint). Security headers (CSP, XFO, HSTS) on all responses.
 
 ### ETA Feature Engineering: Expanded Feature Set
 New features added: `is_rush_hour`, `hour_sin/cos`, `dow_sin/cos`, `city_zone`, `weather_encoded`, `distance_traffic_interaction`, `distance_festival_interaction`. Previously-unused features (`order_hour`, `day_of_week`, `is_weekend`, `order_hour_bucket`) now included in training.
