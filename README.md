@@ -411,6 +411,7 @@ make db-history      # Show migration history
 | **Concierge ETA returned hardcoded 30 min** | ✅ **Fixed in v0.4.0** | Now uses real ETA model via `ConciergeTools.get_eta_estimate()` with graceful formula fallback |
 | **`pipeline.py` maintained its own `eta_feature_cols`** | ✅ **Fixed in v0.4.0** | Now imports `ETA_FEATURE_COLS` from `delivery_features.py` — single source of truth |
 | **Synthetic CF data** | ⚠️ Documented limitation | Real user-interaction data needed for production |
+| **API/UI read from CSVs instead of DB** | ✅ **Fixed in v0.5.0** | All serving paths now read from Postgres/SQLite via repository functions. CSVs only used in seed/import pipeline |
 | **VADER is English-only** | ⚠️ Documented limitation | Hinglish-aware sentiment model needed |
 | **Static traffic levels** | ⚠️ Known gap | Real-time traffic API (Google Maps/OSRM) planned |
 | **No Prometheus metrics** | 🔜 Planned | `/metrics` endpoint + Grafana dashboard |

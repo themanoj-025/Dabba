@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **P0 — CSV→DB migration for serving paths**: ``api/routers/model_info.py``,
+  ``api/routers/recommend.py``, and ``api/routers/chat.py`` now read from the database
+  via repository functions instead of ``pd.read_csv()``. All 4 Streamlit pages also
+  migrated. CSV loading is now restricted to ``database/seed.py`` (the import pipeline).
+- **New repository functions**: ``get_all_restaurants_as_df()`` returns all restaurants
+  as a feature-engineered DataFrame (with cuisine one-hot encoding).
+  ``get_all_experiment_results()`` returns experiment results sorted by MAE.
+- **CSV-read prohibition tests**: Static AST checks assert no ``pd.read_csv()`` calls
+  exist in API routers or Streamlit pages (``tests/test_api.py``).
+
+### Fixed
+- ``tests/integration/test_concierge.py``: ``test_get_eta_no_model`` assertion updated
+  to match actual ``note`` field (``"approximate (no model loaded)"``).
+
+### Added
 - **P1 — `/v1/explain/{prediction_id}` endpoint**: New ``api/routers/explain.py`` router that
   reads from the existing ``predictions`` table and exposes stored SHAP values through the API.
   Includes ``ExplainResponse`` schema, ``get_prediction_by_id()`` repository function, and
