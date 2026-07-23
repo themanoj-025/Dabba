@@ -85,3 +85,66 @@ class TestRestaurantRecommender:
         rec = RestaurantRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="Thai", area="Nonexistent")
         assert result.empty or len(result) == 0
+
+
+class TestRecommenderSimilarity:
+    """Tests for the _compute_similarity method."""
+
+    @pytest.fixture
+    def recommender(self):
+        """Create a recommender with a small DataFrame."""
+        df = pd.DataFrame(
+            {
+                "name": ["A", "B", "C"],
+                "rate": [4.0, 3.5, 4.5],
+                "votes": [100, 50, 200],
+                "cost_for_two": [500, 300, 800],
+                "location": ["X", "Y", "Z"],
+                "votes_log": [4.6, 3.9, 5.3],
+                "online_order_binary": [1, 0, 1],
+            }
+        )
+        return RestaurantRecommender(df, ["votes_log", "cost_for_two"])
+
+    def test_returns_numpy_array(self, recommender):
+        """Should return a numpy array."""
+        query = np.array([5.0, 600.0])
+        sim = recommender._compute_similarity(query)
+        assert isinstance(sim, np.ndarray)
+
+    def test_length_matches_dataframe(self, recommender):
+        """Should return one score per restaurant."""
+        query = np.array([5.0, 600.0])
+        sim = recommender._compute_similarity(query)
+        assert len(sim) == len(recommender.df)
+
+    def test_similarity_between_zero_and_one(self, recommender):
+        """Cosine similarity should be in [0, 1] for non-negative features."""
+        query = np.array([5.0, 600.0])
+        sim = recommender._compute_similarity(query)
+        assert all(-0.01 <= s <= 1.01 for s in sim)
+
+    def test_identical_query_returns_one(self, recommender):
+        """Query equal to a restaurant should yield similarity ~1."""
+        query = recommender.feature_matrix[0]
+        sim = recommender._compute_similarity(query)
+        assert sim[0] == pytest.approx(1.0, abs=1e-5)
+
+
+class TestRecommenderLoadModel:
+    """Tests for load_rating_model()."""
+
+    @pytest.fixture
+    def recommender(self):
+        """Create a basic recommender."""
+        df = pd.DataFrame({"name": ["A"], "rate": [4.0], "votes": [100], "cost_for_two": [500]})
+        return RestaurantRecommender(df, ["cost_for_two"])
+
+    def test_model_none_initially(self, recommender):
+        """Model should be None before loading."""
+        assert recommender.rating_model is None
+
+    def test_load_nonexistent_path(self, recommender):
+        """Loading a nonexistent path should not crash."""
+        recommender.load_rating_model(model_path="/nonexistent/path/model.pkl")
+        assert recommender.rating_model is None
