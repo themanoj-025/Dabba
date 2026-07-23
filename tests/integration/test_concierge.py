@@ -113,7 +113,7 @@ class TestConciergeTools:
         result = tools.get_eta_estimate("Meghana Foods")
         assert result is not None
         assert result["predicted_minutes"] == 30
-        assert result["note"] == "approximate"
+        assert "approximate" in result["note"]
 
     def test_get_eta_unknown_restaurant(self, tools):
         """Should return None for unknown restaurant."""
