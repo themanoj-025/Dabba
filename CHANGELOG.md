@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **P4 — Secrets manager pattern**: Comprehensive ``.env.example`` added with all config
+  fields documented. Includes production secret injection guidance for HashiCorp Vault,
+  AWS Secrets Manager, and Docker Secrets deployment patterns.
+- **P4 — Isolated test database fixture**: ``tests/conftest.py`` creates a temporary
+  SQLite database per test session (``scope="session", autouse=True``). Ensures zero
+  cross-test pollution and keeps the dev database untouched.
+- **P4 — Drift-triggered retraining hook**: New ``src/dabba/monitoring/retrain.py`` module
+  that spawns ``python -m dabba.pipeline --force`` as a subprocess when drift severity
+  exceeds 30% of features. Includes rate-limited cooldown (6h default), dry-run mode,
+  and graceful fallback on errors. Wired into ``DriftDetector.detect_and_alert()``.
+- **P3 — Real-time traffic API**: New ``src/dabba/features/traffic.py`` module with
+  TomTom/Mappls backends + time-of-day simulation fallback. ``build_eta_features_for_api``
+  auto-fetches real traffic when ``traffic_level=None``. Config fields ``tomtom_api_key``
+  and ``mappls_api_key`` added to ``DabbaConfig``.
+- **P3 — Hinglish sentiment analysis**: New ``src/dabba/nlp/hinglish_sentiment.py``
+  module using HuggingFace multilingual model with VADER fallback. 8 tests.
 - **P2 — Structured JSON logging**: New ``dabba/observability`` module with a custom
   ``JSONFormatter`` that outputs every log line as JSON with timestamp, level, logger,
   message, and request ID (via async-safe ``contextvars``). Applied globally across

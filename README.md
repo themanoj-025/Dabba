@@ -368,7 +368,8 @@ make db-history      # Show migration history
 | **Language** | Python 3.11 |
 | **ML** | scikit-learn, XGBoost, LightGBM, CatBoost |
 | **Deep Learning** | PyTorch (matrix factorization), skorch (neural net) |
-| **NLP** | NLTK (VADER sentiment) |
+| **NLP** | NLTK (VADER), HuggingFace (multilingual Hinglish) |
+| **Observability** | Prometheus, structured JSON logging, request tracing |
 | **LLM** | Anthropic Claude (optional, with rules-based fallback) |
 | **Vector Search** | FAISS (with sklearn fallback) |
 | **Explainability** | SHAP |
@@ -411,10 +412,14 @@ make db-history      # Show migration history
 | **Concierge ETA returned hardcoded 30 min** | ✅ **Fixed in v0.4.0** | Now uses real ETA model via `ConciergeTools.get_eta_estimate()` with graceful formula fallback |
 | **`pipeline.py` maintained its own `eta_feature_cols`** | ✅ **Fixed in v0.4.0** | Now imports `ETA_FEATURE_COLS` from `delivery_features.py` — single source of truth |
 | **Synthetic CF data** | ⚠️ Documented limitation | Real user-interaction data needed for production |
-| **API/UI read from CSVs instead of DB** | ✅ **Fixed in v0.5.0** | All serving paths now read from Postgres/SQLite via repository functions. CSVs only used in seed/import pipeline |
-| **VADER is English-only** | ⚠️ Documented limitation | Hinglish-aware sentiment model needed |
-| **Static traffic levels** | ⚠️ Known gap | Real-time traffic API (Google Maps/OSRM) planned |
-| **No Prometheus metrics** | 🔜 Planned | `/metrics` endpoint + Grafana dashboard |
+| **API/UI read from CSVs instead of DB** | ✅ **Fixed in v0.5.0** | All serving paths read from Postgres/SQLite via repository functions. CSVs only used in seed/import pipeline |
+| **CSV-read prohibition tests** | ✅ **Added in v0.5.0** | AST-based checks guarantee no ``pd.read_csv()`` in serving path |
+| **Structured JSON logging** | ✅ **Built in v0.5.0** | All log lines are JSON with timestamp, level, logger, request ID via ``contextvars`` |
+| **Concierge ReAct tracing** | ✅ **Built in v0.5.0** | Each tool execution tracked with structured spans + Prometheus histogram |
+| **VADER is English-only** | ✅ **Hinglish module added** | New ``src/dabba/nlp/hinglish_sentiment.py`` with HuggingFace multilingual model + VADER fallback |
+| **Static traffic levels** | ✅ **Traffic API added** | New ``src/dabba/features/traffic.py`` with TomTom/Mappls backends + time-of-day simulation fallback |
+| **No Prometheus metrics** | ✅ **Built in v0.5.0** | ``GET /metrics`` endpoint with request count, latency histogram, drift/tool-call counters |
+| **No retraining trigger** | 🔜 Planned | Drift-threshold-triggered retraining |
 | **No retraining trigger** | 🔜 Planned | Drift-threshold-triggered retraining |
 
 ---

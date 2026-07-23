@@ -2,11 +2,14 @@
 model comparison with CatBoost, collaborative filtering, reliability
 score A/B scenarios, and interactive chart generation.
 
-Usage: python -m dabba.pipeline
+Usage:
+    python -m dabba.pipeline              # run full pipeline
+    python -m dabba.pipeline --force       # re-run even if models exist
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 from pathlib import Path
@@ -543,4 +546,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Dabba training pipeline")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force re-run even if model artifacts already exist",
+    )
+    args = parser.parse_args()
+    if args.force:
+        logger.info("⚠️  --force flag set: re-running pipeline from scratch")
     main()

@@ -45,7 +45,8 @@ Dabba v4 uses **versioned API routing** under `/v1` with API key authentication 
 
 ```
 app (no auth)
-  └── GET /health  [reads from app.state via request parameter]
+  ├── GET /health  [reads from app.state via request parameter]
+  └── GET /metrics [Prometheus metrics text format]
   └── v1_router (auth + rate limit, models via Depends DI)
        ├── POST /v1/recommend       (30/min)  [Depends(get_recommender)]
        ├── POST /v1/predict-eta     (30/min)  [Depends(get_eta_model)]
@@ -61,13 +62,14 @@ app (no auth)
 | # | Method | Route | Module | Auth | Rate Limit | Purpose |
 |---|--------|-------|--------|------|------------|---------|
 | 1 | GET | `/health` | `api/main.py` (inline) | No | No | Health check + model load status |
-| 2 | GET | `/v1/model-info` | `routers/model_info.py` | `X-API-Key` | 60/min | Deployed model names & metrics |
+| 2 | GET | `/metrics` | `api/main.py` (inline) | No | No | Prometheus metrics (request count, latency, errors, drift, tool calls) |
+| 3 | GET | `/v1/model-info` | `routers/model_info.py` | `X-API-Key` | 60/min | Deployed model names & metrics |
 | 3 | POST | `/v1/recommend` | `routers/recommend.py` | `X-API-Key` | 30/min | Hybrid recommendations, optional LLM narration |
 | 4 | POST | `/v1/predict-eta` | `routers/eta.py` | `X-API-Key` | 30/min | Delivery ETA using winning model |
 | 5 | POST | `/v1/chat` | `routers/chat.py` | `X-API-Key` | 10/min | Food concierge with tool-use |
-| 6 | GET | `/v1/restaurants` | `routers/restaurants.py` | `X-API-Key` | 60/min | List restaurants from database |
-| 7 | GET | `/v1/restaurants/{id}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Get restaurant by ID (404 if not found) |
-| 8 | GET | `/v1/restaurants/search/{q}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Search by name or cuisine |
+| 7 | GET | `/v1/restaurants` | `routers/restaurants.py` | `X-API-Key` | 60/min | List restaurants from database |
+| 8 | GET | `/v1/restaurants/{id}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Get restaurant by ID (404 if not found) |
+| 9 | GET | `/v1/restaurants/search/{q}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Search by name or cuisine |
 
 ### Authentication
 

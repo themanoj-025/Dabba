@@ -14,7 +14,33 @@ See `routes.md` for dev-mode bypass behavior.
 
 ---
 
-### 1. GET `/health`
+### 1. GET `/metrics`
+
+**Auth**: None
+
+**Rate Limit**: None
+
+**Purpose**: Prometheus metrics endpoint for observability. Returns text-format
+metrics for scraping by Prometheus or Grafana.
+
+**Response** (Prometheus text format):
+```
+# HELP dabba_http_requests_total Total HTTP requests by method, endpoint, and status
+# TYPE dabba_http_requests_total counter
+dabba_http_requests_total{method="GET",endpoint="/health",status="200"} 42.0
+# HELP dabba_http_request_duration_seconds HTTP request duration in seconds by endpoint
+# TYPE dabba_http_request_duration_seconds histogram
+...
+```
+
+Includes: request count, latency histogram, error rate per route, drift-event counter,
+concierge tool-call counter, model-loaded gauges.
+
+**Dependencies**: ``prometheus-client`` (added to ``requirements.txt``).
+
+---
+
+### 2. GET `/health`
 
 **Auth**: None
 
@@ -40,7 +66,8 @@ for load balancers, Docker health checks, and monitoring.
 
 **Rate Limit**: 60/minute
 
-**Purpose**: Deployed model names and metrics — reads from comparison CSVs.
+**Purpose**: Deployed model names and metrics — reads from the ``ExperimentResult``
+database table (not CSVs).
 
 **Response**:
 ```json

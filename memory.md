@@ -369,11 +369,10 @@ make db-migrate     # Run Alembic migrations
 ### 🔴 High Priority
 | Gap | Details | Effort |
 |-----|---------|--------|
-| **ETA endpoint feature mismatch** | `POST /v1/predict-eta` sends 6 features, model trained on ~20+ | Small |
-| **Concierge ETA stub** | `get_eta_estimate()` returns hardcoded 30 min | Small |
 | **Real user-interaction data** | CF uses synthetic data (clearly documented) | Large |
-| **Real-time traffic API** | Google Maps/OSRM for dynamic ETA | Medium |
-| **Missing test coverage** | narrator, RAG, optimizer, cache, evaluation, pages | Medium |
+| **Drift-triggered retraining** | No automation for retraining on drift | Medium |
+| **Secrets manager** | Still `.env`-only for all API keys | Small |
+| **Dedicated test DB** | Tests share global SQLite, risk of cross-pollution | Small |
 
 ### 🟡 Medium Priority
 | Gap | Details |

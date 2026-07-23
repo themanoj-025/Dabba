@@ -27,6 +27,7 @@ import pandas as pd
 from scipy.stats import ks_2samp
 
 from dabba.config import DabbaConfig, get_config
+from dabba.monitoring.retrain import maybe_trigger_retraining
 
 logger = logging.getLogger(__name__)
 
@@ -430,6 +431,16 @@ class DriftDetector:
 
             # Persist to database
             _save_drift_log(alert_result, alerted=slack_sent, config=self.config)
+
+            # Trigger retraining if drift is severe
+            try:
+                maybe_trigger_retraining(
+                    alert_result,
+                    project_root=self.config.project_root,
+                    dry_run=self.config.slack_webhook_url is None,  # dry-run if no Slack configured
+                )
+            except Exception as e:
+                logger.warning("Retrain trigger failed (non-fatal): %s", e)
 
         return result
 
