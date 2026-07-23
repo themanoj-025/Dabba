@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **P0 Bug Fix — ETA endpoint feature mismatch**: ``api/routers/eta.py`` now builds the
+  full ~20-column feature vector (cyclical time encoding, rush hour, interaction terms,
+  city zone, weather, age buckets) via :func:`build_eta_features_for_api` from
+  ``delivery_features.py``, matching the training pipeline exactly. Previously it sent
+  only 6 features to a model trained on 20+ — predictions were silently degraded.
+- **Shared `ETA_FEATURE_COLS` constant**: Single source of truth in ``delivery_features.py``
+  used by both ``pipeline.py`` (training) and the API serving endpoint, preventing future
+  feature drift between training and serving.
+- **P0 Bug Fix — Concierge ETA stub**: ``ConciergeTools.get_eta_estimate()`` now uses the
+  real loaded ETA model via ``build_eta_features_for_api()`` instead of returning a hardcoded
+  30-minute estimate. Falls back gracefully to a formula-based estimate on model error.
+- **ETA model wired to concierge at startup**: ``api/main.py`` passes ``app.state.eta_model``
+  to ``chat._load_concierge_tools()``, giving the concierge access to real predictions.
+- **Helper functions for feature parity**: ``_hour_bucket()`` and ``_age_bucket()`` extracted
+  from ``add_delivery_features()`` into reusable module-level functions in ``delivery_features.py``.
 - **Comprehensive project analysis**: Full inventory of all ~60 modules across data pipeline,
   ML models, LLM layer, API, dashboard, testing, CI/CD, and documentation
 - **Gaps/remaining work documentation**: Detailed 3-tier priority list (High/Medium/Low)

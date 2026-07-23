@@ -24,9 +24,9 @@ router = APIRouter(prefix="/predict-eta", tags=["eta"])
 
 config = get_config()
 
-# Feature columns the winning ETA model expects, in the order the pipeline
-# preprocessor was fit on. Single source of truth: ETA_FEATURE_COLS in
-# delivery_features.py, which mirrors pipeline.py's eta_feature_cols.
+# Feature columns are built using build_eta_features_for_api() from
+# delivery_features.py, which is the single source of truth matching the
+# training pipeline (pipeline.py imports ETA_FEATURE_COLS from there).
 
 
 def _load_eta_model() -> Optional[object]:
