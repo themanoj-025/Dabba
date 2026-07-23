@@ -82,32 +82,76 @@ class ConciergeTools:
         return results.to_dict("records")
 
     def get_eta_estimate(self, restaurant_name: str) -> Optional[Dict[str, Any]]:
-        """Get a predicted delivery ETA for a restaurant.
+        """Get a predicted delivery ETA for a restaurant using the real ETA model.
+
+        Builds a full feature vector (matching the training pipeline's 20+ features)
+        from the restaurant's data and current temporal context, then calls the
+        loaded ETA model. Falls back to a reasonable estimate if no model is loaded.
 
         Args:
             restaurant_name: Name of the restaurant.
 
         Returns:
-            Dict with predicted_minutes and is_at_risk, or None.
+            Dict with predicted_minutes and is_at_risk, or None if restaurant not found.
         """
-        # Check restaurant existence FIRST — never return a fake estimate
-        # for a restaurant that doesn't exist, even if no model is loaded.
+        # Check restaurant existence FIRST
         matches = self.df[
             self.df["name"].str.contains(restaurant_name, case=False, na=False)
         ]
         if matches.empty:
             return None
 
-        if self.eta_model is None:
-            return {"predicted_minutes": 30, "is_at_risk": False, "note": "approximate"}
+        restaurant = matches.iloc[0]
 
-        # Use restaurant-level features + mean delivery features
-        # In production, this would use actual delivery data per restaurant
-        return {
-            "predicted_minutes": 35,
-            "is_at_risk": False,
-            "note": "estimated from similar orders",
-        }
+        # Estimate distance from the restaurant's location to a central delivery point
+        # (Bangalore centroid ≈ 12.97, 77.59). Falls back to 5km if no coords available.
+        lat = restaurant.get("latitude", restaurant.get("restaurant_latitude", None))
+        lon = restaurant.get("longitude", restaurant.get("restaurant_longitude", None))
+
+        if pd.notna(lat) and pd.notna(lon):
+            from dabba.features.geo import haversine_distance
+            distance_km = float(haversine_distance(lat, lon, 12.97, 77.59))
+        else:
+            distance_km = 5.0
+
+        if self.eta_model is None:
+            return {
+                "predicted_minutes": round(max(10, distance_km * 3 + 15)),
+                "is_at_risk": False,
+                "note": "approximate (no model loaded)",
+            }
+
+        try:
+            from dabba.features.delivery_features import build_eta_features_for_api
+
+            features = build_eta_features_for_api(
+                distance_km=distance_km,
+                traffic_level=1,  # default: Medium
+                is_festival=False,
+                delivery_person_age=30.0,
+                delivery_person_rating=4.0,
+                vehicle_condition=2,
+            )
+
+            prediction = float(self.eta_model.predict(features)[0])
+            sla_threshold = self.config.sla_threshold_minutes
+
+            return {
+                "predicted_minutes": round(prediction, 1),
+                "is_at_risk": prediction > sla_threshold,
+                "note": "estimated from restaurant data",
+            }
+        except Exception as e:
+            logger.warning(
+                "ETA model prediction failed for '%s': %s — falling back to formula",
+                restaurant_name,
+                e,
+            )
+            return {
+                "predicted_minutes": round(max(10, distance_km * 3 + 15)),
+                "is_at_risk": False,
+                "note": "fallback (model error)",
+            }
 
     def get_reliability_score(self, restaurant_name: str) -> Optional[float]:
         """Get the reliability score for a restaurant.
