@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -38,6 +39,7 @@ import pandas as pd
 from dabba.config import DabbaConfig, get_config
 from dabba.features.delivery_features import build_eta_features_for_api
 from dabba.features.geo import haversine_distance
+from dabba.observability import concierge_tool_calls_total, concierge_loop_duration_seconds
 
 logger = logging.getLogger(__name__)
 
@@ -324,6 +326,8 @@ def _llm_concierge_response(
         4. If no ``tool_use`` → break, return accumulated text.
 
     The loop runs at most ``config.llm_max_steps`` iterations.
+    Each iteration is traced via Prometheus metrics (tool call counter,
+    loop duration histogram).
 
     Args:
         messages: Conversation history as list of
@@ -363,6 +367,7 @@ def _llm_concierge_response(
 
     for step in range(1, max_steps + 1):
         logger.debug("Concierge ReAct step %d/%d", step, max_steps)
+        step_start_time = time.monotonic()
 
         try:
             response = client.messages.create(
@@ -410,7 +415,27 @@ def _llm_concierge_response(
         # Execute each tool and add tool_result content blocks
         tool_results: List[Dict[str, Any]] = []
         for block in tool_calls:
+            tool_start = time.monotonic()
+
+            # Record tool call metric
+            concierge_tool_calls_total.labels(tool=block.name).inc()
+
             result_text = _execute_tool(block.name, block.input, tools)
+
+            tool_duration = time.monotonic() - tool_start
+
+            # Log trace span for this tool execution as a structured log line
+            logger.info(
+                "Concierge tool executed",
+                extra={
+                    "span_type": "tool_execution",
+                    "tool": block.name,
+                    "step": step,
+                    "duration_s": round(tool_duration, 3),
+                    "result_length": len(result_text),
+                },
+            )
+
             tool_results.append(
                 {
                     "type": "tool_result",
@@ -418,6 +443,10 @@ def _llm_concierge_response(
                     "content": result_text,
                 }
             )
+
+        # Record loop iteration duration
+        loop_duration = time.monotonic() - step_start_time
+        concierge_loop_duration_seconds.labels(step=str(step)).observe(loop_duration)
 
         # Tool results are sent as a user message with tool_result blocks
         anthropic_messages.append({"role": "user", "content": tool_results})

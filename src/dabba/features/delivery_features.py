@@ -318,7 +318,7 @@ def add_delivery_features(
 def build_eta_features_for_api(
     *,
     distance_km: float,
-    traffic_level: int = 1,
+    traffic_level: Optional[int] = None,
     is_festival: bool = False,
     delivery_person_age: float = 30.0,
     delivery_person_rating: float = 4.0,
@@ -339,9 +339,13 @@ def build_eta_features_for_api(
     current time if not provided, so the API works without requiring
     the caller to specify them.
 
+    When traffic_level is None and ``DABBA_TOMTOM_API_KEY`` is configured,
+    real-time traffic data is fetched from the TomTom Traffic API.
+
     Args:
         distance_km: Haversine distance in km.
         traffic_level: Traffic ordinal (0=Low, 1=Medium, 2=High, 3=Jam).
+            If None, real-time traffic is fetched (requires API key).
         is_festival: Whether it's a festival day.
         delivery_person_age: Delivery person age.
         delivery_person_rating: Delivery person rating (1-5).
@@ -378,16 +382,41 @@ def build_eta_features_for_api(
         "dow_sin": float(dow_sin[0]),
         "dow_cos": float(dow_cos[0]),
         "order_hour_bucket": _hour_bucket(hour),
-        "traffic_ordinal": traffic_level,
+        "traffic_ordinal": traffic_level if traffic_level is not None else 1,
         "is_festival": is_festival_int,
         "weather_encoded": weather_encoded,
-        "distance_traffic_interaction": distance_km * (traffic_level + 1),
+        "distance_traffic_interaction": distance_km * ((traffic_level if traffic_level is not None else 1) + 1),
         "distance_festival_interaction": distance_km * festival_flag,
         "delivery_person_age": delivery_person_age,
         "delivery_person_ratings": delivery_person_rating,
         "vehicle_condition": vehicle_condition,
         "delivery_person_age_bucket": _age_bucket(delivery_person_age),
     }
+
+    # Use real-time traffic when the caller didn't specify a traffic_level
+    # and a traffic API key is configured. This makes the ETA endpoint
+    # traffic-aware without requiring callers to specify traffic.
+    if traffic_level is None:
+        try:
+            from dabba.features.traffic import get_traffic_level as _get_traffic
+
+            traffic_info = _get_traffic(
+                lat=12.97,
+                lon=77.59,
+                hour=hour,
+                day_of_week=dow,
+                config=config,
+            )
+            data["traffic_ordinal"] = traffic_info.level
+            data["distance_traffic_interaction"] = distance_km * (traffic_info.level + 1)
+            logger.debug(
+                "Real-time traffic level: %d (%s) via %s",
+                traffic_info.level,
+                traffic_info.label,
+                traffic_info.source,
+            )
+        except Exception:
+            pass  # Keep default traffic_level
 
     return pd.DataFrame([data])
 

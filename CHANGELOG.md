@@ -8,6 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **P2 — Structured JSON logging**: New ``dabba/observability`` module with a custom
+  ``JSONFormatter`` that outputs every log line as JSON with timestamp, level, logger,
+  message, and request ID (via async-safe ``contextvars``). Applied globally across
+  the FastAPI application (``api/main.py``).
+- **P2 — Prometheus /metrics endpoint**: ``GET /metrics`` returns Prometheus text-format
+  metrics including request count, latency histogram (bucketed), error rate per route,
+  drift-event counter, concierge tool-call counter, and model-loaded gauges.
+  ``prometheus-client`` added to ``requirements.txt``.
+- **P2 — Concierge ReAct loop tracing**: Each tool execution in the concierge's ReAct loop
+  is tracked with a structured log span (tool name, step, duration) and a Prometheus
+  histogram (``dabba_concierge_loop_duration_seconds``).
+- **P2 — Request ID middleware**: Every HTTP request receives a ``X-Request-ID`` header
+  and a unique request ID that propagates into all log lines from that request context.
+- **P2 — Custom drift-event and tool-call counters**: ``dabba_drift_events_total`` and
+  ``dabba_concierge_tool_calls_total`` Prometheus counters added for operational insight.
 - **P0 — CSV→DB migration for serving paths**: ``api/routers/model_info.py``,
   ``api/routers/recommend.py``, and ``api/routers/chat.py`` now read from the database
   via repository functions instead of ``pd.read_csv()``. All 4 Streamlit pages also
@@ -21,8 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - ``tests/integration/test_concierge.py``: ``test_get_eta_no_model`` assertion updated
   to match actual ``note`` field (``"approximate (no model loaded)"``).
+- ``tests/test_narrator.py``: Fixed 6 ``TestRulesNarrate`` tests that were calling
+  ``_rules_narrate()`` with 3 positional arguments — the function requires 4
+  (missing ``eta_prediction=None``).
 
-### Added
+### Added (pre-v0.5.0 history, kept for attribution)
+
 - **P1 — `/v1/explain/{prediction_id}` endpoint**: New ``api/routers/explain.py`` router that
   reads from the existing ``predictions`` table and exposes stored SHAP values through the API.
   Includes ``ExplainResponse`` schema, ``get_prediction_by_id()`` repository function, and

@@ -1,8 +1,9 @@
-"""FastAPI application v4 — Dabba ML endpoints.
+"""FastAPI application v5 — Dabba ML endpoints with observability.
 
 Routing structure:
     Root (no auth, no rate limit):
         GET  /health               — health check
+        GET  /metrics              — Prometheus metrics
 
     v1 (auth + rate limited):
         POST /v1/recommend         — hybrid restaurant recommendations
@@ -14,31 +15,51 @@ State management:
     All models/tools are loaded at startup and stored in ``app.state``
     rather than module-level globals. Router endpoints access them
     via FastAPI ``Depends()`` instead of ``get_*()`` accessors.
+
+Observability:
+    - JSON-formatted structured logging (via :mod:`dabba.observability`)
+    - Prometheus metrics at ``/metrics`` (counter, latency histogram)
+    - Request ID in every log line via middleware
 """
 
 from __future__ import annotations
 
 import logging
+import time
 
-from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from dabba.config import get_config
+from dabba.observability import (
+    generate_request_id,
+    http_request_duration_seconds,
+    http_requests_total,
+    metrics_endpoint,
+    models_loaded,
+    set_request_id,
+    setup_logging,
+)
 from api.auth import verify_api_key
 from api.limiter import limiter
 from api.routers import recommend, eta, chat, explain, model_info, restaurants
 from api.schemas import HealthResponse
 from dabba.database.session import init_db as init_database
 
+# ─── Configure JSON logging ──────────────────────────────────────────
+config = get_config()
+setup_logging(config.log_level)
+
 logger = logging.getLogger(__name__)
+
 
 # ─── App instance ────────────────────────────────────────────────────
 app = FastAPI(
     title="Dabba API",
     description="India-focused restaurant recommendation and delivery ETA API",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 # ─── Rate limiter ─────────────────────────────────────────────────────
@@ -59,6 +80,30 @@ app.add_middleware(
 )
 
 
+# ─── Observability middleware (request ID + Prometheus) ───────────────
+@app.middleware("http")
+async def observability_middleware(request: Request, call_next):
+    request_id = generate_request_id()
+    set_request_id(request_id)
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    duration = time.time() - start_time
+    endpoint = request.url.path
+    method = request.method
+    status = str(response.status_code)
+
+    # Record Prometheus metrics
+    http_requests_total.labels(method=method, endpoint=endpoint, status=status).inc()
+    http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(duration)
+
+    # Add request_id to response headers
+    response.headers["X-Request-ID"] = request_id
+
+    return response
+
+
 # ─── Security Headers ────────────────────────────────────────────────
 @app.middleware("http")
 async def add_security_headers(request, call_next):
@@ -75,8 +120,6 @@ async def add_security_headers(request, call_next):
     )
     return response
 
-
-config = get_config()
 
 # ─── v1 authenticated router ─────────────────────────────────────────
 # All v1 endpoints require X-API-Key (unless DABBA_API_KEY is unset)
@@ -121,11 +164,43 @@ async def startup() -> None:
         eta_model=app.state.eta_model,
     )
 
+    # Set Prometheus model-loaded gauges
+    models_loaded.labels(model="eta").set(
+        1 if app.state.eta_model is not None else 0
+    )
+    models_loaded.labels(model="recommender").set(
+        1 if app.state.hybrid_recommender is not None else 0
+    )
+    models_loaded.labels(model="concierge").set(
+        1 if app.state.concierge_tools is not None else 0
+    )
+
     logger.info(
-        "Dabba API started — ETA=%s, Recommender=%s, Concierge=%s",
-        "loaded" if app.state.eta_model is not None else "missing",
-        "loaded" if app.state.hybrid_recommender is not None else "missing",
-        "loaded" if app.state.concierge_tools is not None else "empty",
+        "Dabba API started",
+        extra={
+            "eta_model": "loaded" if app.state.eta_model is not None else "missing",
+            "recommender": (
+                "loaded" if app.state.hybrid_recommender is not None else "missing"
+            ),
+            "concierge": (
+                "loaded" if app.state.concierge_tools is not None else "empty"
+            ),
+            "version": "0.5.0",
+        },
+    )
+
+
+# ─── Metrics (no auth) ───────────────────────────────────────────────
+@app.get("/metrics")
+async def metrics() -> Response:
+    """Prometheus metrics endpoint — no auth required.
+
+    Returns metrics in Prometheus text format for scraping by
+    Prometheus or Grafana.
+    """
+    return Response(
+        content=metrics_endpoint(),
+        media_type="text/plain; version=0.0.4; charset=utf-8",
     )
 
 

@@ -114,6 +114,16 @@ class DabbaConfig(BaseSettings):
         description="TTL for recommendation cache entries (seconds)",
     )
 
+    # --- External API Keys ---
+    tomtom_api_key: Optional[str] = Field(
+        default=None,
+        description="TomTom Traffic API key for real-time traffic data",
+    )
+    mappls_api_key: Optional[str] = Field(
+        default=None,
+        description="Mappls/MapmyIndia API key for India-specific traffic",
+    )
+
     # --- Drift Detection ---
     drift_ks_threshold: float = 0.05  # p-value threshold for KS test
     drift_feature_sample: int = 100  # samples to use for drift detection
