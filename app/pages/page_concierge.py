@@ -1,15 +1,18 @@
 """Page 4: Food Concierge — chat interface with styled bubbles,
-tool-use integration, and example prompt chips."""
+tool-use integration, and example prompt chips.
+
+Data is loaded from the database via repositories, completing the
+CSV→DB migration for the Streamlit dashboard.
+"""
 
 from __future__ import annotations
-
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 from app.utils.sanitize import html_escape
 from dabba.config import get_config
+from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.food_concierge import ConciergeTools, get_concierge_response
 
 PAGE_NAME = "concierge"
@@ -24,7 +27,7 @@ def show() -> None:
         "Ask for recommendations, ETAs, or reliability scores in plain English."
     )
 
-    # Load restaurant data
+    # Load restaurant data from database
     df = _load_data()
 
     # Initialize concierge tools
@@ -127,10 +130,17 @@ def show() -> None:
         st.rerun()
 
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def _load_data() -> pd.DataFrame:
-    """Load processed restaurant data."""
-    data_path = Path("data/processed/restaurants_processed.csv")
-    if data_path.exists():
-        return pd.read_csv(data_path)
-    return pd.DataFrame()
+    """Load restaurant data from the database with Streamlit caching.
+
+    Uses the repository layer to read from Postgres/SQLite instead of
+    reading CSVs directly. Cached for 5 minutes to avoid DB hammering.
+    """
+    try:
+        from dabba.database.session import get_db
+
+        with get_db() as db:
+            return get_all_restaurants_as_df(db, with_cuisine_features=False)
+    except Exception:
+        return pd.DataFrame()
