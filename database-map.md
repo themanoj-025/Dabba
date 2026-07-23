@@ -77,7 +77,7 @@ The API reads from the database (not CSV) via `load_zomato_from_db()` and `load_
 | `online_order_binary` | INTEGER | 0/1 |
 | `book_table_binary` | INTEGER | 0/1 |
 | `cuisine_count` | INTEGER | Number of cuisines |
-| `avg_sentiment` | FLOAT | VADER compound score |
+| `avg_sentiment` | FLOAT | VADER compound score (or HuggingFace multilingual if Hinglish module enabled) |
 | `reliability_score` | FLOAT | Composite score (0-1) |
 | `latitude` / `longitude` | FLOAT | Restaurant coordinates |
 | `created_at` / `updated_at` | DATETIME | Auto-timestamps |

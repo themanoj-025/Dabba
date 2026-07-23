@@ -419,33 +419,33 @@ make db-history      # Show migration history
 | **VADER is English-only** | ✅ **Hinglish module added** | New ``src/dabba/nlp/hinglish_sentiment.py`` with HuggingFace multilingual model + VADER fallback |
 | **Static traffic levels** | ✅ **Traffic API added** | New ``src/dabba/features/traffic.py`` with TomTom/Mappls backends + time-of-day simulation fallback |
 | **No Prometheus metrics** | ✅ **Built in v0.5.0** | ``GET /metrics`` endpoint with request count, latency histogram, drift/tool-call counters |
-| **No retraining trigger** | 🔜 Planned | Drift-threshold-triggered retraining |
-| **No retraining trigger** | 🔜 Planned | Drift-threshold-triggered retraining |
+| **No retraining trigger** | ✅ **Built in v0.6.0** | ``src/dabba/monitoring/retrain.py`` with subprocess spawn, 6h cooldown, dry-run mode |
+| **No secrets manager pattern** | ✅ **Built in v0.6.0** | ``.env.example`` documents Vault, AWS Secrets Manager, Docker Secrets patterns |
+| **Tests share dev database** | ✅ **Built in v0.6.0** | ``conftest.py`` creates temp SQLite per test session (``scope="session", autouse=True``) |
 
 ---
 
 ## 📋 What I'd Do Next
 
 ### 🔴 High Priority
-- **Fix ETA endpoint feature mismatch** — the `POST /v1/predict-eta` route sends only 6 features but the model was trained on ~20+ features (cyclical encoding, rush hour, interaction features). The feature sets need to be aligned.
-- **Fill the concierge ETA stub** — `ConciergeTools.get_eta_estimate()` returns a hardcoded 30-min estimate instead of using the loaded ETA model
-- **Real user-interaction data** instead of synthetic for collaborative filtering
-- **Real-time traffic API integration** (Google Maps, OSRM) for dynamic ETA
 
-### 🟡 Medium Priority
-- **Add missing unit tests** — `recommendation_narrator.py`, `rag_similar_restaurants.py`, `optimizer.py`, `cache/redis_client.py`, evaluation modules, and Streamlit pages all lack dedicated test coverage
+- **Real user-interaction data** instead of synthetic for collaborative filtering
 - **Fine-tuned small model** instead of API calls for the narrator at scale (e.g., fine-tuned BART or T5)
 - **Multi-city expansion** beyond Bangalore
 - **A/B testing framework** for recommendation algorithm variants in production
-- **Hindi/English code-switched sentiment** — VADER is English-only
-- **Production hardening** — dedicated test DB, secrets management, structured logging, Prometheus metrics
+
+### 🟡 Medium Priority
+
+- **End-to-end CI integration** for slow tests (model training, transformers download) to run on schedule, not every push
+- **Production-grade job queue** for drift-triggered retraining (current subprocess approach is functional but not resilient)
+- **Grafana dashboard** on top of the Prometheus `/metrics` endpoint
+- **PWA support** for Streamlit dashboard
 
 ### 🔵 Low Priority
+
 - **Mobile app** with React Native for on-the-go recommendations
-- **Add `/v1/explain/{prediction_id}`** endpoint (schema already exists in `models.py`)
-- **Model auto-retraining** — CI/CD-triggered retraining pipeline
-- **PWA support** for Streamlit dashboard
 - **Kubernetes manifests** for zero-downtime deployment
+- **Model auto-retraining pipeline** triggered by CI/CD schedule
 
 ---
 

@@ -87,7 +87,7 @@ database table (not CSVs).
 }
 ```
 
-**Dependencies**: `reports/model_comparison_rating.csv`, `reports/model_comparison_eta.csv`.
+**Dependencies**: Database (``ExperimentResult`` table) via ``get_winning_model()`` repository.
 
 ---
 
@@ -129,7 +129,7 @@ database table (not CSVs).
 }
 ```
 
-**Dependencies**: `models/best_rating_model.pkl`, processed restaurant CSV.
+**Dependencies**: `models/best_rating_model.pkl`, database via ``get_all_restaurants_as_df()`` repository.
 
 ---
 
@@ -267,7 +267,38 @@ database table (not CSVs).
 
 ---
 
-### 8. GET `/v1/restaurants/search/{query}`
+### 8. GET `/v1/explain/{prediction_id}`
+
+**Auth**: `X-API-Key` header
+
+**Rate Limit**: 60/minute
+
+**Purpose**: Retrieve a stored model prediction with SHAP explanations.
+
+**Path Parameters**:
+- `prediction_id` (int) — Prediction primary key
+
+**Response** (`ExplainResponse`):
+```json
+{
+    "id": 1,
+    "model_name": "RandomForest",
+    "model_version": "v1",
+    "input_data": {"feature_1": 0.5, "feature_2": 1.2},
+    "output_value": 4.2,
+    "shap_values": {"feature_1": 0.3, "feature_2": -0.1},
+    "created_at": "2026-07-23T10:30:00"
+}
+```
+
+**Error Responses**:
+- `404` — Prediction not found
+
+**Dependencies**: ``predictions`` table via ``get_prediction_by_id()`` repository.
+
+---
+
+### 9. GET `/v1/restaurants/search/{query}`
 
 **Auth**: `X-API-Key` header
 
@@ -311,6 +342,7 @@ database table (not CSVs).
 | `ChatRequest` | POST /v1/chat | message, history (list of ChatMessage) |
 | `ChatResponse` | POST /v1/chat | reply |
 | `RestaurantItem` | GET /v1/restaurants/* | id, name, rate, bayesian_rating, cost_for_two, location, cuisines, votes, reliability_score |
+| `ExplainResponse` | GET /v1/explain/{prediction_id} | id, model_name, model_version, input_data, output_value, shap_values, created_at |
 | `RestaurantListResponse` | GET /v1/restaurants | restaurants (list), total, limit, offset |
 
 ---

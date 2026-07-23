@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **JSON logging migration**: ``src/dabba/database/seed.py`` and ``src/dabba/pipeline.py``
+  migrated from ``logging.basicConfig`` to ``setup_logging()`` from the ``observability``
+  module. All log lines across the entire project now emit structured JSON with
+  timestamp, level, and logger name. ``pipeline.py`` now also respects custom
+  ``DABBA_LOG_LEVEL`` via a second ``setup_logging()`` call inside ``main()``.
+- **Documentation audit**: All `* .md` files updated to reflect P0-P4 completed state.
+  ``memory.md`` Feature Inventory updated with real test file references for narrator,
+  RAG, redis, optimizer, and business_cost modules. ``README.md`` Known Limitations
+  and What I'd Do Next sections revised. ``api-map.md``, ``architecture.md``,
+  ``dependency-graph.md``, ``routes.md`` updated with new endpoints, modules, and
+  test coverage.
+
+### Added
 - **P4 — Secrets manager pattern**: Comprehensive ``.env.example`` added with all config
   fields documented. Includes production secret injection guidance for HashiCorp Vault,
   AWS Secrets Manager, and Docker Secrets deployment patterns.

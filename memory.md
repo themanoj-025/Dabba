@@ -294,17 +294,17 @@ Kaggle (Zomato + Delivery CSVs)
 | Hybrid Recommender | `models/hybrid_recommender.py` | — |
 | Collaborative Filtering | `models/collaborative_recommender.py` | `test_collaborative_recommender.py` |
 | Optuna HPO | `models/base_trainer.py` (search spaces, tuning) | `test_optuna_tuning.py` (~25 tests) |
-| LLM Narrator | `llm/recommendation_narrator.py` | — |
-| RAG Retrieval | `llm/rag_similar_restaurants.py` | — |
+| LLM Narrator | `llm/recommendation_narrator.py` | `test_narrator.py` (14 tests) |
+| RAG Retrieval | `llm/rag_similar_restaurants.py` | `test_rag_similar.py` (16 tests) |
 | Food Concierge | `llm/food_concierge.py` | `integration/test_concierge.py` (27 tests) |
 | Drift Detection | `monitoring/drift.py` | `test_drift.py` (13 tests) |
-| SLA / Reliability | `evaluation/business_cost.py` | — |
-| Redis Cache | `cache/redis_client.py` | — |
+| SLA / Reliability | `evaluation/business_cost.py` | `test_business_cost.py` |
+| Redis Cache | `cache/redis_client.py` | `test_redis_client.py` (19 tests) |
 | Database ORM | `database/models.py`, `database/session.py` | `test_database.py` (16 tests) |
 | DB Loaders | `database/seed.py`, `database/repositories.py` | `test_db_loaders.py` (11 tests) |
 | API | `api/main.py`, `api/routers/*` | `test_api.py` (7 tests) |
 | Dashboard | `app/streamlit_app.py`, `app/pages/*` | — |
-| Delivery Optimizer | `models/optimizer.py` | — |
+| Delivery Optimizer | `models/optimizer.py` | `test_optimizer.py` (16 tests) |
 | E2E Workflow | `pipeline.py` | `e2e/test_workflow.py` (6 tests) |
 
 ---
@@ -370,9 +370,9 @@ make db-migrate     # Run Alembic migrations
 | Gap | Details | Effort |
 |-----|---------|--------|
 | **Real user-interaction data** | CF uses synthetic data (clearly documented) | Large |
-| **Drift-triggered retraining** | No automation for retraining on drift | Medium |
-| **Secrets manager** | Still `.env`-only for all API keys | Small |
-| **Dedicated test DB** | Tests share global SQLite, risk of cross-pollution | Small |
+| **Drift-triggered retraining** | ✅ ``src/dabba/monitoring/retrain.py`` spawns subprocess (6h cooldown, dry-run) | Medium |
+| **Secrets manager** | ✅ ``.env.example`` documents Vault/AWS Secrets Manager/Docker Secrets | Small |
+| **Dedicated test DB** | ✅ ``conftest.py`` creates temp SQLite per test session | Small |
 
 ### 🟡 Medium Priority
 | Gap | Details |
@@ -380,9 +380,7 @@ make db-migrate     # Run Alembic migrations
 | Fine-tuned small model (BART/T5) instead of Claude API at scale |
 | Multi-city expansion beyond Bangalore |
 | A/B testing framework for recommendation variants in production |
-| Hindi/English code-switched sentiment (VADER is English-only) |
-| Production hardening: dedicated test DB, secrets management, structured logging |
-| Prometheus metrics + Grafana dashboard |
+| Grafana dashboard on top of Prometheus /metrics endpoint |
 
 ### 🔵 Low Priority
 | Gap | Details |
@@ -403,6 +401,6 @@ make db-migrate     # Run Alembic migrations
 | **CSV dependency** — pipeline still requires CSVs to exist | DB-backed loaders added, but not enforced | Low |
 | **MLflow** requires separate server | Fails gracefully when unavailable | Low |
 | **VADER is English-only** | Hindi/English code-switched reviews not handled | Medium |
-| **No dedicated test DB** | Tests share global SQLite engine | Medium |
-| **No Prometheus metrics** | No `/metrics` endpoint on any service | Low |
-| **No scheduled retraining** | Models trained manually via `make train` | Medium |
+| **No dedicated test DB** | ✅ Fixed — `conftest.py` creates isolated temp SQLite per session | Resolved |
+| **No Prometheus metrics** | ✅ Fixed — `GET /metrics` with request count, latency histogram, counters | Resolved |
+| **No scheduled retraining** | ✅ Fixed — `retrain.py` spawns pipeline on drift (6h cooldown) | Resolved |

@@ -9,7 +9,6 @@ import logging
 from typing import Tuple
 
 import numpy as np
-import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
 from sklearn.metrics import silhouette_score
 
@@ -92,35 +91,6 @@ def geocode_location(location: str) -> Tuple[float, float] | None:
         if name.lower() in loc_lower or loc_lower in name.lower():
             return coords
     return None
-
-
-def add_distance_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Add restaurant and delivery location coordinates if missing.
-
-    If the DataFrame has a 'location' column but no lat/long,
-    geocode approximate centroids from the lookup table.
-
-    Args:
-        df: DataFrame with location information.
-
-    Returns:
-        pd.DataFrame: DataFrame with restaurant_latitude and
-            restaurant_longitude columns.
-    """
-    df = df.copy()
-
-    # If lat/long already present, return as-is
-    if "restaurant_latitude" in df.columns and "restaurant_longitude" in df.columns:
-        return df
-
-    if "location" in df.columns:
-        coords = df["location"].apply(
-            lambda x: geocode_location(str(x)) if pd.notna(x) else None
-        )
-        df["restaurant_latitude"] = coords.apply(lambda c: c[0] if c else np.nan)
-        df["restaurant_longitude"] = coords.apply(lambda c: c[1] if c else np.nan)
-
-    return df
 
 
 def compare_clustering_methods(

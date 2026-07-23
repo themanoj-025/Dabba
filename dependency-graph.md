@@ -13,14 +13,16 @@ src/dabba/
 │   ├── loaders.py → config.py, pandas
 │   └── cleaning.py → config.py, pandas, numpy
 │
+├── nlp/
+│   ├── sentiment.py → config.py, nltk (VADER), ast, pandas
+│   └── hinglish_sentiment.py → config.py, transformers (optional), nltk (fallback), ast, pandas
+│
 ├── features/
 │   ├── restaurant_features.py → config.py, geo.py, pandas
 │   ├── delivery_features.py → config.py, geo.py, pandas
 │   │   └── (rush hour, sin/cos, city_zone, weather, interactions)
-│   └── geo.py → sklearn (KMeans, DBSCAN, Agglomerative, silhouette_score)
-│
-├── nlp/
-│   └── sentiment.py → config.py, nltk (VADER), ast, pandas
+│   ├── geo.py → sklearn (KMeans, DBSCAN, Agglomerative, silhouette_score)
+│   └── traffic.py → config.py, requests (optional TomTom/Mappls)
 │
 ├── models/
 │   ├── base_trainer.py → config.py, sklearn, optuna, mlflow, joblib
@@ -35,6 +37,9 @@ src/dabba/
 │   ├── recommender.py → config.py, sklearn, pandas
 │   └── optimizer.py → scipy.optimize
 │
+├── observability/
+│   └── __init__.py → logging, json, contextvars, prometheus_client
+│
 ├── llm/
 │   ├── recommendation_narrator.py → config.py (rules-based, optional anthropic)
 │   ├── rag_similar_restaurants.py → config.py, faiss, sklearn, numpy
@@ -42,15 +47,13 @@ src/dabba/
 │       └── (multi-step tool chain with tool_result feedback)
 │
 ├── monitoring/
-│   └── drift.py → config.py, scipy.stats, pandas, urllib.request
-│       └── (AlertResult, _send_slack_alert, cooldown, detect_and_alert)
+│   ├── drift.py → config.py, scipy.stats, pandas, urllib.request
+│   │   └── (AlertResult, _send_slack_alert, cooldown, detect_and_alert)
+│   └── retrain.py → subprocess, drift.py (DriftResult)
 │
 ├── database/
 │   ├── session.py → config.py, sqlalchemy
 │   └── models.py → sqlalchemy (Restaurant, Order, Prediction, DriftLog, ExperimentResult)
-│
-├── cache/
-│   └── redis_client.py → config.py, redis/fakeredis
 │
 └── evaluation/
     ├── metrics.py → sklearn
@@ -64,9 +67,11 @@ api/
 ├── schemas.py → pydantic
 ├── routers/
 │   ├── recommend.py → schemas, hybrid_recommender, llm, Depends(app.state)
-│   ├── eta.py → schemas, joblib, Depends(app.state)
+│   ├── eta.py → schemas, joblib, delivery_features (build_eta_features_for_api), Depends(app.state)
 │   ├── chat.py → schemas, llm/food_concierge, Depends(app.state)
-│   └── model_info.py → schemas, config.py, pandas
+│   ├── model_info.py → schemas, config, repositories (get_winning_model)
+│   ├── explain.py → schemas, repositories (get_prediction_by_id), database.session
+│   └── restaurants.py → schemas, repositories, database.session
 
 app/
 ├── streamlit_app.py → app/pages/*, dabba.config
@@ -91,15 +96,24 @@ tests/
 ├── test_model_selection.py → src/dabba/models/model_selection.py
 ├── test_drift.py → src/dabba/monitoring/drift.py (13 tests — Slack, cooldown, detect_and_alert)
 ├── test_collaborative_recommender.py → src/dabba/models/collaborative_recommender.py
-├── test_api.py → api/main.py (fastapi.testclient)
+├── test_api.py → api/main.py (fastapi.testclient) — includes CSV-read prohibition tests
 ├── test_rating_model.py → src/dabba/models/rating_model.py
 ├── test_eta_model.py → src/dabba/models/eta_model.py
-├── test_recommender.py → src/dabba/models/recommender.py
+├── test_recommender.py → src/dabba/models/recommender.py (14 tests — Bayesian avg, content-based)
 ├── test_optuna_tuning.py → src/dabba/models/base_trainer.py (25 tests — HPO, search spaces, MLflow)
 ├── test_database.py → src/dabba/database/ (16 tests — seed, repositories, session)
 ├── test_db_loaders.py → src/dabba/data/loaders.py + dabba.database (11 tests — DB-backed loaders)
-├── test_drift.py → src/dabba/monitoring/drift.py (13 tests — Slack, cooldown, detect_and_alert)
-├── integration/test_concierge.py → src/dabba/llm/food_concierge.py (27 tests — ReAct, intent matching, tools) 
+├── test_narrator.py → src/dabba/llm/recommendation_narrator.py (14 tests — rules + LLM)
+├── test_rag_similar.py → src/dabba/llm/rag_similar_restaurants.py (16 tests — embeddings, similarity)
+├── test_redis_client.py → src/dabba/cache/redis_client.py (19 tests — set/get/delete/flush)
+├── test_optimizer.py → src/dabba/models/optimizer.py (16 tests — Hungarian assignment)
+├── test_traffic.py → src/dabba/features/traffic.py (traffic simulation + level estimates)
+├── test_retrain.py → src/dabba/monitoring/retrain.py (drift-triggered retraining)
+├── test_metrics.py → src/dabba/evaluation/metrics.py (regression metric calculations)
+├── test_business_cost.py → src/dabba/evaluation/business_cost.py (SLA, reliability, A/B)
+├── test_hybrid_recommender.py → src/dabba/models/hybrid_recommender.py
+├── test_hinglish_sentiment.py → src/dabba/nlp/hinglish_sentiment.py (multilingual sentiment)
+├── integration/test_concierge.py → src/dabba/llm/food_concierge.py (27 tests — ReAct, intent matching)
 ├── e2e/test_workflow.py → pipeline.py (6 tests — end-to-end workflow)
 ├── integration/__init__.py → Integration test directory
 └── e2e/__init__.py → E2E test directory
@@ -127,6 +141,9 @@ Optional:
 ├── plotly      → interactive charts (UI + pipeline)
 ├── folium      → geographic visualization
 ├── nltk        → VADER sentiment analysis
+├── transformers → Hinglish multilingual sentiment (optional)
+├── requests    → Traffic API (TomTom, Mappls) — optional
+├── prometheus-client → /metrics endpoint
 
 Infrastructure:
 ├── fastapi     → REST API + Depends DI + app.state

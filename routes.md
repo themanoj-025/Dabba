@@ -70,6 +70,7 @@ app (no auth)
 | 7 | GET | `/v1/restaurants` | `routers/restaurants.py` | `X-API-Key` | 60/min | List restaurants from database |
 | 8 | GET | `/v1/restaurants/{id}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Get restaurant by ID (404 if not found) |
 | 9 | GET | `/v1/restaurants/search/{q}` | `routers/restaurants.py` | `X-API-Key` | 60/min | Search by name or cuisine |
+| 10 | GET | `/v1/explain/{prediction_id}` | `routers/explain.py` | `X-API-Key` | 60/min | Retrieve stored prediction with SHAP values |
 
 ### Authentication
 

@@ -20,9 +20,13 @@ Dabba is organized as follows:
 ```bash
 src/dabba/          # Core ML pipeline (data, features, models, LLM, monitoring, evaluation)
   database/         # SQLAlchemy ORM, session management, seed script, repositories
+  observability/    # Structured JSON logging, Prometheus metrics, request tracing
+  nlp/              # VADER sentiment + Hinglish multilingual sentiment (transformers)
+  features/         # Restaurant/delivery features + real-time traffic API (TomTom/Mappls)
+  monitoring/       # KS-test drift detection + Slack alerts + drift-triggered retraining
 app/                # Streamlit dashboard (4 pages + components + theme)
-api/                # FastAPI server (6 routes: recommend, predict-eta, chat, model-info, restaurants, health)
-tests/              # 100+ pytest tests (unit, integration, e2e)
+api/                # FastAPI server (10 endpoints across 8 routers: health, metrics, recommend, predict-eta, chat, model-info, explain, restaurants list/get/search)
+tests/              # 220+ pytest tests (unit, integration, e2e)
 notebooks/          # 6 EDA and prototyping notebooks
 data/               # Raw + processed datasets (gitignored)
 models/             # Saved model artifacts .pkl / .pt (gitignored)
@@ -47,10 +51,11 @@ make lint          # Verify: ruff check + black --check + isort --check
 
 ## Testing
 
-- **Run tests**: `make test` (or `pytest tests/ -v`)
-- **100+ tests** across: cleaning, features, model selection, collaborative filtering, drift detection, API, database, integration, e2e
+- **Run tests**: `make test` (or `pytest tests/ -v --timeout=60`)
+- **220+ tests** across: cleaning, features, model selection, collaborative filtering, drift detection, API, database, narrator, RAG, redis, optimizer, traffic, retrain, integration, e2e
 - **Write tests** for any new functionality using pytest
 - Tests are in `tests/` and mirror the `src/dabba/` module structure
+- **Slow tests** (model training, transformers download) are excluded from CI — run them locally with longer timeouts via `pytest tests/test_eta_model.py --timeout=300`
 
 ## Database Operations
 
@@ -79,6 +84,43 @@ python -m dabba.database.seed --clear             # Clear all data before seedin
 5. Ensure linters pass: `make lint`
 6. Submit a pull request with a clear description
 
+## LLM Features (Optional)
+
+To enable LLM-powered recommendations and concierge chat:
+
+```bash
+echo "DABBA_LLM_ENABLED=true" >> .env
+echo "DABBA_ANTHROPIC_API_KEY=sk-ant-..." >> .env
+```
+
+Without this, all LLM features fall back to **rules-based behavior** — the app never breaks.
+
+## Real-Time Traffic (Optional)
+
+For dynamic ETA predictions with real traffic data, configure one of:
+
+- **TomTom**: `DABBA_TOMTOM_API_KEY` — https://developer.tomtom.com/ (2500 req/day free)
+- **Mappls**: `DABBA_MAPPLS_API_KEY` — https://www.mappls.com/ (India-specific)
+
+If both are unset, falls back to time-of-day traffic simulation.
+
+## Hinglish Sentiment (Optional)
+
+For Hindi/English code-switched review sentiment, the Hinglish module uses a HuggingFace
+multilingual model. Install with:
+
+```bash
+pip install transformers torch
+```
+
+Falls back to VADER (English-only) if `transformers` is not installed.
+
+## Observability
+
+- **Structured JSON logging**: All log lines are JSON with timestamp, level, logger, request ID
+- **Prometheus `/metrics`**: Available at `http://localhost:8000/metrics` (no auth)
+- **Request tracing**: Every request has a unique `X-Request-ID` header propagated through logs
+
 ## Common Commands
 
 ```bash
@@ -87,7 +129,7 @@ make train          # Run full ML pipeline
 make run-app        # Start Streamlit dashboard (port 8501)
 make run-api        # Start FastAPI server (port 8000)
 make run-mlflow     # Start MLflow tracking UI (port 5000)
-make test           # Run 100+ tests with coverage
+make test           # Run 220+ tests with coverage
 make lint           # Run ruff + black --check
 make format         # Auto-format code
 make clean          # Remove generated files

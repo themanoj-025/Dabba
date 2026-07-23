@@ -122,6 +122,8 @@ pipeline.py (orchestrator)
  ├── features/delivery_features.py → config.py, geo.py
  ├── features/geo.py → scikit-learn
  ├── nlp/sentiment.py → config.py, nltk
+ ├── nlp/hinglish_sentiment.py → config.py, transformers (optional), nltk (fallback)
+ ├── features/traffic.py → config.py, requests (optional TomTom/Mappls)
  ├── models/rating_model.py → config.py, sklearn, xgboost, lightgbm, catboost
  ├── models/eta_model.py → config.py, sklearn, xgboost, lightgbm, catboost
  ├── models/model_selection.py → config.py
@@ -129,7 +131,9 @@ pipeline.py (orchestrator)
  ├── models/collaborative_recommender.py → config.py, torch
  ├── models/hybrid_recommender.py → config.py, recommender.py
  ├── evaluation/metrics.py → sklearn
- └── evaluation/business_cost.py → config.py
+ ├── evaluation/business_cost.py → config.py
+ ├── observability/__init__.py → logging, json, contextvars, prometheus_client
+ └── monitoring/retrain.py → subprocess, drift.py (DriftResult)
 
 api/main.py (FastAPI — models stored in app.state)
  ├── config.py
@@ -198,16 +202,25 @@ docker/
 
 | Test File | Tests | What It Covers |
 |-----------|-------|----------------|
-| `test_api.py` | 7 | FastAPI smoke tests (health, model-info, ETA, recommend, chat, auth) |
+| `test_api.py` | 7 | FastAPI smoke tests (health, model-info, ETA, recommend, chat, auth, CSV-read prohibition) |
 | `test_features.py` | 18 | Cyclical encoding, city zone, rush hour, interaction features |
 | `test_drift.py` | 13 | KS-test detection, Slack alerting, cooldown management |
 | `test_database.py` | 16 | Seed functions, repository queries, in-memory SQLite |
 | `test_db_loaders.py` | 11 | DB-backed loaders with CSV fallback |
 | `test_optuna_tuning.py` | ~25 | HPO search spaces, trial sampling, MLflow integration |
+| `test_narrator.py` | 14 | LLM + rules-based recommendation narration |
+| `test_rag_similar.py` | 16 | FAISS/sklearn embedding + similarity retrieval |
+| `test_redis_client.py` | 19 | Redis caching (set/get/delete/flush, fakeredis fallback) |
+| `test_recommender.py` | 14 | Bayesian average, content-based recommender |
+| `test_optimizer.py` | 16 | Hungarian algorithm assignment strategies |
+| `test_traffic.py` | — | Traffic simulation and level estimation |
+| `test_retrain.py` | — | Drift-triggered retraining hook |
+| `test_metrics.py` | — | Regression metric calculations |
+| `test_business_cost.py` | — | SLA analysis, reliability score, A/B scenarios |
 | `test_collaborative_recommender.py` | — | Matrix factorization training |
 | `test_rating_model.py` | — | Rating model pipeline |
 | `test_eta_model.py` | — | ETA model pipeline |
-| `test_recommender.py` | — | Content-based recommender |
+| `test_model_selection.py` | — | Model selection and comparison |
 | `test_cleaning.py` | — | Data cleaning |
 | `integration/test_concierge.py` | 27 | ReAct loop, intent matching, tool execution |
 | `e2e/test_workflow.py` | 6 | Full pipeline end-to-end |

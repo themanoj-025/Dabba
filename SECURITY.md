@@ -42,8 +42,8 @@ Instead, report it privately via:
 
 ### Dependencies
 - All Python dependencies are version-pinned in `pyproject.toml`
-- Regular updates via `dependabot` (configured in `.github/dependabot.yml`)
 - Secrets (`kaggle.json`, `.env`) are gitignored
+- Docker images are pinned to specific base image tags
 
 ### Infrastructure
 - Docker containers run with least-privilege user where possible

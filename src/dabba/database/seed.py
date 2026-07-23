@@ -21,6 +21,7 @@ import pandas as pd
 from dabba.config import DabbaConfig, get_config
 from dabba.database.models import Order, Restaurant, RESTAURANT_COL_MAP
 from dabba.database.session import get_db, init_db
+from dabba.observability import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -252,9 +253,9 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
 
 def main() -> None:
     """CLI entry point for database seeding."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    args = _parse_args()
     config = get_config()
+    setup_logging(config.log_level)
+    args = _parse_args()
 
     if args.full_import:
         full_import(config)

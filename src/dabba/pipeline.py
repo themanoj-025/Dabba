@@ -24,6 +24,7 @@ import pandas as pd
 from dabba.config import get_config
 from dabba.data.cleaning import clean_delivery, clean_zomato
 from dabba.data.loaders import describe_dataset, load_delivery, load_zomato
+from dabba.observability import setup_logging
 from dabba.evaluation.business_cost import (
     compute_reliability_score,
     compute_sla_analysis,
@@ -55,10 +56,7 @@ from dabba.database.session import get_db, init_db
 from dabba.database.models import Restaurant, ExperimentResult, RESTAURANT_COL_MAP
 from dabba.features.delivery_features import ETA_FEATURE_COLS
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+setup_logging("INFO")
 logger = logging.getLogger("dabba.pipeline")
 
 
@@ -323,6 +321,8 @@ def compute_shap_explanations(
 def main() -> None:
     """Run the full v3 training pipeline."""
     config = get_config()
+    # Re-apply logging with config level (idempotent — no-op if already INFO)
+    setup_logging(config.log_level)
     logger.info("=== Dabba v3 Training Pipeline ===")
     logger.info("Project root: %s", config.project_root)
 
