@@ -1,4 +1,4 @@
-# 🔗 Dabba v3 — Dependency Graph
+# 🔗 Dabba v4 — Dependency Graph
 
 ## File Dependency Map
 
@@ -96,6 +96,11 @@ tests/
 ├── test_eta_model.py → src/dabba/models/eta_model.py
 ├── test_recommender.py → src/dabba/models/recommender.py
 ├── test_optuna_tuning.py → src/dabba/models/base_trainer.py (25 tests — HPO, search spaces, MLflow)
+├── test_database.py → src/dabba/database/ (16 tests — seed, repositories, session)
+├── test_db_loaders.py → src/dabba/data/loaders.py + dabba.database (11 tests — DB-backed loaders)
+├── test_drift.py → src/dabba/monitoring/drift.py (13 tests — Slack, cooldown, detect_and_alert)
+├── integration/test_concierge.py → src/dabba/llm/food_concierge.py (27 tests — ReAct, intent matching, tools) 
+├── e2e/test_workflow.py → pipeline.py (6 tests — end-to-end workflow)
 ├── integration/__init__.py → Integration test directory
 └── e2e/__init__.py → E2E test directory
 ```
