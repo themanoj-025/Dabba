@@ -1,6 +1,7 @@
 """Feature engineering for the delivery ETA prediction module.
 
-Transforms cleaned delivery data into model-ready features.
+Transforms cleaned delivery data into model-ready features and provides
+:func:`build_eta_features_for_api` for serving-side feature construction.
 
 Features created (existing + new):
     - haversine_distance_km: distance from restaurant to delivery point
@@ -21,12 +22,14 @@ Features created (existing + new):
     - speed_kmh: distance / time (informational, for outlier detection)
 
 Usage in pipeline:
-    See pipeline.py's ``eta_feature_cols`` list — this module only
-    creates the columns; the pipeline selects which to use.
+    See ``ETA_FEATURE_COLS`` — a shared constant that serves as the single
+    source of truth for which columns the model expects. Both ``pipeline.py``
+    and the API serving endpoint import from here to prevent feature drift.
 """
 
 from __future__ import annotations
 
+import datetime
 import logging
 from typing import Optional
 
@@ -353,8 +356,6 @@ def build_eta_features_for_api(
         pd.DataFrame: Single-row DataFrame with all model-required columns.
     """
     config = config or get_config()
-    import datetime
-
     now = datetime.datetime.now()
     hour = order_hour if order_hour is not None else now.hour
     dow = day_of_week if day_of_week is not None else now.weekday()

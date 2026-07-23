@@ -50,6 +50,7 @@ from dabba.models.rating_model import (
 from dabba.nlp.sentiment import add_sentiment_scores
 from dabba.database.session import get_db, init_db
 from dabba.database.models import Restaurant, ExperimentResult, RESTAURANT_COL_MAP
+from dabba.features.delivery_features import ETA_FEATURE_COLS
 
 logging.basicConfig(
     level=logging.INFO,
@@ -404,41 +405,10 @@ def main() -> None:
     describe_dataset(df_delivery, "Delivery (cleaned)")
     df_delivery = add_delivery_features(df_delivery, config)
 
-    eta_feature_cols = [
-        c
-        for c in df_delivery.columns
-        if c
-        in [
-            # Spatial
-            "haversine_distance_km",
-            "city_zone",  # string → one-hot encoded by ColumnTransformer
-            # Temporal — existing but were never added to training before
-            "order_hour",
-            "day_of_week",
-            "is_weekend",
-            # Temporal — new
-            "is_rush_hour",
-            "hour_sin",
-            "hour_cos",
-            "dow_sin",
-            "dow_cos",
-            "order_hour_bucket",  # string → one-hot; fixes pre-existing bug where this was silently dropped
-            # Environmental
-            "traffic_ordinal",
-            "is_festival",
-            "weather_encoded",
-            # Interactions
-            "distance_traffic_interaction",
-            "distance_festival_interaction",
-            # Profile
-            "delivery_person_age",
-            "delivery_person_ratings",
-            "vehicle_condition",
-            "delivery_person_age_bucket",  # string → one-hot
-        ]
-    ]
-
-    X_eta = df_delivery[eta_feature_cols].fillna(0)
+    # Shared constant from delivery_features.py — single source of truth
+    # for which columns the ETA model expects. The serving endpoint
+    # (api/routers/eta.py) and the concierge both import from here.
+    X_eta = df_delivery[ETA_FEATURE_COLS].fillna(0)
     y_eta = df_delivery["time_taken_min"]
 
     if config.optuna_enabled:

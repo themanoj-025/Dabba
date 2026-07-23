@@ -21,6 +21,10 @@ FLOW (per user message):
 FALLBACK:
     Rules-based intent matching when the LLM is unavailable —
     the app never breaks without a key.
+
+NOTE ON ETA: ``get_eta_estimate()`` now uses the real loaded ETA model
+(via ``build_eta_features_for_api``) instead of a hardcoded 30-min stub.
+The model is passed to ``ConciergeTools`` at construction time.
 """
 
 from __future__ import annotations
@@ -32,6 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
 from dabba.config import DabbaConfig, get_config
+from dabba.features.delivery_features import build_eta_features_for_api
 
 logger = logging.getLogger(__name__)
 
@@ -122,8 +127,6 @@ class ConciergeTools:
             }
 
         try:
-            from dabba.features.delivery_features import build_eta_features_for_api
-
             features = build_eta_features_for_api(
                 distance_km=distance_km,
                 traffic_level=1,  # default: Medium
