@@ -223,7 +223,107 @@ def get_winning_model(db: Session, task: str) -> Optional[ExperimentResult]:
         .filter(ExperimentResult.task == task, ExperimentResult.is_winner.is_(True))
         .order_by(desc(ExperimentResult.created_at))
         .first()
-    )# ─── Predictions ──────────────────────────────────────────────────
+    )
+
+
+# ─── Predictions ──────────────────────────────────────────────────
+
+
+def get_all_experiment_results(
+    db: Session,
+    task: Optional[str] = None,
+) -> List[ExperimentResult]:
+    """Fetch all experiment results for a task, ordered by MAE ascending.
+
+    Args:
+        db: Database session.
+        task: 'rating' or 'eta'. If None, return all.
+
+    Returns:
+        List of ExperimentResult instances sorted by MAE.
+    """
+    q = db.query(ExperimentResult).order_by(ExperimentResult.mae)
+    if task:
+        q = q.filter(ExperimentResult.task == task)
+    return q.all()
+
+
+# ─── Restaurant DataFrame helper ──────────────────────────────────
+
+# Canonical cuisine list matching restaurant_features.py
+_RESTAURANT_TOP_CUISINES: list[str] = [
+    "North Indian", "Chinese", "South Indian", "Mughlai", "Cafe",
+    "Bakery", "Italian", "Fast Food", "Continental", "Desserts",
+    "Biryani", "Street Food", "Ice Cream", "Andhra", "Thai",
+    "Kerala", "Seafood", "Bengali", "Rajasthani", "Goan",
+    "Japanese", "Korean", "Mexican", "Mediterranean", "Lebanese",
+    "American", "French", "German", "Vietnamese", "Middle Eastern",
+]
+
+
+def get_all_restaurants_as_df(
+    db: Session,
+    with_cuisine_features: bool = True,
+) -> "pd.DataFrame":
+    """Fetch all restaurants from DB and return as a feature-engineered DataFrame.
+
+    Builds a DataFrame matching the structure of the processed CSV,
+    including cuisine one-hot encoded columns, so callers can use it
+    to initialise recommenders and concierge tools without reading CSVs.
+
+    Args:
+        db: Database session.
+        with_cuisine_features: If True, add cuisine one-hot encoded columns.
+
+    Returns:
+        pd.DataFrame with restaurant data and engineered features.
+    """
+    import pandas as pd
+    import numpy as np
+
+    restaurants = db.query(Restaurant).order_by(Restaurant.name).all()
+    if not restaurants:
+        return pd.DataFrame()
+
+    rows = []
+    for r in restaurants:
+        row = {
+            "name": r.name,
+            "rate": r.rate,
+            "bayesian_rating": r.bayesian_rating,
+            "cost_for_two": r.cost_for_two,
+            "location": r.location,
+            "cuisines": r.cuisines,
+            "votes": r.votes,
+            "votes_log": r.votes_log,
+            "online_order_binary": r.online_order_binary,
+            "book_table_binary": r.book_table_binary,
+            "cuisine_count": r.cuisine_count,
+            "avg_sentiment": r.avg_sentiment,
+            "reliability_score": r.reliability_score,
+            "latitude": r.latitude,
+            "longitude": r.longitude,
+        }
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+
+    if with_cuisine_features and "cuisines" in df.columns:
+        for cuisine in _RESTAURANT_TOP_CUISINES:
+            col_name = f"cuisine_{cuisine.lower().replace(' ', '_')}"
+            df[col_name] = (
+                df["cuisines"]
+                .str.contains(cuisine, case=False, na=False)
+                .astype(int)
+            )
+
+    # Fill missing numeric columns
+    for col in ["votes_log", "online_order_binary", "book_table_binary",
+                "cuisine_count", "avg_sentiment", "reliability_score"]:
+        if col in df.columns:
+            df[col] = df[col].fillna(0)
+
+    return df
 
 
 def get_prediction_by_id(db: Session, prediction_id: int) -> Optional[Prediction]:
