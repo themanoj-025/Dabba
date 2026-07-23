@@ -221,8 +221,14 @@ def test_api_routers_no_csv_reads(rel_path: str) -> None:
     if not file_path.exists():
         pytest.skip(f"{rel_path} not found")
 
-    with open(file_path) as f:
-        source = f.read()
+    try:
+        with open(file_path, encoding="utf-8") as f:
+            source = f.read()
+    except UnicodeDecodeError:
+        with open(file_path, encoding="utf-8", errors="replace") as f:
+            source = f.read()
+    except FileNotFoundError:
+        pytest.skip(f"{rel_path} not found")
 
     try:
         tree = ast.parse(source)
@@ -271,8 +277,14 @@ def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
     if not file_path.exists():
         pytest.skip(f"{rel_path} not found")
 
-    with open(file_path) as f:
-        source = f.read()
+    try:
+        with open(file_path, encoding="utf-8") as f:
+            source = f.read()
+    except UnicodeDecodeError:
+        with open(file_path, encoding="utf-8", errors="replace") as f:
+            source = f.read()
+    except FileNotFoundError:
+        pytest.skip(f"{rel_path} not found")
 
     try:
         tree = ast.parse(source)
