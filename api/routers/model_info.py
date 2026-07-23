@@ -1,60 +1,63 @@
-"""Model Info router — deployed model names and metrics."""
+"""Model Info router — deployed model names and metrics.
+
+Reads from the ``ExperimentResult`` database table (seeded by the training
+pipeline) instead of comparison CSVs, completing the CSV→DB migration.
+"""
 
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
-import pandas as pd
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
+from sqlalchemy.orm import Session
 
 from api.limiter import limiter
-from dabba.config import get_config
+from dabba.database.repositories import get_winning_model
+from dabba.database.session import get_db_generator
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/model-info", tags=["model-info"])
 
-config = get_config()
-
 
 @router.get("")
 @limiter.limit("60/minute")
-async def model_info(request: Request):
+async def model_info(
+    request: Request,
+    db: Session = Depends(get_db_generator),
+) -> dict:
     """Return which models are deployed and their metrics.
+
+    Reads from the ExperimentResult table which stores data from the
+    last training run, seeded by the pipeline.
 
     Args:
         request: Incoming HTTP request (required by rate limiter).
+        db: Database session (injected).
 
     Returns:
         Dict with rating_model and eta_model info.
     """
-    rating_winner = None
-    eta_winner = None
+    rating_winner: Optional[dict] = None
+    eta_winner: Optional[dict] = None
 
-    try:
-        rating_df = pd.read_csv(config.rating_comparison_path)
-        if not rating_df.empty:
-            best = rating_df.iloc[0]
-            rating_winner = {
-                "model": str(best.get("model", "unknown")),
-                "mae": float(best.get("mae", 0)),
-                "rmse": float(best.get("rmse", 0)),
-                "r2": float(best.get("r2", 0)),
-            }
-    except FileNotFoundError:
-        pass
+    rating_result = get_winning_model(db, "rating")
+    if rating_result is not None:
+        rating_winner = {
+            "model": rating_result.model_name,
+            "mae": rating_result.mae,
+            "rmse": rating_result.rmse,
+            "r2": rating_result.r2,
+        }
 
-    try:
-        eta_df = pd.read_csv(config.eta_comparison_path)
-        if not eta_df.empty:
-            best = eta_df.iloc[0]
-            eta_winner = {
-                "model": str(best.get("model", "unknown")),
-                "mae": float(best.get("mae", 0)),
-                "rmse": float(best.get("rmse", 0)),
-                "r2": float(best.get("r2", 0)),
-            }
-    except FileNotFoundError:
-        pass
+    eta_result = get_winning_model(db, "eta")
+    if eta_result is not None:
+        eta_winner = {
+            "model": eta_result.model_name,
+            "mae": eta_result.mae,
+            "rmse": eta_result.rmse,
+            "r2": eta_result.r2,
+        }
 
     return {"rating_model": rating_winner, "eta_model": eta_winner}
