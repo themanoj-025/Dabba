@@ -115,7 +115,10 @@ async def startup() -> None:
     # Load each model and store in app.state
     app.state.eta_model = eta._load_eta_model()
     app.state.hybrid_recommender = recommend._load_hybrid_recommender()
-    app.state.concierge_tools = chat._load_concierge_tools()
+    # Pass the ETA model to the concierge so get_eta_estimate() uses real predictions
+    app.state.concierge_tools = chat._load_concierge_tools(
+        eta_model=app.state.eta_model,
+    )
 
     logger.info(
         "Dabba API started — ETA=%s, Recommender=%s, Concierge=%s",

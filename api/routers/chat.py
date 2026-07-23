@@ -25,11 +25,19 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 config = get_config()
 
 
-def _load_concierge_tools() -> Optional[ConciergeTools]:
+def _load_concierge_tools(
+    eta_model: Any = None,
+) -> Optional[ConciergeTools]:
     """Build and return ConciergeTools from processed data.
 
-    Called once at app startup by ``api.main``. Returns an empty
-    ConciergeTools if data hasn't been generated yet.
+    Called once at app startup by ``api.main``. Passes the loaded
+    ETA model so the concierge's ``get_eta_estimate()`` can make
+    real predictions instead of returning a hardcoded stub.
+
+    Returns an empty ConciergeTools if data hasn't been generated yet.
+
+    Args:
+        eta_model: The loaded ETA model pipeline (optional).
 
     Returns:
         ConciergeTools instance (never None — uses empty DF as fallback).
@@ -37,11 +45,15 @@ def _load_concierge_tools() -> Optional[ConciergeTools]:
     data_path = config.data_processed_dir / "restaurants_processed.csv"
     if not data_path.exists():
         logger.warning("Processed data not found for concierge")
-        return ConciergeTools(pd.DataFrame(), config=config)
+        return ConciergeTools(pd.DataFrame(), eta_model=eta_model, config=config)
 
     df = pd.read_csv(data_path)
-    tools = ConciergeTools(df, config=config)
-    logger.info("Concierge tools loaded with %d restaurants", len(df))
+    tools = ConciergeTools(df, eta_model=eta_model, config=config)
+    logger.info(
+        "Concierge tools loaded with %d restaurants (ETA model: %s)",
+        len(df),
+        "loaded" if eta_model is not None else "missing",
+    )
     return tools
 
 
