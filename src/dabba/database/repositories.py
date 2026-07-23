@@ -223,11 +223,26 @@ def get_winning_model(db: Session, task: str) -> Optional[ExperimentResult]:
         .filter(ExperimentResult.task == task, ExperimentResult.is_winner.is_(True))
         .order_by(desc(ExperimentResult.created_at))
         .first()
-    )
+    )# ─── Predictions ──────────────────────────────────────────────────
+
+
+def get_prediction_by_id(db: Session, prediction_id: int) -> Optional[Prediction]:
+    """Fetch a single prediction by primary key.
+
+    Used by the ``/v1/explain/{prediction_id}`` endpoint to retrieve
+    stored model predictions with their SHAP explainability values.
+
+    Args:
+        db: Database session.
+        prediction_id: Prediction primary key.
+
+    Returns:
+        Prediction instance or None.
+    """
+    return db.query(Prediction).filter(Prediction.id == prediction_id).first()
 
 
 # ─── Drift Logs ──────────────────────────────────────────────────────
-
 
 def get_recent_drift_logs(
     db: Session,

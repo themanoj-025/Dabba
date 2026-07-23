@@ -142,3 +142,20 @@ class ChatResponse(BaseModel):
     """Food Concierge chat response."""
 
     reply: str = Field(..., description="Concierge's reply")
+
+
+class ExplainResponse(BaseModel):
+    """Model prediction explanation response.
+
+    Returns the stored SHAP values alongside the prediction details
+    for a single inference request, enabling the ``/v1/explain``
+    endpoint to close the explainability loop.
+    """
+
+    id: int
+    model_name: str
+    model_version: Optional[str] = None
+    input_data: Optional[dict] = None
+    output_value: float
+    shap_values: Optional[dict] = None
+    created_at: str
