@@ -10,12 +10,12 @@ import logging
 from typing import Optional
 
 import joblib
-import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
 from dabba.config import DabbaConfig, get_config
+from dabba.features.delivery_features import build_eta_features_for_api
 from api.schemas import ETARequest, ETAResponse
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/predict-eta", tags=["eta"])
 
 config = get_config()
+
+# Feature columns the winning ETA model expects, in the order the pipeline
+# preprocessor was fit on. Single source of truth: ETA_FEATURE_COLS in
+# delivery_features.py, which mirrors pipeline.py's eta_feature_cols.
 
 
 def _load_eta_model() -> Optional[object]:
@@ -90,17 +94,17 @@ async def predict_eta(
         logger.debug("ETA cache hit for key=%s", cache_key)
         return ETAResponse(**cached)
 
-    features = pd.DataFrame(
-        [
-            {
-                "haversine_distance_km": body.distance_km,
-                "traffic_ordinal": body.traffic_level,
-                "is_festival": int(body.is_festival),
-                "delivery_person_age": body.delivery_person_age,
-                "delivery_person_ratings": body.delivery_person_rating,
-                "vehicle_condition": body.vehicle_condition,
-            }
-        ]
+    # Build the full feature vector matching the training pipeline.
+    # Previously this only had 6 features — the model was trained on ~20.
+    # Reusing build_eta_features_for_api() from delivery_features.py
+    # ensures the serving endpoint stays in sync with the training pipeline.
+    features = build_eta_features_for_api(
+        distance_km=body.distance_km,
+        traffic_level=body.traffic_level,
+        is_festival=body.is_festival,
+        delivery_person_age=body.delivery_person_age or 30.0,
+        delivery_person_rating=body.delivery_person_rating or 4.0,
+        vehicle_condition=body.vehicle_condition or 1,
     )
 
     try:
