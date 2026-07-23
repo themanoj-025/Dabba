@@ -37,6 +37,7 @@ import pandas as pd
 
 from dabba.config import DabbaConfig, get_config
 from dabba.features.delivery_features import build_eta_features_for_api
+from dabba.features.geo import haversine_distance
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +115,6 @@ class ConciergeTools:
         lon = restaurant.get("longitude", restaurant.get("restaurant_longitude", None))
 
         if pd.notna(lat) and pd.notna(lon):
-            from dabba.features.geo import haversine_distance
             distance_km = float(haversine_distance(lat, lon, 12.97, 77.59))
         else:
             distance_km = 5.0

@@ -8,7 +8,7 @@ no module-level globals.
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
