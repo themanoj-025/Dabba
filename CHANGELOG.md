@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **P1 — `/v1/explain/{prediction_id}` endpoint**: New ``api/routers/explain.py`` router that
+  reads from the existing ``predictions`` table and exposes stored SHAP values through the API.
+  Includes ``ExplainResponse`` schema, ``get_prediction_by_id()`` repository function, and
+  router registration in ``api/main.py``. Closing the explainability loop referenced in
+  ``database/models.py`` docstring.
 - **P0 Bug Fix — ETA endpoint feature mismatch**: ``api/routers/eta.py`` now builds the
   full ~20-column feature vector (cyclical time encoding, rush hour, interaction terms,
   city zone, weather, age buckets) via :func:`build_eta_features_for_api` from

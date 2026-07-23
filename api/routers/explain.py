@@ -62,5 +62,5 @@ async def explain_prediction(
         input_data=prediction.input_data,
         output_value=prediction.output_value,
         shap_values=prediction.shap_values,
-        created_at=str(prediction.created_at),
+        created_at=prediction.created_at.isoformat(),
     )
