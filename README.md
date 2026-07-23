@@ -400,6 +400,24 @@ make db-history      # Show migration history
 
 ---
 
+## 🐛 Known Limitations & Fixes-in-Progress
+
+> *Transparency note: These are real gaps I've identified through a full-pipeline audit.
+> Listing them here turns bugs into signals — every one has a plan.*
+
+| Limitation | Status | Plan |
+|------------|--------|------|
+| **ETA endpoint was sending 6 features to a model trained on 20+** | ✅ **Fixed in v0.4.0** | Now uses `build_eta_features_for_api()` from `delivery_features.py` — the same feature pipeline as training |
+| **Concierge ETA returned hardcoded 30 min** | ✅ **Fixed in v0.4.0** | Now uses real ETA model via `ConciergeTools.get_eta_estimate()` with graceful formula fallback |
+| **`pipeline.py` maintained its own `eta_feature_cols`** | ✅ **Fixed in v0.4.0** | Now imports `ETA_FEATURE_COLS` from `delivery_features.py` — single source of truth |
+| **Synthetic CF data** | ⚠️ Documented limitation | Real user-interaction data needed for production |
+| **VADER is English-only** | ⚠️ Documented limitation | Hinglish-aware sentiment model needed |
+| **Static traffic levels** | ⚠️ Known gap | Real-time traffic API (Google Maps/OSRM) planned |
+| **No Prometheus metrics** | 🔜 Planned | `/metrics` endpoint + Grafana dashboard |
+| **No retraining trigger** | 🔜 Planned | Drift-threshold-triggered retraining |
+
+---
+
 ## 📋 What I'd Do Next
 
 ### 🔴 High Priority
