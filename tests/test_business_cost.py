@@ -84,30 +84,20 @@ class TestReliabilityScore:
         assert all(0.0 <= s <= 1.0 for s in scores)
 
     def test_higher_rating_increases_score(self):
-        """Higher rating should yield a higher reliability score (all else equal)."""
-        # Use arrays so min-max normalization produces distinct values
-        score_low = compute_reliability_score(
-            rating=np.array([2.0, 3.0]), sentiment=np.array([0.5, 0.5]),
+        """Within the same array, higher rating should yield higher score."""
+        scores = compute_reliability_score(
+            rating=np.array([2.0, 5.0]), sentiment=np.array([0.5, 0.5]),
             delay_risk=np.array([0.3, 0.3])
         )
-        score_high = compute_reliability_score(
-            rating=np.array([4.0, 5.0]), sentiment=np.array([0.5, 0.5]),
-            delay_risk=np.array([0.3, 0.3])
-        )
-        # Compare high-rated array's max vs low-rated array's max
-        assert np.max(score_high) > np.max(score_low)
+        assert scores[1] > scores[0]
 
     def test_higher_delay_decreases_score(self):
-        """Higher delay risk should decrease reliability score."""
-        score_low_delay = compute_reliability_score(
+        """Within the same array, higher delay risk should decrease score."""
+        scores = compute_reliability_score(
             rating=np.array([4.0, 4.0]), sentiment=np.array([0.5, 0.5]),
-            delay_risk=np.array([0.1, 0.5])
+            delay_risk=np.array([0.1, 0.9])
         )
-        score_high_delay = compute_reliability_score(
-            rating=np.array([4.0, 4.0]), sentiment=np.array([0.5, 0.5]),
-            delay_risk=np.array([0.5, 0.9])
-        )
-        assert np.max(score_low_delay) > np.max(score_high_delay)
+        assert scores[0] > scores[1]
 
     def test_clips_to_zero_one(self):
         """Score should be clipped to [0, 1] even with extreme inputs."""

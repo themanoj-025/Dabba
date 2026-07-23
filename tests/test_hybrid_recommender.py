@@ -34,8 +34,10 @@ class TestHybridRecommenderInit:
         """Bayesian rating should be computed during init."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         assert "bayesian_rating" in rec.df.columns
-        # Low-vote restaurant should be pulled toward global mean
-        assert rec.df["bayesian_rating"].iloc[3] < rec.df["rate"].iloc[3]
+        # Low-vote, low-rated restaurant should be pulled UP toward global mean
+        assert rec.df["bayesian_rating"].iloc[3] > rec.df["rate"].iloc[3]
+        # High-vote restaurant should stay close to its rating
+        assert abs(rec.df["bayesian_rating"].iloc[0] - rec.df["rate"].iloc[0]) < 0.1
 
     def test_collaborative_model_none_by_default(self, sample_df):
         """Collaborative model should be None if not provided."""

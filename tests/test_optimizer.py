@@ -40,10 +40,10 @@ class TestOptimizeAssignments:
         assert len(assignment) == 3
 
     def test_assignment_count_matches_orders(self):
-        """Number of assignments should match number of orders (rows)."""
+        """Number of assignments should match min(orders, partners)."""
         cost = np.random.RandomState(42).rand(5, 3)
         assignment, total = optimize_assignments(cost)
-        assert len(assignment) == 5
+        assert len(assignment) == min(*cost.shape)
 
     def test_single_order(self):
         """Single order should return the cheapest partner."""
@@ -54,7 +54,11 @@ class TestOptimizeAssignments:
 
     def test_square_matrix(self):
         """Square matrix should match each partner to exactly one order."""
-        cost = np.eye(3) * 5.0  # diagonal = 5, others = 0
+        cost = np.array([
+            [5.0, 9.0, 9.0],
+            [9.0, 5.0, 9.0],
+            [9.0, 9.0, 5.0],
+        ])  # diagonal cheapest at 5, off-diagonals at 9
         assignment, total = optimize_assignments(cost)
         assert total == pytest.approx(15.0)  # all three on diagonal
         assert len(set(assignment)) == 3  # each partner assigned once
