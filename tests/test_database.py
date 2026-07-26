@@ -9,16 +9,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from dabba.database.models import Base, DriftLog, ExperimentResult, Restaurant
 from dabba.database.repositories import (
     count_restaurants,
-    get_all_orders,
     get_all_restaurants,
     get_drift_summary,
-    get_experiment_results,
-    get_orders_by_restaurant,
     get_recent_drift_logs,
     get_restaurant_by_id,
     get_restaurant_by_name,

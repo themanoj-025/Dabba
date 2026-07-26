@@ -20,7 +20,7 @@ import pytest
 from dabba.data.cleaning import clean_delivery, clean_zomato
 from dabba.features.delivery_features import add_delivery_features
 from dabba.features.restaurant_features import add_restaurant_features
-from dabba.monitoring.drift import DriftDetector, DriftResult
+from dabba.monitoring.drift import DriftDetector
 
 
 class TestCleaningToFeaturesFlow:

@@ -1,6 +1,5 @@
 """Tests for the real-time traffic API module (P3)."""
 
-import pytest
 
 from dabba.features.traffic import (
     TrafficInfo,

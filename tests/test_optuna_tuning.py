@@ -11,8 +11,6 @@ Covers:
 
 from __future__ import annotations
 
-import sys
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -197,7 +195,7 @@ class TestTuneHyperparameters:
     def test_tune_returns_params_and_metrics(self, sample_data):
         """Should return best params, best MAE, and best RMSE."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -220,7 +218,7 @@ class TestTuneHyperparameters:
     def test_get_tuned_model_returns_estimator(self, sample_data):
         """get_tuned_model should return an unfitted estimator."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -235,7 +233,7 @@ class TestTuneHyperparameters:
     def test_tune_all_models_returns_dict(self, sample_data):
         """tune_all_models should return tuned models for requested list."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -254,7 +252,7 @@ class TestTuneHyperparameters:
     def test_custom_search_space(self, sample_data):
         """Should use a custom search space when provided."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -272,7 +270,7 @@ class TestTuneHyperparameters:
     def test_tuning_with_categorical_features(self, sample_data):
         """Should handle DataFrames with categorical columns."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -286,7 +284,7 @@ class TestTuneHyperparameters:
     def test_tune_returns_better_than_baseline(self, sample_data):
         """Tuning with enough trials should beat default params on synthetic data."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -335,7 +333,7 @@ class TestTuneWithMlflow:
         is wrapped in a try/except, so unavailable MLflow should not crash.
         """
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -351,7 +349,7 @@ class TestTuneWithMlflow:
     def test_tuning_works_with_mlflow_import_error(self, sample_data):
         """Tuning should survive MLflow import failures via try/except."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 
@@ -398,7 +396,7 @@ class TestHpoIntegration:
     def test_tuned_rating_models_include_all_defaults(self, sample_data):
         """get_tuned_rating_models should include all the same models as defaults."""
         try:
-            import optuna
+            pass
         except ImportError:
             pytest.skip("optuna not installed")
 

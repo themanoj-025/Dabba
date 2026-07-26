@@ -67,7 +67,6 @@ class TestMaybeTriggerRetrainingHappyPath:
 
     def test_triggers_on_severe_drift(self, severe_drift_result: DriftResult) -> None:
         """Should return True and spawn a subprocess when drift exceeds threshold."""
-        from dabba.monitoring.retrain import _last_retrain_time
 
         # Reset cooldown
         import dabba.monitoring.retrain as retrain_mod
@@ -85,7 +84,6 @@ class TestMaybeTriggerRetrainingHappyPath:
 
     def test_dry_run_logs_only(self, severe_drift_result: DriftResult) -> None:
         """With dry_run=True, should return True but NOT spawn a subprocess."""
-        from dabba.monitoring.retrain import _last_retrain_time
         import dabba.monitoring.retrain as retrain_mod
         retrain_mod._last_retrain_time = 0.0
 
@@ -145,7 +143,6 @@ class TestMaybeTriggerRetrainingEdgeCases:
 
     def test_cooldown_respected(self, severe_drift_result: DriftResult) -> None:
         """Should return False during cooldown period."""
-        from dabba.monitoring.retrain import _last_retrain_time
         import dabba.monitoring.retrain as retrain_mod
 
         # Set cooldown to the recent past (5 seconds ago)
@@ -185,7 +182,6 @@ class TestMaybeTriggerRetrainingFailures:
 
     def test_subprocess_exception_graceful(self, severe_drift_result: DriftResult) -> None:
         """Should return False gracefully when subprocess.Popen raises."""
-        from dabba.monitoring.retrain import _last_retrain_time
         import dabba.monitoring.retrain as retrain_mod
         retrain_mod._last_retrain_time = 0.0
 

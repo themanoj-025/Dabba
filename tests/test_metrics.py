@@ -1,7 +1,6 @@
 """Tests for model evaluation metrics."""
 
 import numpy as np
-import pytest
 
 from dabba.evaluation.metrics import compute_regression_metrics
 

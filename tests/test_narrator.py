@@ -1,8 +1,7 @@
 """Tests for the recommendation narrator — LLM-powered with rules fallback."""
 
-import pytest
 
-from dabba.config import DabbaConfig, get_config
+from dabba.config import get_config
 from dabba.llm.recommendation_narrator import (
     _rules_narrate,
     narrate_recommendation,

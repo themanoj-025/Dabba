@@ -191,7 +191,7 @@ def full_import(config: Optional[DabbaConfig] = None) -> None:
     logger.info("=== Full CSV→DB Import ===")
 
     try:
-        from dabba.data.cleaning import clean_delivery, clean_zomato
+        from dabba.data.cleaning import clean_delivery
         from dabba.data.loaders import load_delivery, load_zomato
         from dabba.features.delivery_features import add_delivery_features
         from dabba.features.restaurant_features import add_restaurant_features

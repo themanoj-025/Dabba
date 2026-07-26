@@ -12,13 +12,9 @@ from __future__ import annotations
 import os
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from dabba.database.models import Base, Order, Restaurant, RESTAURANT_COL_MAP
 from dabba.database.seed import seed_orders, seed_restaurants
 
 

@@ -279,7 +279,6 @@ def get_all_restaurants_as_df(
         pd.DataFrame with restaurant data and engineered features.
     """
     import pandas as pd
-    import numpy as np
 
     restaurants = db.query(Restaurant).order_by(Restaurant.name).all()
     if not restaurants:

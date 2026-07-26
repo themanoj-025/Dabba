@@ -1,6 +1,5 @@
 """Tests for the Hinglish sentiment module (P3)."""
 
-import pytest
 
 from dabba.nlp.hinglish_sentiment import score_sentiment, add_hinglish_sentiment_scores
 

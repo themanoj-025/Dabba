@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
 from dabba.cache.redis_client import get_cache
-from dabba.config import DabbaConfig, get_config
+from dabba.config import get_config
 from dabba.features.delivery_features import build_eta_features_for_api
 from api.schemas import ETARequest, ETAResponse
 

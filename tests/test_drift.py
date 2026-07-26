@@ -165,7 +165,6 @@ class TestDetectAndAlert:
 
     def test_cooldown_suppresses_duplicate(self, detector):
         """Same feature alerted twice should respect cooldown."""
-        from dabba.monitoring.drift import _format_drift_message
 
         batch = detector.generate_drift_batch(n_samples=50, shift_scale=3.0)
 

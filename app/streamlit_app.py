@@ -48,7 +48,7 @@ with st.sidebar:
         """
         <p style="font-size:0.85rem;color:#6b7280;margin-bottom:1.5rem;">
         Restaurant ranking, recommendation, and delivery-reliability platform.
-        Powered by rigorous ML + LLM.
+        Built using rigorous ML + LLM.
         </p>
         """,
         unsafe_allow_html=True,
@@ -103,7 +103,7 @@ else:
     st.title("🍛 Dabba — Restaurant Intelligence Platform")
     st.markdown("""
         Welcome to **Dabba**, an India-focused restaurant ranking and
-        delivery-reliability platform built with rigorous ML experimentation.
+        delivery-reliability platform using rigorous ML experimentation.
 
         ### Navigate to a page:
         - 🍽️ **Discover** — Get personalized restaurant recommendations
@@ -117,6 +117,6 @@ else:
                               - 0.3 × norm(delay_risk)
         ```
         A composite score combining restaurant quality, customer sentiment,
-        and delivery reliability — powered by the winning ML models.
+        and delivery reliability — using the winning ML models.
         """)
     st.info("👈 Use the sidebar to navigate to a specific page.")
