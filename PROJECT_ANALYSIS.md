@@ -39,7 +39,7 @@ C:\Users\jm270\miniconda3\Lib\site-packages\starlette\config.py:112: in _read_fi
                 ^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <encodings.cp1252.IncrementalDecoder object at 0x000001F2E44815B0>
+self = <encodings.cp1252.IncrementalDecoder object at 0x00000231D025B5C0>
 input = b'# \xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x...e2\x94\x80\xe2\x94\x80\n# Uncomment to change MLflow tracking URI\n# DABBA_MLFLOW_TRACKING_URI=http://localhost:5000\n'
 final = False
 
@@ -77,7 +77,7 @@ C:\Users\jm270\miniconda3\Lib\site-packages\starlette\config.py:112: in _read_fi
                 ^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <encodings.cp1252.IncrementalDecoder object at 0x000001F2F7171CD0>
+self = <encodings.cp1252.IncrementalDecoder object at 0x00000231D25AF5C0>
 input = b'# \xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x...e2\x94\x80\xe2\x94\x80\n# Uncomment to change MLflow tracking URI\n# DABBA_MLFLOW_TRACKING_URI=http://localhost:5000\n'
 final = False
 
@@ -115,7 +115,7 @@ C:\Users\jm270\miniconda3\Lib\site-packages\starlette\config.py:112: in _read_fi
                 ^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <encodings.cp1252.IncrementalDecoder object at 0x000001F2E40A31D0>
+self = <encodings.cp1252.IncrementalDecoder object at 0x00000231D0262E70>
 input = b'# \xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x95\x90\xe2\x...e2\x94\x80\xe2\x94\x80\n# Uncomment to change MLflow tracking URI\n# DABBA_MLFLOW_TRACKING_URI=http://localhost:5000\n'
 final = False
 
@@ -130,7 +130,7 @@ ERROR tests/test_api.py::TestHealthEndpoint::test_health_returns_ok - Unicode...
 ERROR tests/test_api.py::TestHealthEndpoint::test_health_always_accessible_without_key
 ERROR tests/test_api.py::TestModelInfoEndpoint::test_model_info_returns_json
 !!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 3 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
-39 passed, 1 skipped, 3 errors in 21.56s
+39 passed, 1 skipped, 3 errors in 16.15s
 `
 
 ## 3. Operations & Release Checklist
