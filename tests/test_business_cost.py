@@ -67,9 +67,7 @@ class TestReliabilityScore:
 
     def test_returns_float_for_scalars(self):
         """Scalar inputs should return a float score in [0, 1]."""
-        score = compute_reliability_score(
-            rating=4.5, sentiment=0.8, delay_risk=0.2
-        )
+        score = compute_reliability_score(rating=4.5, sentiment=0.8, delay_risk=0.2)
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
@@ -86,16 +84,18 @@ class TestReliabilityScore:
     def test_higher_rating_increases_score(self):
         """Within the same array, higher rating should yield higher score."""
         scores = compute_reliability_score(
-            rating=np.array([2.0, 5.0]), sentiment=np.array([0.5, 0.5]),
-            delay_risk=np.array([0.3, 0.3])
+            rating=np.array([2.0, 5.0]),
+            sentiment=np.array([0.5, 0.5]),
+            delay_risk=np.array([0.3, 0.3]),
         )
         assert scores[1] > scores[0]
 
     def test_higher_delay_decreases_score(self):
         """Within the same array, higher delay risk should decrease score."""
         scores = compute_reliability_score(
-            rating=np.array([4.0, 4.0]), sentiment=np.array([0.5, 0.5]),
-            delay_risk=np.array([0.1, 0.9])
+            rating=np.array([4.0, 4.0]),
+            sentiment=np.array([0.5, 0.5]),
+            delay_risk=np.array([0.1, 0.9]),
         )
         assert scores[0] > scores[1]
 
@@ -103,7 +103,9 @@ class TestReliabilityScore:
         """Score should be clipped to [0, 1] even with extreme inputs."""
         # Large negative component
         score = compute_reliability_score(
-            rating=0.0, sentiment=-1.0, delay_risk=1.0,
+            rating=0.0,
+            sentiment=-1.0,
+            delay_risk=1.0,
             weights={"w_rating": 1.0, "w_sentiment": 0.0, "w_delay": 1.0},
         )
         assert 0.0 <= score <= 1.0
@@ -112,7 +114,9 @@ class TestReliabilityScore:
         """Custom weight dict (rating=1.0) should produce score = norm(rating)."""
         # With w_rating=1.0 and single scalar input, min-max norm returns 0.5
         score_custom = compute_reliability_score(
-            rating=4.5, sentiment=0.8, delay_risk=0.2,
+            rating=4.5,
+            sentiment=0.8,
+            delay_risk=0.2,
             weights={"w_rating": 1.0, "w_sentiment": 0.0, "w_delay": 0.0},
         )
         assert score_custom == pytest.approx(0.5)
@@ -152,15 +156,17 @@ class TestAbScenarioSimulation:
         """Create a sample restaurant DataFrame for A/B testing."""
         rng = np.random.RandomState(42)
         n = 10
-        return pd.DataFrame({
-            "name": [f"Rest_{i}" for i in range(n)],
-            "rate": rng.uniform(3.0, 5.0, n),
-            "avg_sentiment": rng.uniform(-0.5, 1.0, n),
-            "delay_risk": rng.uniform(0.1, 0.9, n),
-            "cost_for_two": rng.randint(200, 1500, n),
-            "location": rng.choice(["Koramangala", "Indiranagar"], n),
-            "cuisines": rng.choice(["North Indian", "Chinese"], n),
-        })
+        return pd.DataFrame(
+            {
+                "name": [f"Rest_{i}" for i in range(n)],
+                "rate": rng.uniform(3.0, 5.0, n),
+                "avg_sentiment": rng.uniform(-0.5, 1.0, n),
+                "delay_risk": rng.uniform(0.1, 0.9, n),
+                "cost_for_two": rng.randint(200, 1500, n),
+                "location": rng.choice(["Koramangala", "Indiranagar"], n),
+                "cuisines": rng.choice(["North Indian", "Chinese"], n),
+            }
+        )
 
     def test_returns_all_profiles(self, sample_df):
         """Should return results for all weight profiles plus _meta."""

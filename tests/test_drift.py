@@ -100,6 +100,7 @@ class TestSlackAlertFunctions:
     def test_format_drift_message_with_drift(self):
         """Should format a message with drifted features."""
         from dabba.monitoring.drift import _format_drift_message, DriftResult
+
         result = DriftResult(
             drifted_features={"feature_a": (0.001, 0.42), "feature_b": (0.003, 0.38)},
             total_features=5,
@@ -116,6 +117,7 @@ class TestSlackAlertFunctions:
     def test_format_drift_message_no_drift(self):
         """Should format a clean message when no drift."""
         from dabba.monitoring.drift import _format_drift_message, DriftResult
+
         result = DriftResult(
             drifted_features={},
             total_features=5,
@@ -129,6 +131,7 @@ class TestSlackAlertFunctions:
     def test_send_slack_invalid_url(self):
         """Should return not-sent when webhook URL is unreachable."""
         from dabba.monitoring.drift import _send_slack_alert
+
         # Use a clearly invalid URL that will fail DNS resolution
         result = _send_slack_alert(
             "https://hooks.invalid-slack-domain-that-does-not-exist.example.com/services/test",
@@ -144,10 +147,12 @@ class TestDetectAndAlert:
     @pytest.fixture
     def detector(self):
         rng = np.random.RandomState(42)
-        ref = pd.DataFrame({
-            "feature_a": rng.normal(0, 1, 500),
-            "feature_b": rng.uniform(0, 10, 500),
-        })
+        ref = pd.DataFrame(
+            {
+                "feature_a": rng.normal(0, 1, 500),
+                "feature_b": rng.uniform(0, 10, 500),
+            }
+        )
         return DriftDetector(ref)
 
     def test_detect_and_alert_no_drift(self, detector):
@@ -175,6 +180,7 @@ class TestDetectAndAlert:
 
         # Manually set cooldown for all drifted features
         import time
+
         for feature in r1.drifted_features:
             detector._alert_cooldowns[feature] = time.time()
 

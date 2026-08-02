@@ -1,6 +1,5 @@
 """Tests for the recommendation narrator — LLM-powered with rules fallback."""
 
-
 from dabba.config import get_config
 from dabba.llm.recommendation_narrator import (
     _rules_narrate,
@@ -101,7 +100,11 @@ class TestNarrateRecommendation:
     def test_with_eta_prediction(self):
         """Eta_prediction should be included in the output."""
         result = narrate_recommendation(
-            SAMPLE_RESTAURANT, 0.8, sentiment_avg=0.5, eta_prediction=30.0, config=get_config()
+            SAMPLE_RESTAURANT,
+            0.8,
+            sentiment_avg=0.5,
+            eta_prediction=30.0,
+            config=get_config(),
         )
         assert "30 min" in result or "30" in result
 

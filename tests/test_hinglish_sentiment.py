@@ -1,6 +1,5 @@
 """Tests for the Hinglish sentiment module (P3)."""
 
-
 from dabba.nlp.hinglish_sentiment import score_sentiment, add_hinglish_sentiment_scores
 
 
@@ -42,10 +41,12 @@ class TestAddHinglishSentimentScores:
         """Should add avg_sentiment column."""
         import pandas as pd
 
-        df = pd.DataFrame({
-            "name": ["Test Restaurant"],
-            "reviews_list": [["Great food!"]],
-        })
+        df = pd.DataFrame(
+            {
+                "name": ["Test Restaurant"],
+                "reviews_list": [["Great food!"]],
+            }
+        )
         result = add_hinglish_sentiment_scores(df)
         assert "avg_sentiment" in result.columns
 
@@ -53,10 +54,12 @@ class TestAddHinglishSentimentScores:
         """Empty reviews should result in 0.0 sentiment."""
         import pandas as pd
 
-        df = pd.DataFrame({
-            "name": ["Test"],
-            "reviews_list": [None],
-        })
+        df = pd.DataFrame(
+            {
+                "name": ["Test"],
+                "reviews_list": [None],
+            }
+        )
         result = add_hinglish_sentiment_scores(df)
         assert result["avg_sentiment"].iloc[0] == 0.0
 

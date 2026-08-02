@@ -81,6 +81,7 @@ class TestModelInfoEndpoint:
         import importlib
 
         import api.main as api_main
+
         importlib.reload(api_main)
 
         test_client = TestClient(api_main.app)

@@ -361,19 +361,19 @@ class DriftDetector:
     ) -> DriftResult:
         """Drift detection + Slack notification + DB logging.
 
-      Combines :meth:`detect` with the full alerting pipeline:
+        Combines :meth:`detect` with the full alerting pipeline:
 
-        1. Run drift detection on the batch
-        2. If drift detected, check per-feature cooldown
-        3. For features not in cooldown, send Slack alert
-           (if ``slack_webhook_url`` is configured)
-        4. Persist drift events to the database
+          1. Run drift detection on the batch
+          2. If drift detected, check per-feature cooldown
+          3. For features not in cooldown, send Slack alert
+             (if ``slack_webhook_url`` is configured)
+          4. Persist drift events to the database
 
-        Args:
-            batch: DataFrame of new inference data.
+          Args:
+              batch: DataFrame of new inference data.
 
-        Returns:
-            The DriftResult from detection (unchanged by alerting).
+          Returns:
+              The DriftResult from detection (unchanged by alerting).
         """
         result = self.detect(batch)
 
@@ -382,16 +382,12 @@ class DriftDetector:
 
         # Determine which features are not in cooldown
         features_to_alert = [
-            f
-            for f in result.drifted_features
-            if not self._is_alert_on_cooldown(f)
+            f for f in result.drifted_features if not self._is_alert_on_cooldown(f)
         ]
 
         # Build a sub-result for features that should trigger alerts
         if features_to_alert:
-            alert_features = {
-                f: result.drifted_features[f] for f in features_to_alert
-            }
+            alert_features = {f: result.drifted_features[f] for f in features_to_alert}
             alert_result = DriftResult(
                 drifted_features=alert_features,
                 total_features=result.total_features,
@@ -437,7 +433,8 @@ class DriftDetector:
                 maybe_trigger_retraining(
                     alert_result,
                     project_root=self.config.project_root,
-                    dry_run=self.config.slack_webhook_url is None,  # dry-run if no Slack configured
+                    dry_run=self.config.slack_webhook_url
+                    is None,  # dry-run if no Slack configured
                 )
             except Exception as e:
                 logger.warning("Retrain trigger failed (non-fatal): %s", e)

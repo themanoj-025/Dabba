@@ -198,11 +198,19 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
             col_map = RESTAURANT_COL_MAP
             # Map lat/lon columns (multiple possible names)
             lat_col = next(
-                (c for c in ["restaurant_latitude", "latitude", "lat"] if c in df.columns),
+                (
+                    c
+                    for c in ["restaurant_latitude", "latitude", "lat"]
+                    if c in df.columns
+                ),
                 None,
             )
             lon_col = next(
-                (c for c in ["restaurant_longitude", "longitude", "lon", "lng"] if c in df.columns),
+                (
+                    c
+                    for c in ["restaurant_longitude", "longitude", "lon", "lng"]
+                    if c in df.columns
+                ),
                 None,
             )
 
@@ -213,7 +221,9 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
                     continue
 
                 # Upsert by name
-                existing = db.query(Restaurant).filter(Restaurant.name == str(name)).first()
+                existing = (
+                    db.query(Restaurant).filter(Restaurant.name == str(name)).first()
+                )
                 if existing:
                     restaurant = existing
                 else:
@@ -369,7 +379,9 @@ def main() -> None:
 
     # Rating model comparison (now with CatBoost + MLflow + Optuna HPO)
     if config.optuna_enabled:
-        logger.info("--- [HPO] Running Optuna hyperparameter tuning for rating models ---")
+        logger.info(
+            "--- [HPO] Running Optuna hyperparameter tuning for rating models ---"
+        )
     else:
         logger.info("--- [HPO] Skipped (disabled in config) ---")
 
@@ -390,7 +402,9 @@ def main() -> None:
         logger.info("🏆 Best rating model: %s", best_name)
 
         # Persist experiment results to DB (with is_winner flag)
-        _save_experiment_results(rating_results, task="rating", config=config, best_name=best_name)
+        _save_experiment_results(
+            rating_results, task="rating", config=config, best_name=best_name
+        )
 
         if best_name:
             fitted_rating_model = fit_best_rating_model(
@@ -435,7 +449,9 @@ def main() -> None:
         logger.info("🏆 Best ETA model: %s", best_eta_name)
 
         # Persist experiment results to DB
-        _save_experiment_results(eta_results, task="eta", config=config, best_name=best_eta_name)
+        _save_experiment_results(
+            eta_results, task="eta", config=config, best_name=best_eta_name
+        )
 
         if best_eta_name:
             fitted_eta_model = fit_best_eta_model(

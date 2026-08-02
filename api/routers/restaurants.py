@@ -154,7 +154,9 @@ async def search_restaurants(
 
     by_cuisine = get_restaurants_by_cuisine(db, query, limit=limit)
     if not by_cuisine:
-        raise HTTPException(status_code=404, detail=f"No restaurants found matching '{query}'")
+        raise HTTPException(
+            status_code=404, detail=f"No restaurants found matching '{query}'"
+        )
 
     return RestaurantListResponse(
         restaurants=[

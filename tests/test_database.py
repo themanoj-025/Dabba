@@ -255,8 +255,28 @@ class TestExperimentRepository:
     def test_get_winning_model(self, in_memory_db):
         """Should return the winning model for a task."""
         db = in_memory_db
-        db.add(ExperimentResult(task="rating", model_name="XGBoost", mae=0.3, rmse=0.4, r2=0.8, train_time_s=10.0, is_winner=True))
-        db.add(ExperimentResult(task="rating", model_name="CatBoost", mae=0.35, rmse=0.45, r2=0.75, train_time_s=12.0, is_winner=False))
+        db.add(
+            ExperimentResult(
+                task="rating",
+                model_name="XGBoost",
+                mae=0.3,
+                rmse=0.4,
+                r2=0.8,
+                train_time_s=10.0,
+                is_winner=True,
+            )
+        )
+        db.add(
+            ExperimentResult(
+                task="rating",
+                model_name="CatBoost",
+                mae=0.35,
+                rmse=0.45,
+                r2=0.75,
+                train_time_s=12.0,
+                is_winner=False,
+            )
+        )
         db.commit()
 
         winner = get_winning_model(db, task="rating")
@@ -266,7 +286,17 @@ class TestExperimentRepository:
     def test_get_winning_model_no_winner(self, in_memory_db):
         """Should return None if no winner flagged."""
         db = in_memory_db
-        db.add(ExperimentResult(task="eta", model_name="LightGBM", mae=5.0, rmse=7.0, r2=0.3, train_time_s=5.0, is_winner=False))
+        db.add(
+            ExperimentResult(
+                task="eta",
+                model_name="LightGBM",
+                mae=5.0,
+                rmse=7.0,
+                r2=0.3,
+                train_time_s=5.0,
+                is_winner=False,
+            )
+        )
         db.commit()
 
         assert get_winning_model(db, task="eta") is None
@@ -278,8 +308,28 @@ class TestDriftLogRepository:
     def test_get_recent_drift_logs(self, in_memory_db):
         """Should return drift logs ordered by time."""
         db = in_memory_db
-        db.add(DriftLog(feature_name="rating", ks_statistic=0.3, p_value=0.01, threshold=0.05, n_reference=100, n_batch=100, alerted=True))
-        db.add(DriftLog(feature_name="eta", ks_statistic=0.2, p_value=0.03, threshold=0.05, n_reference=100, n_batch=100, alerted=False))
+        db.add(
+            DriftLog(
+                feature_name="rating",
+                ks_statistic=0.3,
+                p_value=0.01,
+                threshold=0.05,
+                n_reference=100,
+                n_batch=100,
+                alerted=True,
+            )
+        )
+        db.add(
+            DriftLog(
+                feature_name="eta",
+                ks_statistic=0.2,
+                p_value=0.03,
+                threshold=0.05,
+                n_reference=100,
+                n_batch=100,
+                alerted=False,
+            )
+        )
         db.commit()
 
         logs = get_recent_drift_logs(db)
@@ -288,9 +338,39 @@ class TestDriftLogRepository:
     def test_get_drift_summary(self, in_memory_db):
         """Should return aggregate summary."""
         db = in_memory_db
-        db.add(DriftLog(feature_name="a", ks_statistic=0.3, p_value=0.01, threshold=0.05, n_reference=100, n_batch=100, alerted=True))
-        db.add(DriftLog(feature_name="a", ks_statistic=0.25, p_value=0.02, threshold=0.05, n_reference=100, n_batch=100, alerted=True))
-        db.add(DriftLog(feature_name="b", ks_statistic=0.2, p_value=0.04, threshold=0.05, n_reference=100, n_batch=100, alerted=False))
+        db.add(
+            DriftLog(
+                feature_name="a",
+                ks_statistic=0.3,
+                p_value=0.01,
+                threshold=0.05,
+                n_reference=100,
+                n_batch=100,
+                alerted=True,
+            )
+        )
+        db.add(
+            DriftLog(
+                feature_name="a",
+                ks_statistic=0.25,
+                p_value=0.02,
+                threshold=0.05,
+                n_reference=100,
+                n_batch=100,
+                alerted=True,
+            )
+        )
+        db.add(
+            DriftLog(
+                feature_name="b",
+                ks_statistic=0.2,
+                p_value=0.04,
+                threshold=0.05,
+                n_reference=100,
+                n_batch=100,
+                alerted=False,
+            )
+        )
         db.commit()
 
         summary = get_drift_summary(db)

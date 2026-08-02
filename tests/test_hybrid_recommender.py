@@ -12,16 +12,23 @@ class TestHybridRecommenderInit:
     @pytest.fixture
     def sample_df(self):
         """Create a small restaurant DataFrame for testing."""
-        return pd.DataFrame({
-            "name": ["A", "B", "C", "D"],
-            "rate": [4.5, 3.8, 4.2, 3.5],
-            "votes": [500, 50, 300, 10],
-            "cost_for_two": [500, 300, 800, 200],
-            "location": ["Koramangala", "Indiranagar", "Koramangala", "HSR Layout"],
-            "cuisines": ["North Indian, Chinese", "Italian", "North Indian", "South Indian"],
-            "votes_log": [6.2, 3.9, 5.7, 2.4],
-            "online_order_binary": [1, 1, 0, 1],
-        })
+        return pd.DataFrame(
+            {
+                "name": ["A", "B", "C", "D"],
+                "rate": [4.5, 3.8, 4.2, 3.5],
+                "votes": [500, 50, 300, 10],
+                "cost_for_two": [500, 300, 800, 200],
+                "location": ["Koramangala", "Indiranagar", "Koramangala", "HSR Layout"],
+                "cuisines": [
+                    "North Indian, Chinese",
+                    "Italian",
+                    "North Indian",
+                    "South Indian",
+                ],
+                "votes_log": [6.2, 3.9, 5.7, 2.4],
+                "online_order_binary": [1, 1, 0, 1],
+            }
+        )
 
     def test_initializes_with_dataframe(self, sample_df):
         """Should initialize with a DataFrame and feature columns."""
@@ -56,11 +63,13 @@ class TestHybridRecommenderInit:
 
     def test_missing_vote_column(self):
         """Should fall back to raw rating when vote column is missing."""
-        df = pd.DataFrame({
-            "name": ["A", "B"],
-            "rate": [4.0, 3.5],
-            "cost_for_two": [500, 300],
-        })
+        df = pd.DataFrame(
+            {
+                "name": ["A", "B"],
+                "rate": [4.0, 3.5],
+                "cost_for_two": [500, 300],
+            }
+        )
         rec = HybridRecommender(df, ["cost_for_two"])
         assert rec.df["bayesian_rating"].iloc[0] == 4.0
 
@@ -71,16 +80,30 @@ class TestHybridRecommenderRecommend:
     @pytest.fixture
     def sample_df(self):
         """Create a restaurant DataFrame with feature columns."""
-        return pd.DataFrame({
-            "name": ["A", "B", "C", "D", "E"],
-            "rate": [4.5, 3.8, 4.2, 3.5, 4.8],
-            "votes": [500, 50, 300, 10, 1000],
-            "cost_for_two": [500, 300, 800, 200, 1200],
-            "location": ["Koramangala", "Indiranagar", "Koramangala", "HSR Layout", "MG Road"],
-            "cuisines": ["North Indian, Chinese", "Italian", "North Indian, Mughlai", "South Indian", "Japanese"],
-            "votes_log": [6.2, 3.9, 5.7, 2.4, 6.9],
-            "online_order_binary": [1, 1, 0, 1, 1],
-        })
+        return pd.DataFrame(
+            {
+                "name": ["A", "B", "C", "D", "E"],
+                "rate": [4.5, 3.8, 4.2, 3.5, 4.8],
+                "votes": [500, 50, 300, 10, 1000],
+                "cost_for_two": [500, 300, 800, 200, 1200],
+                "location": [
+                    "Koramangala",
+                    "Indiranagar",
+                    "Koramangala",
+                    "HSR Layout",
+                    "MG Road",
+                ],
+                "cuisines": [
+                    "North Indian, Chinese",
+                    "Italian",
+                    "North Indian, Mughlai",
+                    "South Indian",
+                    "Japanese",
+                ],
+                "votes_log": [6.2, 3.9, 5.7, 2.4, 6.9],
+                "online_order_binary": [1, 1, 0, 1, 1],
+            }
+        )
 
     def test_recommend_returns_dataframe(self, sample_df):
         """recommend() should return a DataFrame."""
@@ -149,12 +172,14 @@ class TestGetWeightProfile:
     @pytest.fixture
     def recommender(self):
         """Create a minimal HybridRecommender."""
-        df = pd.DataFrame({
-            "name": ["Test"],
-            "rate": [4.0],
-            "votes": [100],
-            "cost_for_two": [500],
-        })
+        df = pd.DataFrame(
+            {
+                "name": ["Test"],
+                "rate": [4.0],
+                "votes": [100],
+                "cost_for_two": [500],
+            }
+        )
         return HybridRecommender(df, ["cost_for_two"])
 
     def test_balanced_has_all_weights(self, recommender):

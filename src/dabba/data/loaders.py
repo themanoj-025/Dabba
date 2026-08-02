@@ -111,9 +111,7 @@ def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
         ]
 
     df = pd.DataFrame(records)
-    logger.info(
-        "Loaded %d restaurants from database", len(df)
-    )
+    logger.info("Loaded %d restaurants from database", len(df))
     return df
 
 
@@ -197,16 +195,16 @@ def load_delivery_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
                 "delivery_person_ratings": o.delivery_person_rating,
                 "vehicle_condition": o.vehicle_condition,
                 # actual_eta may be None for newly-seeded orders without outcomes
-                "time_taken_min": o.actual_eta if o.actual_eta is not None else o.predicted_eta,
+                "time_taken_min": o.actual_eta
+                if o.actual_eta is not None
+                else o.predicted_eta,
                 "predicted_eta": o.predicted_eta,
             }
             for o in orders
         ]
 
     df = pd.DataFrame(records)
-    logger.info(
-        "Loaded %d orders from database", len(df)
-    )
+    logger.info("Loaded %d orders from database", len(df))
     return df
 
 

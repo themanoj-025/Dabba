@@ -52,7 +52,11 @@ def seed_restaurants(
         None,
     )
     lon_col = next(
-        (c for c in ["restaurant_longitude", "longitude", "lon", "lng"] if c in df.columns),
+        (
+            c
+            for c in ["restaurant_longitude", "longitude", "lon", "lng"]
+            if c in df.columns
+        ),
         None,
     )
 
@@ -72,7 +76,12 @@ def seed_restaurants(
                 if df_col in row and not pd.isna(row[df_col]):
                     setattr(restaurant, db_col, row[df_col])
 
-            if lat_col and lon_col and not pd.isna(row.get(lat_col)) and not pd.isna(row.get(lon_col)):
+            if (
+                lat_col
+                and lon_col
+                and not pd.isna(row.get(lat_col))
+                and not pd.isna(row.get(lon_col))
+            ):
                 restaurant.latitude = float(row[lat_col])
                 restaurant.longitude = float(row[lon_col])
 
@@ -106,21 +115,33 @@ def seed_orders(
     count = 0
     with get_db() as db:
         for i, (_, row) in enumerate(df.iterrows()):
-            pred_eta = float(predictions[i]) if predictions is not None else row.get("time_taken_min", 30.0)
+            pred_eta = (
+                float(predictions[i])
+                if predictions is not None
+                else row.get("time_taken_min", 30.0)
+            )
             actual_eta = float(row.get("time_taken_min", pred_eta))
 
             order = Order(
                 distance_km=float(row.get("haversine_distance_km", 0)),
                 traffic_level=int(row.get("traffic_ordinal", 0)),
                 is_festival=bool(row.get("is_festival", False)),
-                delivery_person_age=float(row["delivery_person_age"]) if not pd.isna(row.get("delivery_person_age")) else None,
-                delivery_person_rating=float(row["delivery_person_ratings"]) if not pd.isna(row.get("delivery_person_ratings")) else None,
-                vehicle_condition=int(row["vehicle_condition"]) if not pd.isna(row.get("vehicle_condition")) else None,
+                delivery_person_age=float(row["delivery_person_age"])
+                if not pd.isna(row.get("delivery_person_age"))
+                else None,
+                delivery_person_rating=float(row["delivery_person_ratings"])
+                if not pd.isna(row.get("delivery_person_ratings"))
+                else None,
+                vehicle_condition=int(row["vehicle_condition"])
+                if not pd.isna(row.get("vehicle_condition"))
+                else None,
                 predicted_eta=pred_eta,
                 actual_eta=actual_eta,
                 sla_threshold=sla_threshold,
                 is_at_risk=bool(pred_eta > sla_threshold),
-                actual_late=bool(actual_eta > sla_threshold) if not pd.isna(actual_eta) else None,
+                actual_late=bool(actual_eta > sla_threshold)
+                if not pd.isna(actual_eta)
+                else None,
             )
             db.add(order)
             count += 1
@@ -264,8 +285,12 @@ def main() -> None:
     if args.clear:
         clear_all(config)
 
-    rest_path = args.restaurants_csv or str(config.data_processed_dir / "restaurants_processed.csv")
-    del_path = args.delivery_csv or str(config.data_processed_dir / "delivery_processed.csv")
+    rest_path = args.restaurants_csv or str(
+        config.data_processed_dir / "restaurants_processed.csv"
+    )
+    del_path = args.delivery_csv or str(
+        config.data_processed_dir / "delivery_processed.csv"
+    )
 
     # Load and seed restaurants
     try:

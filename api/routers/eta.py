@@ -121,6 +121,8 @@ async def predict_eta(
     )
 
     # Cache the result
-    cache.set(cache_key, response.model_dump(), ttl_seconds=config.cache_eta_ttl_seconds)
+    cache.set(
+        cache_key, response.model_dump(), ttl_seconds=config.cache_eta_ttl_seconds
+    )
 
     return response

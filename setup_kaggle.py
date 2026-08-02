@@ -56,10 +56,14 @@ def main() -> None:
     # Step 4: Verify authentication
     print("\n--- Verifying Kaggle authentication ---")
     result = subprocess.run(
-        [sys.executable, "-c",
-         "from kaggle.api.kaggle_api_extended import KaggleApi; "
-         "api = KaggleApi(); api.authenticate(); print('[OK] Kaggle authenticated successfully')"],
-        capture_output=True, text=True
+        [
+            sys.executable,
+            "-c",
+            "from kaggle.api.kaggle_api_extended import KaggleApi; "
+            "api = KaggleApi(); api.authenticate(); print('[OK] Kaggle authenticated successfully')",
+        ],
+        capture_output=True,
+        text=True,
     )
     print(result.stdout.strip())
     if result.returncode != 0:
@@ -79,9 +83,18 @@ def main() -> None:
     for slug, label in datasets:
         print(f"\nDownloading {label} dataset ({slug})...")
         result = subprocess.run(
-            ["kaggle", "datasets", "download", "-d", slug,
-             "-p", str(raw_dir), "--unzip"],
-            capture_output=True, text=True
+            [
+                "kaggle",
+                "datasets",
+                "download",
+                "-d",
+                slug,
+                "-p",
+                str(raw_dir),
+                "--unzip",
+            ],
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             print(f"[OK] {label} dataset downloaded successfully")

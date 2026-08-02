@@ -196,9 +196,9 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
 
     # Winner reasoning
     st.markdown(f"""
-        **Why {best['model']} won:**
-        This model achieved the lowest MAE of {best['mae']:.4f}
-        ({'minutes' if task == 'eta' else 'rating points'}),
+        **Why {best["model"]} won:**
+        This model achieved the lowest MAE of {best["mae"]:.4f}
+        ({"minutes" if task == "eta" else "rating points"}),
         meaning its predictions are closest to the actual values on average.
         The comparison used 5-fold cross-validation with identical features
         for all models, ensuring a fair comparison.
@@ -235,7 +235,7 @@ def _show_ab_scenarios(path: Path) -> None:
                 st.caption(desc)
                 for i, r in enumerate(info.get("top_restaurants", [])[:5]):
                     st.markdown(
-                        f"{i+1}. **{r.get('name', '?')}** — "
+                        f"{i + 1}. **{r.get('name', '?')}** — "
                         f"Score: {r.get('score', 0):.3f}"
                     )
 

@@ -39,7 +39,10 @@ import pandas as pd
 from dabba.config import DabbaConfig, get_config
 from dabba.features.delivery_features import build_eta_features_for_api
 from dabba.features.geo import haversine_distance
-from dabba.observability import concierge_tool_calls_total, concierge_loop_duration_seconds
+from dabba.observability import (
+    concierge_tool_calls_total,
+    concierge_loop_duration_seconds,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +183,9 @@ class ConciergeTools:
 # ─── Tool execution helpers ──────────────────────────────────────────
 
 
-def _execute_tool(tool_name: str, tool_input: Dict[str, Any], tools: ConciergeTools) -> str:
+def _execute_tool(
+    tool_name: str, tool_input: Dict[str, Any], tools: ConciergeTools
+) -> str:
     """Execute a concierge tool and format the result as structured text for the LLM.
 
     The returned string is passed back to the LLM as a ``tool_result``
@@ -214,9 +219,7 @@ def _execute_tool(tool_name: str, tool_input: Dict[str, Any], tools: ConciergeTo
     elif tool_name == "get_eta_estimate":
         result = tools.get_eta_estimate(**tool_input)
         if result is None:
-            return (
-                f"Restaurant '{tool_input.get('restaurant_name', '')}' not found."
-            )
+            return f"Restaurant '{tool_input.get('restaurant_name', '')}' not found."
         risk = "at risk of exceeding SLA" if result.get("is_at_risk") else "on track"
         note = result.get("note", "")
         eta = result.get("predicted_minutes", "?")
@@ -452,9 +455,7 @@ def _llm_concierge_response(
         anthropic_messages.append({"role": "user", "content": tool_results})
 
         if step >= max_steps:
-            logger.info(
-                "Reached max ReAct steps (%d) for concierge", max_steps
-            )
+            logger.info("Reached max ReAct steps (%d) for concierge", max_steps)
 
     if not final_text_parts:
         return None

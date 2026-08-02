@@ -30,11 +30,13 @@ class TestOptimizeAssignments:
 
     def test_optimal_assignment_3x3(self):
         """Should find optimal assignment for a 3x3 matrix."""
-        cost = np.array([
-            [10.0, 19.0, 8.0],
-            [10.0, 7.0, 10.0],
-            [13.0, 13.0, 14.0],
-        ])
+        cost = np.array(
+            [
+                [10.0, 19.0, 8.0],
+                [10.0, 7.0, 10.0],
+                [13.0, 13.0, 14.0],
+            ]
+        )
         assignment, total = optimize_assignments(cost)
         assert total > 0
         assert len(assignment) == 3
@@ -54,11 +56,13 @@ class TestOptimizeAssignments:
 
     def test_square_matrix(self):
         """Square matrix should match each partner to exactly one order."""
-        cost = np.array([
-            [5.0, 9.0, 9.0],
-            [9.0, 5.0, 9.0],
-            [9.0, 9.0, 5.0],
-        ])  # diagonal cheapest at 5, off-diagonals at 9
+        cost = np.array(
+            [
+                [5.0, 9.0, 9.0],
+                [9.0, 5.0, 9.0],
+                [9.0, 9.0, 5.0],
+            ]
+        )  # diagonal cheapest at 5, off-diagonals at 9
         assignment, total = optimize_assignments(cost)
         assert total == pytest.approx(15.0)  # all three on diagonal
         assert len(set(assignment)) == 3  # each partner assigned once
@@ -105,10 +109,12 @@ class TestCompareAssignmentStrategies:
     @pytest.fixture
     def orders_df(self):
         """Create a sample orders DataFrame."""
-        return pd.DataFrame({
-            "distance_km": [5.0, 10.0, 3.0],
-            "traffic_level": [1, 2, 0],
-        })
+        return pd.DataFrame(
+            {
+                "distance_km": [5.0, 10.0, 3.0],
+                "traffic_level": [1, 2, 0],
+            }
+        )
 
     def test_returns_dict_with_keys(self, orders_df):
         """Should return dict with expected keys."""

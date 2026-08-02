@@ -70,6 +70,7 @@ class TestMaybeTriggerRetrainingHappyPath:
 
         # Reset cooldown
         import dabba.monitoring.retrain as retrain_mod
+
         retrain_mod._last_retrain_time = 0.0
 
         with patch("subprocess.Popen") as mock_popen:
@@ -85,6 +86,7 @@ class TestMaybeTriggerRetrainingHappyPath:
     def test_dry_run_logs_only(self, severe_drift_result: DriftResult) -> None:
         """With dry_run=True, should return True but NOT spawn a subprocess."""
         import dabba.monitoring.retrain as retrain_mod
+
         retrain_mod._last_retrain_time = 0.0
 
         with patch("subprocess.Popen") as mock_popen:
@@ -147,6 +149,7 @@ class TestMaybeTriggerRetrainingEdgeCases:
 
         # Set cooldown to the recent past (5 seconds ago)
         import time
+
         retrain_mod._last_retrain_time = time.time() - 5
 
         with patch("subprocess.Popen") as mock_popen:
@@ -180,9 +183,12 @@ class TestMaybeTriggerRetrainingFailures:
             )
             assert result is False
 
-    def test_subprocess_exception_graceful(self, severe_drift_result: DriftResult) -> None:
+    def test_subprocess_exception_graceful(
+        self, severe_drift_result: DriftResult
+    ) -> None:
         """Should return False gracefully when subprocess.Popen raises."""
         import dabba.monitoring.retrain as retrain_mod
+
         retrain_mod._last_retrain_time = 0.0
 
         with patch("subprocess.Popen", side_effect=OSError("No such file")):

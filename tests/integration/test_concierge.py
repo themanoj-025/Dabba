@@ -153,16 +153,16 @@ class TestExecuteTool:
 
     def test_get_eta_formatted(self, tools):
         """Should format ETA result."""
-        result = _execute_tool("get_eta_estimate", {"restaurant_name": "Truffles"}, tools)
+        result = _execute_tool(
+            "get_eta_estimate", {"restaurant_name": "Truffles"}, tools
+        )
         assert "ETA for Truffles" in result
         assert "on track" in result
         assert "min" in result
 
     def test_get_eta_not_found(self, tools):
         """Should format not-found message."""
-        result = _execute_tool(
-            "get_eta_estimate", {"restaurant_name": "Fake"}, tools
-        )
+        result = _execute_tool("get_eta_estimate", {"restaurant_name": "Fake"}, tools)
         assert "not found" in result
 
     def test_reliability_formatted(self, tools):
@@ -199,7 +199,9 @@ class TestMatchIntent:
 
     def test_eta_intent(self):
         """Should match ETA queries."""
-        intent, params = _match_intent("How long does delivery from Meghana Foods take?")
+        intent, params = _match_intent(
+            "How long does delivery from Meghana Foods take?"
+        )
         assert intent == "eta"
         # Input is lowercased; restaurant name extracted from pattern
         assert "meghana" in params.get("restaurant", "").lower()
@@ -262,9 +264,7 @@ class TestRulesConciergeResponse:
 
     def test_budget_response(self, tools):
         """Should return budget search results."""
-        response = _rules_concierge_response(
-            "Find cheap restaurants under 400", tools
-        )
+        response = _rules_concierge_response("Find cheap restaurants under 400", tools)
         assert "under" in response
 
     def test_unknown_response(self, tools):

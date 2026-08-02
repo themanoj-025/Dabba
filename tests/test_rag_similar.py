@@ -16,13 +16,15 @@ class TestBuildRestaurantEmbeddings:
     @pytest.fixture
     def sample_df(self):
         """Create a small restaurant DataFrame with feature columns."""
-        return pd.DataFrame({
-            "name": ["Rest A", "Rest B", "Rest C", "Rest D"],
-            "rate": [4.5, 3.8, 4.2, 3.5],
-            "cost_for_two": [500, 300, 800, 200],
-            "votes_log": [6.2, 3.9, 5.7, 2.4],
-            "online_order_binary": [1, 1, 0, 1],
-        })
+        return pd.DataFrame(
+            {
+                "name": ["Rest A", "Rest B", "Rest C", "Rest D"],
+                "rate": [4.5, 3.8, 4.2, 3.5],
+                "cost_for_two": [500, 300, 800, 200],
+                "votes_log": [6.2, 3.9, 5.7, 2.4],
+                "online_order_binary": [1, 1, 0, 1],
+            }
+        )
 
     def test_returns_numpy_array(self, sample_df):
         """Should return a numpy array."""
@@ -61,12 +63,8 @@ class TestBuildRestaurantEmbeddings:
 
     def test_deterministic(self, sample_df):
         """Same input should produce same embeddings."""
-        e1 = build_restaurant_embeddings(
-            sample_df, ["rate", "cost_for_two"]
-        )
-        e2 = build_restaurant_embeddings(
-            sample_df, ["rate", "cost_for_two"]
-        )
+        e1 = build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
+        e2 = build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
         assert np.allclose(e1, e2)
 
 
@@ -78,20 +76,20 @@ class TestFindSimilarRestaurants:
         """Create a restaurant DataFrame with distinct restaurants."""
         rng = np.random.RandomState(42)
         n = 10
-        return pd.DataFrame({
-            "name": [f"Restaurant {i}" for i in range(n)],
-            "rate": rng.uniform(3.0, 5.0, n),
-            "cost_for_two": rng.randint(200, 1500, n),
-            "location": rng.choice(["Koramangala", "Indiranagar", "MG Road"], n),
-            "cuisines": rng.choice(["North Indian", "Chinese", "Italian"], n),
-        })
+        return pd.DataFrame(
+            {
+                "name": [f"Restaurant {i}" for i in range(n)],
+                "rate": rng.uniform(3.0, 5.0, n),
+                "cost_for_two": rng.randint(200, 1500, n),
+                "location": rng.choice(["Koramangala", "Indiranagar", "MG Road"], n),
+                "cuisines": rng.choice(["North Indian", "Chinese", "Italian"], n),
+            }
+        )
 
     @pytest.fixture
     def embeddings(self, sample_df):
         """Build embeddings for the sample DataFrame."""
-        return build_restaurant_embeddings(
-            sample_df, ["rate", "cost_for_two"]
-        )
+        return build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
 
     def test_returns_dataframe(self, sample_df, embeddings):
         """Should return a DataFrame."""

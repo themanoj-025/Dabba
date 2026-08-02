@@ -204,9 +204,7 @@ def _sample_optuna_params(trial: Any, search_space: Dict[str, Any]) -> Dict[str,
                 log=spec.get("log", False),
             )
         elif suggest_type == "categorical":
-            params[param_name] = trial.suggest_categorical(
-                param_name, spec["choices"]
-            )
+            params[param_name] = trial.suggest_categorical(param_name, spec["choices"])
     return params
 
 
@@ -334,7 +332,9 @@ def tune_hyperparameters(
         try:
             model = _build_model_from_params(model_name, params)
         except Exception as e:
-            logger.warning("Failed to build %s with params: %s — %s", model_name, params, e)
+            logger.warning(
+                "Failed to build %s with params: %s — %s", model_name, params, e
+            )
             return float("inf")
 
         pipe = Pipeline([("preprocessor", preprocessor), ("model", model)])
@@ -460,7 +460,9 @@ def get_tuned_model(
         )
         return _build_model_from_params(model_name, best_params)
     except Exception as e:
-        logger.warning("Tuning failed for %s: %s — falling back to defaults", model_name, e)
+        logger.warning(
+            "Tuning failed for %s: %s — falling back to defaults", model_name, e
+        )
         return None
 
 

@@ -65,7 +65,10 @@ def _build_reference_data_cached() -> Optional[pd.DataFrame]:
 
     try:
         from dabba.database.session import get_db
-        from dabba.database.repositories import count_restaurants, get_all_restaurants_as_df
+        from dabba.database.repositories import (
+            count_restaurants,
+            get_all_restaurants_as_df,
+        )
 
         with get_db() as db:
             n_restaurants = count_restaurants(db)
@@ -158,7 +161,9 @@ def show() -> None:
                     v = (
                         "success"
                         if on_time_rate > 90
-                        else "danger" if on_time_rate < 70 else "default"
+                        else "danger"
+                        if on_time_rate < 70
+                        else "default"
                     )
                     render_metric_card(
                         "On-Time Rate", f"{on_time_rate:.1f}%", variant=v

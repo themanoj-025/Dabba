@@ -86,7 +86,9 @@ def _age_bucket(age: float) -> str:
         return "veteran"
 
 
-def cyclical_encode(hours: np.ndarray, period: int = 24) -> tuple[np.ndarray, np.ndarray]:
+def cyclical_encode(
+    hours: np.ndarray, period: int = 24
+) -> tuple[np.ndarray, np.ndarray]:
     """Convert a cyclical feature (hour, day) to sin/cos components.
 
     Args:
@@ -215,9 +217,11 @@ def add_delivery_features(
         df["is_weekend"] = (dt.dt.dayofweek >= 5).astype(int)
 
         # Rush hour: morning (8-10), lunch (1-2), evening (6-9)
-        df["is_rush_hour"] = df["order_hour"].apply(
-            lambda h: 1 if h in {8, 9, 10, 13, 14, 18, 19, 20} else 0
-        ).astype(int)
+        df["is_rush_hour"] = (
+            df["order_hour"]
+            .apply(lambda h: 1 if h in {8, 9, 10, 13, 14, 18, 19, 20} else 0)
+            .astype(int)
+        )
         logger.info(
             "Rush hour orders: %d/%d (%.1f%%)",
             df["is_rush_hour"].sum(),
@@ -250,9 +254,7 @@ def add_delivery_features(
         )
 
     # Weather encoding (raw column name after cleaning normalization)
-    weather_col_candidates = [
-        c for c in df.columns if "weather" in c.lower()
-    ]
+    weather_col_candidates = [c for c in df.columns if "weather" in c.lower()]
     if weather_col_candidates:
         weather_col = weather_col_candidates[0]
         df["weather_encoded"] = (
@@ -270,8 +272,8 @@ def add_delivery_features(
 
     # ── 4. Interaction features ─────────────────────────────────────
     if "haversine_distance_km" in df.columns and "traffic_ordinal" in df.columns:
-        df["distance_traffic_interaction"] = (
-            df["haversine_distance_km"] * (df["traffic_ordinal"] + 1)
+        df["distance_traffic_interaction"] = df["haversine_distance_km"] * (
+            df["traffic_ordinal"] + 1
         )
         logger.info(
             "Distance×traffic interaction — mean=%.2f",
@@ -314,6 +316,7 @@ def add_delivery_features(
 
 
 # ─── Feature builder for API requests ─────────────────────────────────
+
 
 def build_eta_features_for_api(
     *,
@@ -385,7 +388,8 @@ def build_eta_features_for_api(
         "traffic_ordinal": traffic_level if traffic_level is not None else 1,
         "is_festival": is_festival_int,
         "weather_encoded": weather_encoded,
-        "distance_traffic_interaction": distance_km * ((traffic_level if traffic_level is not None else 1) + 1),
+        "distance_traffic_interaction": distance_km
+        * ((traffic_level if traffic_level is not None else 1) + 1),
         "distance_festival_interaction": distance_km * festival_flag,
         "delivery_person_age": delivery_person_age,
         "delivery_person_ratings": delivery_person_rating,
@@ -408,7 +412,9 @@ def build_eta_features_for_api(
                 config=config,
             )
             data["traffic_ordinal"] = traffic_info.level
-            data["distance_traffic_interaction"] = distance_km * (traffic_info.level + 1)
+            data["distance_traffic_interaction"] = distance_km * (
+                traffic_info.level + 1
+            )
             logger.debug(
                 "Real-time traffic level: %d (%s) via %s",
                 traffic_info.level,

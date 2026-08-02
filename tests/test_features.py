@@ -122,6 +122,7 @@ class TestCyclicalEncode:
     def test_hour_encoding(self):
         """Hours 0 and 24 should produce same sin/cos values."""
         from dabba.features.delivery_features import cyclical_encode
+
         sin_0, cos_0 = cyclical_encode(np.array([0]), period=24)
         sin_24, cos_24 = cyclical_encode(np.array([24]), period=24)
         assert sin_0[0] == pytest.approx(sin_24[0], abs=1e-10)
@@ -130,6 +131,7 @@ class TestCyclicalEncode:
     def test_hour_6_and_18_opposite(self):
         """Hours 6 and 18 should have opposite sin values."""
         from dabba.features.delivery_features import cyclical_encode
+
         sin_6, _ = cyclical_encode(np.array([6]), period=24)
         sin_18, _ = cyclical_encode(np.array([18]), period=24)
         assert sin_6[0] == pytest.approx(-sin_18[0], abs=1e-10)
@@ -141,18 +143,21 @@ class TestCityZone:
     def test_central_zone(self):
         """MG Road area should be central."""
         from dabba.features.delivery_features import _assign_city_zone
+
         zone = _assign_city_zone(12.97, 77.61)
         assert zone == "central"
 
     def test_north_zone(self):
         """Yelahanka area should be north."""
         from dabba.features.delivery_features import _assign_city_zone
+
         zone = _assign_city_zone(13.10, 77.57)
         assert zone == "north"
 
     def test_unknown_zone(self):
         """NaN coordinates should return unknown."""
         from dabba.features.delivery_features import _assign_city_zone
+
         zone = _assign_city_zone(float("nan"), 77.6)
         assert zone == "unknown"
 

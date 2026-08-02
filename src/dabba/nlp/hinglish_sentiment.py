@@ -229,9 +229,7 @@ def add_hinglish_sentiment_scores(
             df["avg_sentiment"].std(),
         )
     else:
-        logger.warning(
-            "Column '%s' not found — defaulting sentiment to 0", review_col
-        )
+        logger.warning("Column '%s' not found — defaulting sentiment to 0", review_col)
         df["avg_sentiment"] = 0.0
 
     return df

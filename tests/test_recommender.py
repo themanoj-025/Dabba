@@ -138,7 +138,9 @@ class TestRecommenderLoadModel:
     @pytest.fixture
     def recommender(self):
         """Create a basic recommender."""
-        df = pd.DataFrame({"name": ["A"], "rate": [4.0], "votes": [100], "cost_for_two": [500]})
+        df = pd.DataFrame(
+            {"name": ["A"], "rate": [4.0], "votes": [100], "cost_for_two": [500]}
+        )
         return RestaurantRecommender(df, ["cost_for_two"])
 
     def test_model_none_initially(self, recommender):

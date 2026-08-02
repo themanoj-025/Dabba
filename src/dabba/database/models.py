@@ -29,7 +29,6 @@ class Base(DeclarativeBase):
     """Declarative base for all Dabba ORM models."""
 
 
-
 # ─── Shared column mapping ───────────────────────────────────────────
 # Maps processed DataFrame column names to Restaurant ORM field names.
 # Used by both seed.py and pipeline.py to avoid duplicating this dict.

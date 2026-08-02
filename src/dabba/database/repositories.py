@@ -59,11 +59,7 @@ def get_all_restaurants(
         List of Restaurant ORM instances.
     """
     return (
-        db.query(Restaurant)
-        .order_by(Restaurant.name)
-        .offset(offset)
-        .limit(limit)
-        .all()
+        db.query(Restaurant).order_by(Restaurant.name).offset(offset).limit(limit).all()
     )
 
 
@@ -90,11 +86,7 @@ def get_restaurant_by_name(db: Session, name: str) -> Optional[Restaurant]:
     Returns:
         Restaurant instance or None.
     """
-    return (
-        db.query(Restaurant)
-        .filter(Restaurant.name.ilike(f"%{name}%"))
-        .first()
-    )
+    return db.query(Restaurant).filter(Restaurant.name.ilike(f"%{name}%")).first()
 
 
 def get_restaurants_by_cuisine(
@@ -252,12 +244,36 @@ def get_all_experiment_results(
 
 # Canonical cuisine list matching restaurant_features.py
 _RESTAURANT_TOP_CUISINES: list[str] = [
-    "North Indian", "Chinese", "South Indian", "Mughlai", "Cafe",
-    "Bakery", "Italian", "Fast Food", "Continental", "Desserts",
-    "Biryani", "Street Food", "Ice Cream", "Andhra", "Thai",
-    "Kerala", "Seafood", "Bengali", "Rajasthani", "Goan",
-    "Japanese", "Korean", "Mexican", "Mediterranean", "Lebanese",
-    "American", "French", "German", "Vietnamese", "Middle Eastern",
+    "North Indian",
+    "Chinese",
+    "South Indian",
+    "Mughlai",
+    "Cafe",
+    "Bakery",
+    "Italian",
+    "Fast Food",
+    "Continental",
+    "Desserts",
+    "Biryani",
+    "Street Food",
+    "Ice Cream",
+    "Andhra",
+    "Thai",
+    "Kerala",
+    "Seafood",
+    "Bengali",
+    "Rajasthani",
+    "Goan",
+    "Japanese",
+    "Korean",
+    "Mexican",
+    "Mediterranean",
+    "Lebanese",
+    "American",
+    "French",
+    "German",
+    "Vietnamese",
+    "Middle Eastern",
 ]
 
 
@@ -311,14 +327,18 @@ def get_all_restaurants_as_df(
         for cuisine in _RESTAURANT_TOP_CUISINES:
             col_name = f"cuisine_{cuisine.lower().replace(' ', '_')}"
             df[col_name] = (
-                df["cuisines"]
-                .str.contains(cuisine, case=False, na=False)
-                .astype(int)
+                df["cuisines"].str.contains(cuisine, case=False, na=False).astype(int)
             )
 
     # Fill missing numeric columns
-    for col in ["votes_log", "online_order_binary", "book_table_binary",
-                "cuisine_count", "avg_sentiment", "reliability_score"]:
+    for col in [
+        "votes_log",
+        "online_order_binary",
+        "book_table_binary",
+        "cuisine_count",
+        "avg_sentiment",
+        "reliability_score",
+    ]:
         if col in df.columns:
             df[col] = df[col].fillna(0)
 
@@ -342,6 +362,7 @@ def get_prediction_by_id(db: Session, prediction_id: int) -> Optional[Prediction
 
 
 # ─── Drift Logs ──────────────────────────────────────────────────────
+
 
 def get_recent_drift_logs(
     db: Session,
@@ -373,19 +394,11 @@ def get_drift_summary(db: Session) -> Dict[str, Any]:
     """
     total = db.query(func.count(DriftLog.id)).scalar() or 0
     alerted = (
-        db.query(func.count(DriftLog.id))
-        .filter(DriftLog.alerted.is_(True))
-        .scalar()
+        db.query(func.count(DriftLog.id)).filter(DriftLog.alerted.is_(True)).scalar()
         or 0
     )
-    features = (
-        db.query(func.count(func.distinct(DriftLog.feature_name))).scalar() or 0
-    )
-    last = (
-        db.query(DriftLog.detected_at)
-        .order_by(desc(DriftLog.detected_at))
-        .first()
-    )
+    features = db.query(func.count(func.distinct(DriftLog.feature_name))).scalar() or 0
+    last = db.query(DriftLog.detected_at).order_by(desc(DriftLog.detected_at)).first()
     return {
         "total_drift_events": total,
         "total_alerted": alerted,

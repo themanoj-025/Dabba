@@ -4,6 +4,7 @@ Revision ID: 001
 Revises: None
 Create Date: 2026-07-22
 """
+
 from __future__ import annotations
 
 from typing import Sequence, Union
@@ -124,9 +125,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         comment="Drift detection events for monitored features",
     )
-    op.create_index(
-        op.f("ix_drift_logs_feature_name"), "drift_logs", ["feature_name"]
-    )
+    op.create_index(op.f("ix_drift_logs_feature_name"), "drift_logs", ["feature_name"])
 
 
 def downgrade() -> None:

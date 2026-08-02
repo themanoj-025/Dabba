@@ -82,8 +82,8 @@ def render_restaurant_card(
         st.markdown(
             f'<p class="details">📍 {location} | 🍳 {cuisines[:60]} | '
             f'<span class="badge badge-cost">₹{int(cost) if cost != "N/A" else "?"}</span>'
-            f'{" | CF: " + f"{cf_score:.2f}" if cf_score else ""}'
-            f'{" | Score: " + f"{combined_score:.3f}" if combined_score else ""}'
+            f"{' | CF: ' + f'{cf_score:.2f}' if cf_score else ''}"
+            f"{' | Score: ' + f'{combined_score:.3f}' if combined_score else ''}"
             f"</p>",
             unsafe_allow_html=True,
         )
@@ -125,7 +125,7 @@ def render_metric_card(
         <div class="metric-card{variant_class}">
             <div class="metric-value">{value}</div>
             <div class="metric-label">{label}</div>
-            {f'<div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">{delta}</div>' if delta else ''}
+            {f'<div style="font-size:0.75rem;color:#6b7280;margin-top:0.25rem;">{delta}</div>' if delta else ""}
         </div>
         """,
         unsafe_allow_html=True,

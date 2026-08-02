@@ -33,7 +33,13 @@ class TestModelSearchSpaces:
     def test_has_expected_models(self):
         """Should contain search spaces for all ensemble models."""
         spaces = get_model_search_spaces()
-        expected = {"XGBoost", "LightGBM", "CatBoost", "RandomForest", "GradientBoosting"}
+        expected = {
+            "XGBoost",
+            "LightGBM",
+            "CatBoost",
+            "RandomForest",
+            "GradientBoosting",
+        }
         assert expected.issubset(set(spaces.keys()))
 
     def test_each_space_has_valid_params(self):
@@ -186,9 +192,7 @@ class TestTuneHyperparameters:
         )
         # y is a noisy linear function of features
         y = pd.Series(
-            2.0 * df["feature_a"]
-            - 1.5 * df["feature_d"]
-            + rng.normal(0, 0.5, n)
+            2.0 * df["feature_a"] - 1.5 * df["feature_d"] + rng.normal(0, 0.5, n)
         )
         return df, y
 
@@ -226,6 +230,7 @@ class TestTuneHyperparameters:
         model = get_tuned_model(X, y, "RandomForest", n_trials=3, cv_folds=3)
         assert model is not None
         from sklearn.ensemble import RandomForestRegressor
+
         assert isinstance(model, RandomForestRegressor)
         # Should not be fitted yet (the pipeline fits during CV, model is fresh)
         assert hasattr(model, "n_estimators")
@@ -239,7 +244,8 @@ class TestTuneHyperparameters:
 
         X, y = sample_data
         tuned = tune_all_models(
-            X, y,
+            X,
+            y,
             models_to_tune=["XGBoost", "RandomForest"],
             n_trials=3,
             cv_folds=3,
@@ -297,8 +303,12 @@ class TestTuneHyperparameters:
         from sklearn.metrics import mean_absolute_error
 
         preprocessor = _build_preprocessor(X)
-        default_model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
-        default_pipe = Pipeline([("preprocessor", preprocessor), ("model", default_model)])
+        default_model = RandomForestRegressor(
+            n_estimators=100, random_state=42, n_jobs=-1
+        )
+        default_pipe = Pipeline(
+            [("preprocessor", preprocessor), ("model", default_model)]
+        )
         default_preds = cross_val_predict(default_pipe, X, y, cv=3, method="predict")
         default_mae = mean_absolute_error(y, default_preds)
 
@@ -372,17 +382,20 @@ class TestHpoIntegration:
     def test_rating_models_export_hpo_function(self):
         """Rating model module should export get_tuned_rating_models."""
         from dabba.models.rating_model import get_tuned_rating_models
+
         assert callable(get_tuned_rating_models)
 
     def test_eta_models_export_hpo_function(self):
         """ETA model module should export get_tuned_eta_models."""
         from dabba.models.eta_model import get_tuned_eta_models
+
         assert callable(get_tuned_eta_models)
 
     def test_rating_train_accepts_use_hpo_flag(self):
         """train_and_evaluate_rating_models should accept use_hpo kwarg."""
         from dabba.models.rating_model import train_and_evaluate_rating_models
         import inspect
+
         sig = inspect.signature(train_and_evaluate_rating_models)
         assert "use_hpo" in sig.parameters
 
@@ -390,6 +403,7 @@ class TestHpoIntegration:
         """train_and_evaluate_eta_models should accept use_hpo kwarg."""
         from dabba.models.eta_model import train_and_evaluate_eta_models
         import inspect
+
         sig = inspect.signature(train_and_evaluate_eta_models)
         assert "use_hpo" in sig.parameters
 
@@ -405,7 +419,9 @@ class TestHpoIntegration:
 
         default_models = get_rating_models()
         tuned_models = get_tuned_rating_models(
-            X, y, models_to_tune=[],  # tune nothing, should be same as defaults
+            X,
+            y,
+            models_to_tune=[],  # tune nothing, should be same as defaults
         )
 
         for name in default_models:
@@ -415,8 +431,6 @@ class TestHpoIntegration:
     def sample_data(self):
         rng = np.random.RandomState(42)
         n = 100
-        df = pd.DataFrame(
-            {"x1": rng.rand(n), "x2": rng.choice(["a", "b", "c"], n)}
-        )
+        df = pd.DataFrame({"x1": rng.rand(n), "x2": rng.choice(["a", "b", "c"], n)})
         y = pd.Series(2 * df["x1"] + rng.normal(0, 0.3, n))
         return df, y

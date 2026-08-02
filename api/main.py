@@ -96,7 +96,9 @@ async def observability_middleware(request: Request, call_next):
 
     # Record Prometheus metrics
     http_requests_total.labels(method=method, endpoint=endpoint, status=status).inc()
-    http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(duration)
+    http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(
+        duration
+    )
 
     # Add request_id to response headers
     response.headers["X-Request-ID"] = request_id
@@ -165,9 +167,7 @@ async def startup() -> None:
     )
 
     # Set Prometheus model-loaded gauges
-    models_loaded.labels(model="eta").set(
-        1 if app.state.eta_model is not None else 0
-    )
+    models_loaded.labels(model="eta").set(1 if app.state.eta_model is not None else 0)
     models_loaded.labels(model="recommender").set(
         1 if app.state.hybrid_recommender is not None else 0
     )
@@ -218,7 +218,5 @@ async def health(request: Request) -> HealthResponse:
         rating_model_loaded=(
             getattr(request.app.state, "hybrid_recommender", None) is not None
         ),
-        eta_model_loaded=(
-            getattr(request.app.state, "eta_model", None) is not None
-        ),
+        eta_model_loaded=(getattr(request.app.state, "eta_model", None) is not None),
     )

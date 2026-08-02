@@ -106,6 +106,7 @@ def get_tuned_eta_models(
         Falls back to default models for any that fail tuning.
     """
     from dabba.config import get_config as _get_config
+
     config = config or _get_config()
 
     # Start with defaults
@@ -128,14 +129,10 @@ def get_tuned_eta_models(
     # Override defaults with tuned models (keeping defaults as fallback)
     for name, tuned in tuned_models.items():
         if tuned is not None:
-            logger.info(
-                "✅ Replaced default %s with Optuna-tuned version", name
-            )
+            logger.info("✅ Replaced default %s with Optuna-tuned version", name)
             models[name] = tuned
         else:
-            logger.warning(
-                "⚠️  Keeping default %s — tuning returned None", name
-            )
+            logger.warning("⚠️  Keeping default %s — tuning returned None", name)
 
     return {k: v for k, v in models.items() if v is not None}
 
@@ -224,9 +221,7 @@ def train_and_evaluate_eta_models(
     run_hpo = use_hpo if use_hpo is not None else config.optuna_enabled
 
     if run_hpo:
-        logger.info(
-            "🔬 Running Optuna hyperparameter tuning for ETA models..."
-        )
+        logger.info("🔬 Running Optuna hyperparameter tuning for ETA models...")
         models = get_tuned_eta_models(X, y, config=config)
     else:
         models = get_eta_models()

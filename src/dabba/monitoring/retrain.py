@@ -45,7 +45,9 @@ def maybe_trigger_retraining(
     project_root: Optional[Path] = None,
     dry_run: bool = False,
 ) -> bool:
-    from dabba.monitoring.drift import DriftResult  # lazy import avoids circular dependency
+    from dabba.monitoring.drift import (
+        DriftResult,
+    )  # lazy import avoids circular dependency
 
     """Trigger model retraining if drift is severe enough.
 
@@ -98,7 +100,9 @@ def maybe_trigger_retraining(
         # Walk up from this file's location to find project root
         here = Path(__file__).resolve()
         for parent in here.parents:
-            if (parent / "src" / "dabba").is_dir() and (parent / "pyproject.toml").is_file():
+            if (parent / "src" / "dabba").is_dir() and (
+                parent / "pyproject.toml"
+            ).is_file():
                 project_root = parent
                 break
         if project_root is None:
@@ -142,8 +146,7 @@ def maybe_trigger_retraining(
 
         _last_retrain_time = now
         logger.info(
-            "Retrain subprocess spawned (PID=%d) — drift fraction=%.2f, "
-            "features=%s",
+            "Retrain subprocess spawned (PID=%d) — drift fraction=%.2f, features=%s",
             process.pid,
             drift_fraction,
             drifted_features[:8],

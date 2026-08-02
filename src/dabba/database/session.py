@@ -59,7 +59,9 @@ def _get_engine(config: DabbaConfig | None = None):
 
     # SQLite uses SingletonThreadPool which doesn't support pool_size/max_overflow.
     # Pool sizing params are only passed for non-SQLite dialects (e.g. Postgres).
-    pool_kwargs = {} if url.startswith("sqlite") else {"pool_size": 5, "max_overflow": 10}
+    pool_kwargs = (
+        {} if url.startswith("sqlite") else {"pool_size": 5, "max_overflow": 10}
+    )
     _engine = create_engine(
         url,
         echo=False,
@@ -70,6 +72,7 @@ def _get_engine(config: DabbaConfig | None = None):
 
     # Enable WAL mode and foreign keys for SQLite
     if url.startswith("sqlite"):
+
         @event.listens_for(_engine, "connect")
         def _set_sqlite_pragma(dbapi_connection, connection_record):
             cursor = dbapi_connection.cursor()
