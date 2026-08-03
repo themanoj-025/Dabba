@@ -70,9 +70,10 @@ services:
       - mlflow_data:/mlflow
     environment:
       - MLFLOW_TRACKING_URI=http://localhost:5000
+      - MLFLOW_ALLOW_FILE_STORE=true
     healthcheck:
-      # Probing the MLflow API list endpoint — more robust than the UI root
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/2.0/mlflow/experiments/list"]
+      # MLflow 3.x removed the old API list endpoint — /health is stable
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -10,6 +10,7 @@ Usage:
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -27,6 +28,12 @@ config = context.config
 # Set up Python logging from alembic.ini
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Honor DABBA_DATABASE_URL when set (Docker/containerized runs);
+# fall back to the sqlalchemy.url in alembic.ini for local dev.
+_env_db_url = os.getenv("DABBA_DATABASE_URL")
+if _env_db_url:
+    config.set_main_option("sqlalchemy.url", _env_db_url)
 
 # Import all models so Alembic can detect them
 from dabba.database.models import Base  # noqa: E402

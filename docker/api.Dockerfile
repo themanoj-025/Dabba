@@ -7,13 +7,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# The dabba package lives under src/ (see pyproject [tool.setuptools.packages.find])
+ENV PYTHONPATH=/app/src
+
 # Install runtime system dependencies + curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install Python dependencies.
+# torch is needed at runtime (HybridRecommender -> collaborative_recommender)
+# but only for CPU inference; the default PyPI wheel bundles ~4GB of CUDA
+# deps. Install the CPU build in its OWN layer (before requirements.txt) so
+# it stays cacheable and satisfies the requirements.txt constraint.
+RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

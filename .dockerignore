@@ -11,7 +11,6 @@ tests/
 Makefile
 pyproject.toml
 setup_kaggle.py
-requirements.txt
 .pre-commit-config.yaml
 
 # Large data files (downloaded at runtime)
