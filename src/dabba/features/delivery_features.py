@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -147,7 +146,7 @@ WEATHER_ENCODING = {
 
 
 def add_delivery_features(
-    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+    df: pd.DataFrame, config: DabbaConfig | None = None
 ) -> pd.DataFrame:
     """Engineer features for the ETA prediction model.
 
@@ -321,16 +320,16 @@ def add_delivery_features(
 def build_eta_features_for_api(
     *,
     distance_km: float,
-    traffic_level: Optional[int] = None,
+    traffic_level: int | None = None,
     is_festival: bool = False,
     delivery_person_age: float = 30.0,
     delivery_person_rating: float = 4.0,
     vehicle_condition: int = 1,
-    order_hour: Optional[int] = None,
-    day_of_week: Optional[int] = None,
+    order_hour: int | None = None,
+    day_of_week: int | None = None,
     weather_encoded: int = 1,
     city_zone: str = "unknown",
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> pd.DataFrame:
     """Build the full ETA feature vector from API-level inputs.
 

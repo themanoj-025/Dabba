@@ -6,7 +6,6 @@ endpoints. When DABBA_API_KEY is not set, auth is skipped in dev mode.
 
 import os
 from pathlib import Path
-from typing import Dict
 
 import pytest
 from fastapi.testclient import TestClient
@@ -34,7 +33,7 @@ def api_key() -> str:
     return os.environ.get("DABBA_API_KEY")
 
 
-def auth_headers(api_key: str | None) -> Dict[str, str]:
+def auth_headers(api_key: str | None) -> dict[str, str]:
     """Return auth headers if an API key is configured."""
     if api_key:
         return {"X-API-Key": api_key}
@@ -238,16 +237,15 @@ def test_api_routers_no_csv_reads(rel_path: str) -> None:
 
     violations = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Attribute):
-                if node.func.attr == "read_csv":
-                    if isinstance(node.func.value, ast.Name) and node.func.value.id in (
-                        "pd",
-                        "pandas",
-                    ):
-                        violations.append(
-                            f"  Line {node.lineno}: direct pd.read_csv() call"
-                        )
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr == "read_csv":
+                if isinstance(node.func.value, ast.Name) and node.func.value.id in (
+                    "pd",
+                    "pandas",
+                ):
+                    violations.append(
+                        f"  Line {node.lineno}: direct pd.read_csv() call"
+                    )
 
     assert not violations, (
         f"{rel_path} still contains pd.read_csv() calls:\n"
@@ -294,16 +292,15 @@ def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
 
     violations = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Attribute):
-                if node.func.attr == "read_csv":
-                    if isinstance(node.func.value, ast.Name) and node.func.value.id in (
-                        "pd",
-                        "pandas",
-                    ):
-                        violations.append(
-                            f"  Line {node.lineno}: direct pd.read_csv() call"
-                        )
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr == "read_csv":
+                if isinstance(node.func.value, ast.Name) and node.func.value.id in (
+                    "pd",
+                    "pandas",
+                ):
+                    violations.append(
+                        f"  Line {node.lineno}: direct pd.read_csv() call"
+                    )
 
     assert not violations, (
         f"{rel_path} still contains pd.read_csv() calls:\n"

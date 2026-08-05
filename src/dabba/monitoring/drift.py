@@ -19,8 +19,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Dict, Optional
+from datetime import UTC, datetime
 
 import numpy as np
 import pandas as pd
@@ -48,7 +47,7 @@ class DriftResult:
         message: Human-readable summary.
     """
 
-    drifted_features: Dict[str, tuple] = field(default_factory=dict)
+    drifted_features: dict[str, tuple] = field(default_factory=dict)
     total_features: int = 0
     drifted_count: int = 0
     has_drift: bool = False
@@ -79,7 +78,7 @@ class AlertResult:
 def _send_slack_alert(
     webhook_url: str,
     message: str,
-    channel: Optional[str] = None,
+    channel: str | None = None,
 ) -> AlertResult:
     """Send a formatted message to Slack via Incoming Webhook.
 
@@ -95,7 +94,7 @@ def _send_slack_alert(
     Returns:
         AlertResult indicating success/failure.
     """
-    payload: Dict[str, object] = {
+    payload: dict[str, object] = {
         "text": message,
         "mrkdwn": True,
     }
@@ -153,12 +152,12 @@ def _format_drift_message(result: DriftResult) -> str:
         return f"✅ No drift detected across {result.total_features} features."
 
     lines = [
-        f"🚨 *Drift Detected!*",
-        f"",
+        "🚨 *Drift Detected!*",
+        "",
         f"• {result.drifted_count}/{result.total_features} features drifted "
         f"(p < {result.threshold})",
-        f"",
-        f"*Affected features:*",
+        "",
+        "*Affected features:*",
     ]
     for feature_name, (p_value, statistic) in result.drifted_features.items():
         lines.append(f"  • `{feature_name}` — p={p_value:.4f}, KS={statistic:.3f}")
@@ -176,7 +175,7 @@ def _format_drift_message(result: DriftResult) -> str:
 def _save_drift_log(
     result: DriftResult,
     alerted: bool = False,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> None:
     """Persist drift detection results to the database (best-effort).
 
@@ -193,12 +192,12 @@ def _save_drift_log(
         return
 
     try:
-        from dabba.database.session import get_db, init_db
         from dabba.database.models import DriftLog
+        from dabba.database.session import get_db, init_db
 
         init_db(config)
         with get_db() as db:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             for feature_name, (p_value, statistic) in result.drifted_features.items():
                 log_entry = DriftLog(
                     feature_name=feature_name,
@@ -238,12 +237,12 @@ class DriftDetector:
     def __init__(
         self,
         reference_data: pd.DataFrame,
-        config: Optional[DabbaConfig] = None,
+        config: DabbaConfig | None = None,
     ):
         self.config = config or get_config()
-        self.reference_stats: Dict[str, Dict] = {}
+        self.reference_stats: dict[str, dict] = {}
         # Per-feature cooldown tracking: {feature_name: last_alert_timestamp}
-        self._alert_cooldowns: Dict[str, float] = {}
+        self._alert_cooldowns: dict[str, float] = {}
         self._fit(reference_data)
 
     def _fit(self, df: pd.DataFrame) -> None:
@@ -307,7 +306,7 @@ class DriftDetector:
             DriftResult with per-feature results and summary.
         """
         threshold = self.config.drift_ks_threshold
-        drifted: Dict[str, tuple] = {}
+        drifted: dict[str, tuple] = {}
         total = 0
 
         for col, ref_info in self.reference_stats.items():
@@ -456,7 +455,7 @@ class DriftDetector:
             DataFrame with shifted distributions for testing.
         """
         rng = np.random.RandomState(self.config.random_seed)
-        data: Dict[str, np.ndarray] = {}
+        data: dict[str, np.ndarray] = {}
 
         for col, info in self.reference_stats.items():
             mean = info["mean"]

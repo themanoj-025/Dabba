@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -61,7 +60,7 @@ def select_best_model(
     results: list,
     metric: str = "mae",
     task: str = "rating",
-) -> Optional[str]:
+) -> str | None:
     """Select the best model by the given metric.
 
     Args:

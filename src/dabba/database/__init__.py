@@ -9,11 +9,11 @@ Provides SQLAlchemy ORM models for structured storage of:
 """
 
 from dabba.database.models import (
-    Restaurant,
+    DriftLog,
+    ExperimentResult,
     Order,
     Prediction,
-    ExperimentResult,
-    DriftLog,
+    Restaurant,
 )
 from dabba.database.repositories import (
     count_restaurants,

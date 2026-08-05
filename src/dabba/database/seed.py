@@ -13,13 +13,12 @@ from __future__ import annotations
 
 import argparse
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
 
 from dabba.config import DabbaConfig, get_config
-from dabba.database.models import Order, Restaurant, RESTAURANT_COL_MAP
+from dabba.database.models import RESTAURANT_COL_MAP, Order, Restaurant
 from dabba.database.session import get_db, init_db
 from dabba.observability import setup_logging
 
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 def seed_restaurants(
     df: pd.DataFrame,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> int:
     """Upsert all restaurants from a DataFrame into the database.
 
@@ -95,8 +94,8 @@ def seed_restaurants(
 
 def seed_orders(
     df: pd.DataFrame,
-    predictions: Optional[np.ndarray] = None,
-    config: Optional[DabbaConfig] = None,
+    predictions: np.ndarray | None = None,
+    config: DabbaConfig | None = None,
 ) -> int:
     """Insert delivery orders into the database.
 
@@ -152,7 +151,7 @@ def seed_orders(
     return count
 
 
-def clear_all(config: Optional[DabbaConfig] = None) -> None:
+def clear_all(config: DabbaConfig | None = None) -> None:
     """Delete all rows from all tables in a single transaction.
 
     Uses one ``with get_db():`` block so that if the Restaurant delete
@@ -196,7 +195,7 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def full_import(config: Optional[DabbaConfig] = None) -> None:
+def full_import(config: DabbaConfig | None = None) -> None:
     """Run the full CSV→DB import: load raw → clean → feature engineer → seed.
 
     This is the main command for migrating from CSV to database.

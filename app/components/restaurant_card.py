@@ -8,7 +8,7 @@ via ``html_escape`` to prevent XSS when rendered with ``unsafe_allow_html=True``
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 import streamlit as st
 
@@ -16,8 +16,8 @@ from app.utils.sanitize import html_escape
 
 
 def render_restaurant_card(
-    restaurant: Dict[str, Any],
-    explanation: Optional[str] = None,
+    restaurant: dict[str, Any],
+    explanation: str | None = None,
     show_similar_button: bool = False,
     similar_callback=None,
     key_prefix: str = "",
@@ -40,8 +40,8 @@ def render_restaurant_card(
     reliability = restaurant.get(
         "reliability_score_display", restaurant.get("reliability_score", 0.5)
     )
-    combined_score = restaurant.get("combined_score", None)
-    cf_score = restaurant.get("cf_score", None)
+    combined_score = restaurant.get("combined_score")
+    cf_score = restaurant.get("cf_score")
 
     with st.container():
         st.markdown('<div class="restaurant-card">', unsafe_allow_html=True)
@@ -96,11 +96,10 @@ def render_restaurant_card(
             )
 
         # Row 4: Similar button
-        if show_similar_button and similar_callback:
-            if st.button(
-                "🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"
-            ):
-                similar_callback(restaurant)
+        if show_similar_button and similar_callback and st.button(
+            "🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"
+        ):
+            similar_callback(restaurant)
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -109,7 +108,7 @@ def render_metric_card(
     label: str,
     value: str,
     variant: str = "default",
-    delta: Optional[str] = None,
+    delta: str | None = None,
 ) -> None:
     """Render a styled metric card for the Ops Monitor page.
 

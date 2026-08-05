@@ -4,19 +4,17 @@ LLM narration, "Find Similar" button, and prioritize toggle.
 
 from __future__ import annotations
 
-from typing import Optional
-
 import pandas as pd
 import streamlit as st
 
 from app.components.restaurant_card import render_restaurant_card
 from dabba.config import get_config
 from dabba.database.repositories import get_all_restaurants_as_df
-from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.llm.rag_similar_restaurants import (
     build_restaurant_embeddings,
     find_similar_restaurants,
 )
+from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.models.hybrid_recommender import HybridRecommender
 
 PAGE_NAME = "discover"
@@ -217,7 +215,7 @@ def show() -> None:
 
 
 @st.cache_data(ttl=300)
-def _load_data() -> Optional[pd.DataFrame]:
+def _load_data() -> pd.DataFrame | None:
     """Load restaurant data from the database with Streamlit caching.
 
     Uses the repository layer to read from Postgres/SQLite instead of

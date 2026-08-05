@@ -32,7 +32,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from api.auth import verify_api_key
+from api.limiter import limiter
+from api.routers import chat, eta, explain, model_info, recommend, restaurants
+from api.schemas import HealthResponse
 from dabba.config import get_config
+from dabba.database.session import init_db as init_database
 from dabba.observability import (
     generate_request_id,
     http_request_duration_seconds,
@@ -42,11 +47,6 @@ from dabba.observability import (
     set_request_id,
     setup_logging,
 )
-from api.auth import verify_api_key
-from api.limiter import limiter
-from api.routers import recommend, eta, chat, explain, model_info, restaurants
-from api.schemas import HealthResponse
-from dabba.database.session import init_db as init_database
 
 # ─── Configure JSON logging ──────────────────────────────────────────
 config = get_config()

@@ -6,10 +6,9 @@ Provides haversine distance calculation and geographic clustering.
 from __future__ import annotations
 
 import logging
-from typing import Tuple
 
 import numpy as np
-from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, KMeans
 from sklearn.metrics import silhouette_score
 
 logger = logging.getLogger(__name__)
@@ -49,7 +48,7 @@ def haversine_distance(
 
 
 # Bangalore neighborhood centroids (approximate)
-BANGALORE_CENTROIDS: dict[str, Tuple[float, float]] = {
+BANGALORE_CENTROIDS: dict[str, tuple[float, float]] = {
     "Koramangala": (12.9352, 77.6245),
     "Indiranagar": (12.9784, 77.6408),
     "HSR Layout": (12.9116, 77.6389),
@@ -73,7 +72,7 @@ BANGALORE_CENTROIDS: dict[str, Tuple[float, float]] = {
 }
 
 
-def geocode_location(location: str) -> Tuple[float, float] | None:
+def geocode_location(location: str) -> tuple[float, float] | None:
     """Look up approximate centroid for a Bangalore neighborhood.
 
     Args:

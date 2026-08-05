@@ -10,7 +10,6 @@ so the API remains usable without configuration during development.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
 
@@ -35,7 +34,7 @@ def verify_api_key(
     if config.api_key is None:
         return
 
-    api_key: Optional[str] = request.headers.get("X-API-Key")
+    api_key: str | None = request.headers.get("X-API-Key")
 
     if api_key is None:
         logger.warning("Request missing X-API-Key header")

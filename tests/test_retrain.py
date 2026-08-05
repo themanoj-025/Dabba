@@ -9,7 +9,6 @@ import pytest
 from dabba.monitoring.drift import DriftResult
 from dabba.monitoring.retrain import maybe_trigger_retraining
 
-
 # ─── Fixtures ─────────────────────────────────────────────────────────────
 
 
@@ -145,10 +144,10 @@ class TestMaybeTriggerRetrainingEdgeCases:
 
     def test_cooldown_respected(self, severe_drift_result: DriftResult) -> None:
         """Should return False during cooldown period."""
-        import dabba.monitoring.retrain as retrain_mod
-
         # Set cooldown to the recent past (5 seconds ago)
         import time
+
+        import dabba.monitoring.retrain as retrain_mod
 
         retrain_mod._last_retrain_time = time.time() - 5
 
@@ -171,8 +170,8 @@ class TestMaybeTriggerRetrainingFailures:
 
     def test_no_project_root_graceful(self, severe_drift_result: DriftResult) -> None:
         """Should return False gracefully when project_root doesn't have pyproject.toml."""
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
 
         with tempfile.TemporaryDirectory() as tmpdir:
             result = maybe_trigger_retraining(

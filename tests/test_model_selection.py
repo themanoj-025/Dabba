@@ -6,8 +6,8 @@ import pandas as pd
 
 from dabba.models.model_selection import (
     comparison_to_dataframe,
-    select_best_model,
     save_comparison_csv,
+    select_best_model,
 )
 
 

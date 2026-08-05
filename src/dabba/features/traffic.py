@@ -23,7 +23,6 @@ import dataclasses
 import datetime
 import logging
 import random
-from typing import Optional
 
 from dabba.config import DabbaConfig, get_config
 
@@ -109,7 +108,7 @@ def _tomtom_traffic(
     lat: float,
     lon: float,
     api_key: str,
-) -> Optional[TrafficInfo]:
+) -> TrafficInfo | None:
     """Fetch real-time traffic flow data from TomTom Traffic API.
 
     Uses the TomTom Traffic Flow API to get current traffic conditions
@@ -139,10 +138,7 @@ def _tomtom_traffic(
         current_speed = flow.get("currentSpeed", 0)
         free_flow_speed = flow.get("freeFlowSpeed", 1)
 
-        if free_flow_speed > 0:
-            speed_ratio = current_speed / free_flow_speed
-        else:
-            speed_ratio = 0.5
+        speed_ratio = current_speed / free_flow_speed if free_flow_speed > 0 else 0.5
 
         if speed_ratio >= 0.8:
             level, label = 0, "Low"
@@ -168,7 +164,7 @@ def _mappls_traffic(
     lat: float,
     lon: float,
     api_key: str,
-) -> Optional[TrafficInfo]:
+) -> TrafficInfo | None:
     """Fetch traffic data from Mappls (MapmyIndia) Traffic API.
 
     Args:
@@ -215,9 +211,9 @@ def _mappls_traffic(
 def get_traffic_level(
     lat: float = 12.97,
     lon: float = 77.59,
-    hour: Optional[int] = None,
-    day_of_week: Optional[int] = None,
-    config: Optional[DabbaConfig] = None,
+    hour: int | None = None,
+    day_of_week: int | None = None,
+    config: DabbaConfig | None = None,
 ) -> TrafficInfo:
     """Get the current traffic level from the best available provider.
 

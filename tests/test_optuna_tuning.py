@@ -11,19 +11,18 @@ Covers:
 
 from __future__ import annotations
 
-
 import numpy as np
 import pandas as pd
 import pytest
 
 from dabba.models.base_trainer import (
     _build_model_from_params,
-    _sample_optuna_params,
     _build_preprocessor,
+    _sample_optuna_params,
     get_model_search_spaces,
-    tune_hyperparameters,
     get_tuned_model,
     tune_all_models,
+    tune_hyperparameters,
 )
 
 
@@ -298,9 +297,9 @@ class TestTuneHyperparameters:
 
         # Default model performance
         from sklearn.ensemble import RandomForestRegressor
-        from sklearn.pipeline import Pipeline
-        from sklearn.model_selection import cross_val_predict
         from sklearn.metrics import mean_absolute_error
+        from sklearn.model_selection import cross_val_predict
+        from sklearn.pipeline import Pipeline
 
         preprocessor = _build_preprocessor(X)
         default_model = RandomForestRegressor(
@@ -393,16 +392,18 @@ class TestHpoIntegration:
 
     def test_rating_train_accepts_use_hpo_flag(self):
         """train_and_evaluate_rating_models should accept use_hpo kwarg."""
-        from dabba.models.rating_model import train_and_evaluate_rating_models
         import inspect
+
+        from dabba.models.rating_model import train_and_evaluate_rating_models
 
         sig = inspect.signature(train_and_evaluate_rating_models)
         assert "use_hpo" in sig.parameters
 
     def test_eta_train_accepts_use_hpo_flag(self):
         """train_and_evaluate_eta_models should accept use_hpo kwarg."""
-        from dabba.models.eta_model import train_and_evaluate_eta_models
         import inspect
+
+        from dabba.models.eta_model import train_and_evaluate_eta_models
 
         sig = inspect.signature(train_and_evaluate_eta_models)
         assert "use_hpo" in sig.parameters

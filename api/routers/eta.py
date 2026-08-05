@@ -7,16 +7,15 @@ then injected via FastAPI ``Depends()`` — no module-level globals.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import joblib
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
+from api.schemas import ETARequest, ETAResponse
 from dabba.cache.redis_client import get_cache
 from dabba.config import get_config
 from dabba.features.delivery_features import build_eta_features_for_api
-from api.schemas import ETARequest, ETAResponse
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ config = get_config()
 # training pipeline (pipeline.py imports ETA_FEATURE_COLS from there).
 
 
-def _load_eta_model() -> Optional[object]:
+def _load_eta_model() -> object | None:
     """Load the winning ETA model from disk.
 
     Called once at app startup by ``api.main``. Returns the model
@@ -47,7 +46,7 @@ def _load_eta_model() -> Optional[object]:
         return None
 
 
-def get_eta_model(request: Request) -> Optional[object]:
+def get_eta_model(request: Request) -> object | None:
     """FastAPI dependency: return the ETA model from ``app.state``.
 
     Usage:
@@ -68,7 +67,7 @@ def get_eta_model(request: Request) -> Optional[object]:
 async def predict_eta(
     request: Request,
     body: ETARequest,
-    model: Optional[object] = Depends(get_eta_model),
+    model: object | None = Depends(get_eta_model),
 ) -> ETAResponse:
     """Predict delivery time for an order.
 

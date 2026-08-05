@@ -10,13 +10,11 @@ Validates that:
 from __future__ import annotations
 
 import os
-from typing import Dict
 
 import pandas as pd
 import pytest
 
 from dabba.database.seed import seed_orders, seed_restaurants
-
 
 # ─── API test fixtures (shared with test_api.py) ─────────────────────
 
@@ -24,8 +22,9 @@ from dabba.database.seed import seed_orders, seed_restaurants
 @pytest.fixture
 def client():
     """Create a test client for the FastAPI app."""
-    from api.main import app
     from fastapi.testclient import TestClient
+
+    from api.main import app
 
     return TestClient(app)
 
@@ -36,7 +35,7 @@ def api_key() -> str:
     return os.environ.get("DABBA_API_KEY")
 
 
-def auth_headers(api_key: str | None) -> Dict[str, str]:
+def auth_headers(api_key: str | None) -> dict[str, str]:
     """Return auth headers if an API key is configured."""
     if api_key:
         return {"X-API-Key": api_key}
@@ -49,7 +48,7 @@ def auth_headers(api_key: str | None) -> Dict[str, str]:
 def _make_memory_config():
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
-    from dabba.database.session import init_db, dispose_engine
+    from dabba.database.session import dispose_engine, init_db
 
     dispose_engine()
     config = DabbaConfig(database_url="sqlite:///:memory:")
@@ -137,8 +136,8 @@ class TestLoadWithUseDbFlag:
 
     def test_use_db_false_ignores_db(self):
         """use_db=False should always load from CSV (not DB)."""
-        from dabba.data.loaders import load_zomato
         from dabba.config import DabbaConfig
+        from dabba.data.loaders import load_zomato
         from dabba.database.session import dispose_engine
 
         dispose_engine()
@@ -152,11 +151,10 @@ class TestLoadWithUseDbFlag:
 
     def test_use_db_true_falls_back_to_csv(self):
         """use_db=True should fall back to CSV when DB is empty."""
-        from dabba.data.loaders import load_zomato
-
         # This test requires the CSV to exist; if not, it should raise
         # FileNotFoundError after the DB fallback fails.
         from dabba.config import get_config
+        from dabba.data.loaders import load_zomato
 
         config = get_config()
         # Just verify the fallback path doesn't crash when DB is empty
@@ -224,8 +222,8 @@ class TestFullImport:
 
     def test_full_import_handles_missing_csv(self):
         """Should exit gracefully when raw CSVs are not available."""
-        from dabba.database.seed import full_import
         from dabba.config import DabbaConfig
+        from dabba.database.seed import full_import
 
         # Use a config pointing to a non-existent CSV
         config = DabbaConfig(
@@ -237,8 +235,8 @@ class TestFullImport:
 
     def test_full_import_runs_when_csv_exists(self):
         """Should complete when raw CSVs are available."""
-        from dabba.database.seed import full_import
         from dabba.config import get_config
+        from dabba.database.seed import full_import
 
         config = get_config()
         if not config.zomato_path.exists():

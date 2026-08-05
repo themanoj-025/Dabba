@@ -9,18 +9,17 @@ recommendation strategies.
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
 from dabba.config import DabbaConfig, get_config
-from dabba.models.recommender import bayesian_average
 from dabba.models.collaborative_recommender import (
     MatrixFactorization,
     get_collaborative_scores,
 )
+from dabba.models.recommender import bayesian_average
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +37,9 @@ class HybridRecommender:
     def __init__(
         self,
         restaurants_df: pd.DataFrame,
-        content_feature_cols: List[str],
-        collaborative_model: Optional[MatrixFactorization] = None,
-        config: Optional[DabbaConfig] = None,
+        content_feature_cols: list[str],
+        collaborative_model: MatrixFactorization | None = None,
+        config: DabbaConfig | None = None,
     ):
         self.config = config or get_config()
         self.df = restaurants_df.copy()
@@ -63,7 +62,7 @@ class HybridRecommender:
             self.df["bayesian_rating"] = 3.5
 
         # Compute collaborative scores if model is available
-        self.collaborative_scores: Optional[np.ndarray] = None
+        self.collaborative_scores: np.ndarray | None = None
         if collaborative_model is not None:
             n_users = collaborative_model.user_embeddings.weight.shape[0]
             restaurant_ids = self.df.index.values
@@ -90,9 +89,9 @@ class HybridRecommender:
 
     def recommend(
         self,
-        cuisine: Optional[str] = None,
-        budget: Optional[float] = None,
-        area: Optional[str] = None,
+        cuisine: str | None = None,
+        budget: float | None = None,
+        area: str | None = None,
         prioritize: str = "balanced",
         top_n: int = 5,
     ) -> pd.DataFrame:
@@ -206,7 +205,7 @@ class HybridRecommender:
         display_cols = [c for c in display_cols if c in result.columns]
         return result[display_cols].reset_index(drop=True)
 
-    def _get_weight_profile(self, prioritize: str) -> Dict[str, float]:
+    def _get_weight_profile(self, prioritize: str) -> dict[str, float]:
         """Get weight profile for the given prioritization.
 
         Args:

@@ -19,7 +19,7 @@ selects the best by lowest MAE, and saves it as the winning model.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
@@ -33,9 +33,17 @@ from dabba.models.base_trainer import (
     _get_catboost,
     _get_lightgbm,
     _get_xgboost,
+)
+from dabba.models.base_trainer import (
     fit_best_model as _fit_best_model,
+)
+from dabba.models.base_trainer import (
     save_model as _save_model,
+)
+from dabba.models.base_trainer import (
     train_and_evaluate_models as _train_and_evaluate_models,
+)
+from dabba.models.base_trainer import (
     tune_all_models as _tune_all_models,
 )
 
@@ -56,7 +64,7 @@ __all__ = [
 ]
 
 
-def get_eta_models() -> Dict[str, Any]:
+def get_eta_models() -> dict[str, Any]:
     """Return candidate ETA prediction models with default hyperparameters.
 
     Returns:
@@ -84,9 +92,9 @@ def get_eta_models() -> Dict[str, Any]:
 def get_tuned_eta_models(
     X: pd.DataFrame,
     y: pd.Series,
-    config: Optional[DabbaConfig] = None,
-    models_to_tune: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    config: DabbaConfig | None = None,
+    models_to_tune: list[str] | None = None,
+) -> dict[str, Any]:
     """Return ETA models with Optuna-tuned hyperparameters.
 
     Runs Optuna HPO on ensemble models, then replaces their defaults
@@ -189,10 +197,10 @@ def _get_pytorch_nn(input_dim: int) -> Any:
 def train_and_evaluate_eta_models(
     X: pd.DataFrame,
     y: pd.Series,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
     use_mlflow: bool = True,
-    use_hpo: Optional[bool] = None,
-) -> Tuple[list, Optional[ModelResult]]:
+    use_hpo: bool | None = None,
+) -> tuple[list, ModelResult | None]:
     """Train all candidate ETA models with k-fold CV.
 
     If ``use_hpo`` is ``True`` (or ``None`` and ``config.optuna_enabled``),
@@ -251,7 +259,7 @@ def fit_best_eta_model(
     X: pd.DataFrame,
     y: pd.Series,
     save_path: Any,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> Any:
     """Retrain the winning ETA model on full data and save.
 

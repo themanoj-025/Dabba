@@ -12,7 +12,7 @@ FALLBACK MODE: Template-based rules when LLM is unavailable or
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from dabba.config import DabbaConfig, get_config
 
@@ -45,12 +45,12 @@ def _get_anthropic_client(config: DabbaConfig):
 
 
 def _llm_narrate(
-    restaurant: Dict[str, Any],
+    restaurant: dict[str, Any],
     reliability_score: float,
     sentiment_avg: float,
-    eta_prediction: Optional[float],
+    eta_prediction: float | None,
     config: DabbaConfig,
-) -> Optional[str]:
+) -> str | None:
     """Generate a natural-language recommendation explanation via Claude."""
     client = _get_anthropic_client(config)
     if client is None:
@@ -91,10 +91,10 @@ def _llm_narrate(
 
 
 def _rules_narrate(
-    restaurant: Dict[str, Any],
+    restaurant: dict[str, Any],
     reliability_score: float,
     sentiment_avg: float,
-    eta_prediction: Optional[float],
+    eta_prediction: float | None,
 ) -> str:
     """Generate a template-based recommendation explanation."""
     name = restaurant.get("name", "This restaurant")
@@ -151,11 +151,11 @@ def _rules_narrate(
 
 
 def narrate_recommendation(
-    restaurant: Dict[str, Any],
+    restaurant: dict[str, Any],
     reliability_score: float,
     sentiment_avg: float = 0.0,
-    eta_prediction: Optional[float] = None,
-    config: Optional[DabbaConfig] = None,
+    eta_prediction: float | None = None,
+    config: DabbaConfig | None = None,
 ) -> str:
     """Generate a natural-language recommendation explanation.
 

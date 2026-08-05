@@ -30,8 +30,8 @@ class TestSimulateTraffic:
 
     def test_rush_hour_higher_traffic(self):
         """Rush hour should generally have higher traffic than late night."""
-        rush_hour = _simulate_traffic(12.97, 77.59, hour=18, day_of_week=2)
-        late_night = _simulate_traffic(12.97, 77.59, hour=3, day_of_week=2)
+        _simulate_traffic(12.97, 77.59, hour=18, day_of_week=2)
+        _simulate_traffic(12.97, 77.59, hour=3, day_of_week=2)
         # Rush hour average should be >= late night (run multiple times)
         rush_levels = [
             _simulate_traffic(12.97, 77.59, hour=18, day_of_week=2).level

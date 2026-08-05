@@ -24,14 +24,13 @@ from dabba.database.repositories import (
 )
 from dabba.database.seed import seed_orders, seed_restaurants
 
-
 # ─── Helpers ─────────────────────────────────────────────────────────
 
 
 def _make_memory_config():
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
-    from dabba.database.session import init_db, dispose_engine
+    from dabba.database.session import dispose_engine, init_db
 
     dispose_engine()  # Clear any cached global engine first
     config = DabbaConfig(database_url="sqlite:///:memory:")

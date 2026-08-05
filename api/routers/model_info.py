@@ -7,7 +7,6 @@ pipeline) instead of comparison CSVs, completing the CSV→DB migration.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
@@ -39,8 +38,8 @@ async def model_info(
     Returns:
         Dict with rating_model and eta_model info.
     """
-    rating_winner: Optional[dict] = None
-    eta_winner: Optional[dict] = None
+    rating_winner: dict | None = None
+    eta_winner: dict | None = None
 
     rating_result = get_winning_model(db, "rating")
     if rating_result is not None:

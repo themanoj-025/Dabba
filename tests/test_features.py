@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from dabba.features.delivery_features import add_delivery_features
 from dabba.features.geo import (
     BANGALORE_CENTROIDS,
     compare_clustering_methods,
@@ -14,7 +15,6 @@ from dabba.features.restaurant_features import (
     add_restaurant_features,
     encode_cuisines,
 )
-from dabba.features.delivery_features import add_delivery_features
 
 
 class TestHaversineDistance:
@@ -78,7 +78,7 @@ class TestClusteringMethods:
         """Silhouette scores should be between -1 and 1."""
         X = np.random.RandomState(42).rand(100, 2)
         results = compare_clustering_methods(X, k_range=range(2, 6))
-        for method, info in results.items():
+        for _method, info in results.items():
             if "silhouette_score" in info:
                 assert -1 <= info["silhouette_score"] <= 1
 
