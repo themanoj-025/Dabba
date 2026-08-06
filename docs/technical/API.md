@@ -1,26 +1,26 @@
 # API — Dabba: API Reference
 
-|Field|Value|
-|---|---|
-|Version|v0.1|
-|Last Updated|2026-08-06|
-|Owner|Backend Engineer|
-|Status|In Review|
+| Field | Value |
+| --- | --- |
+| Version | v0.1 |
+| Last Updated | 2026-08-06 |
+| Owner | Backend Engineer |
+| Status | In Review |
 
 ---
 
 ## 1. Endpoint Inventory
 
-|Method|Path|Auth|Description|
-|---|---|---|---|
-|GET|`/rankings`|API key|Ranked restaurants|
-|GET|`/restaurants/{id}`|API key|Detail + score|
-|GET|`/restaurants/{id}/similar`|API key|Similar restaurants|
-|GET|`/restaurants/{id}/explain`|API key|"Why this" narration|
-|POST|`/chat`|API key|Concierge chat|
-|GET|`/models/info`|API key|Current model versions|
-|GET|`/health`|None|Liveness|
-|GET|`/docs`|None|OpenAPI docs|
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| GET | `/rankings` | API key | Ranked restaurants |
+| GET | `/restaurants/{id}` | API key | Detail + score |
+| GET | `/restaurants/{id}/similar` | API key | Similar restaurants |
+| GET | `/restaurants/{id}/explain` | API key | "Why this" narration |
+| POST | `/chat` | API key | Concierge chat |
+| GET | `/models/info` | API key | Current model versions |
+| GET | `/health` | None | Liveness |
+| GET | `/docs` | None | OpenAPI docs |
 
 ## 2. Example: GET /rankings
 
@@ -55,13 +55,13 @@ Response:
 
 ## 4. Error Codes
 
-|Code|Meaning|Retry?|
-|---|---|---|
-|401|Missing/invalid key|No|
-|404|Restaurant not found|No|
-|422|Validation error|No|
-|429|Rate limited|Yes|
-|503|Model unavailable|Yes|
+| Code | Meaning | Retry? |
+| --- | --- | --- |
+| 401 | Missing/invalid key | No |
+| 404 | Restaurant not found | No |
+| 422 | Validation error | No |
+| 429 | Rate limited | Yes |
+| 503 | Model unavailable | Yes |
 
 ## 5. Rate Limits
 
@@ -84,18 +84,18 @@ sequenceDiagram
 
 ## 8. Related Documents
 
-|Document|Relationship|
-|---|---|
-|[TechSpec.md](TechSpec.md)|API layer|
-|[Schema.md](Schema.md)|Data contracts|
-|[SecurityAndCompliance.md](SecurityAndCompliance.md)|Auth|
-|[AppFlow.md](../design/AppFlow.md)|Dashboard → API|
-|[PRD.md](../product/PRD.md)|Requirements|
-|[Design.md](../design/Design.md)|Response rendering|
-|[ImplementationPlan.md](../project/ImplementationPlan.md)|Tasks|
-|[Tracker.md](../project/Tracker.md)|Status|
-|[Rules.md](../project/Rules.md)|Standards|
-|[Testing.md](Testing.md)|Contract tests|
-|[Deployment.md](Deployment.md)|Deploy|
-|[Glossary.md](../reference/Glossary.md)|Vocabulary|
-|[RiskRegister.md](../project/RiskRegister.md)|Risks|
+| Document | Relationship |
+| --- | --- |
+| [TechSpec.md](TechSpec.md) | API layer |
+| [Schema.md](Schema.md) | Data contracts |
+| [SecurityAndCompliance.md](SecurityAndCompliance.md) | Auth |
+| [AppFlow.md](../design/AppFlow.md) | Dashboard → API |
+| [PRD.md](../product/PRD.md) | Requirements |
+| [Design.md](../design/Design.md) | Response rendering |
+| [ImplementationPlan.md](../project/ImplementationPlan.md) | Tasks |
+| [Tracker.md](../project/Tracker.md) | Status |
+| [Rules.md](../project/Rules.md) | Standards |
+| [Testing.md](Testing.md) | Contract tests |
+| [Deployment.md](Deployment.md) | Deploy |
+| [Glossary.md](../reference/Glossary.md) | Vocabulary |
+| [RiskRegister.md](../project/RiskRegister.md) | Risks |
