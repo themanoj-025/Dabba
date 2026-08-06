@@ -25,8 +25,8 @@ Usage (FastAPI):
 from __future__ import annotations
 
 import logging
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
-from typing import Generator, Iterator
 
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import Session, sessionmaker

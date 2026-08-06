@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -40,7 +39,7 @@ def clean_zomato_rating(series: pd.Series) -> pd.Series:
         pd.Series: Cleaned numeric rating (float, 0-5 scale).
     """
 
-    def _extract(value: object) -> Optional[float]:
+    def _extract(value: object) -> float | None:
         if pd.isna(value):
             return np.nan
         s = str(value).strip()
@@ -69,7 +68,7 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
         pd.Series: Cleaned cost as float (INR).
     """
 
-    def _parse(value: object) -> Optional[float]:
+    def _parse(value: object) -> float | None:
         if pd.isna(value):
             return np.nan
         s = str(value).replace(",", "").replace("₹", "").replace(" ", "")
@@ -85,7 +84,7 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
 
 
 def clean_zomato(
-    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+    df: pd.DataFrame, config: DabbaConfig | None = None
 ) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw Zomato dataframe.
 
@@ -159,7 +158,7 @@ def clean_zomato(
 
 
 def clean_delivery(
-    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+    df: pd.DataFrame, config: DabbaConfig | None = None
 ) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw delivery dataframe.
 

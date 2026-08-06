@@ -7,7 +7,6 @@ and the winning rating model for imputation / reliability scoring.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 import joblib
 import numpy as np
@@ -65,8 +64,8 @@ class RestaurantRecommender:
     def __init__(
         self,
         df: pd.DataFrame,
-        feature_cols: List[str],
-        config: Optional[DabbaConfig] = None,
+        feature_cols: list[str],
+        config: DabbaConfig | None = None,
     ):
         """Initialize the recommender.
 
@@ -98,7 +97,7 @@ class RestaurantRecommender:
 
         logger.info("Recommender initialized with %d restaurants", len(self.df))
 
-    def load_rating_model(self, model_path: Optional[str] = None) -> None:
+    def load_rating_model(self, model_path: str | None = None) -> None:
         """Load the winning rating model for prediction.
 
         Args:
@@ -128,9 +127,9 @@ class RestaurantRecommender:
 
     def recommend(
         self,
-        cuisine: Optional[str] = None,
-        budget: Optional[float] = None,
-        area: Optional[str] = None,
+        cuisine: str | None = None,
+        budget: float | None = None,
+        area: str | None = None,
         top_n: int = 5,
     ) -> pd.DataFrame:
         """Generate ranked restaurant recommendations with explanations.

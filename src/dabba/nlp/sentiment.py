@@ -8,7 +8,6 @@ production choice for Indian restaurant reviews.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -55,7 +54,7 @@ def score_sentiment(text: str, analyzer=None) -> float:
 def add_sentiment_scores(
     df: pd.DataFrame,
     review_col: str = "reviews_list",
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> pd.DataFrame:
     """Add per-restaurant average sentiment scores to the DataFrame.
 

@@ -7,7 +7,6 @@ Also provides DB-backed alternatives for production use.
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import pandas as pd
 
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_zomato(
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
     use_db: bool = False,
 ) -> pd.DataFrame:
     """Load the raw Zomato Bangalore Restaurants dataset.
@@ -61,7 +60,7 @@ def load_zomato(
     return df
 
 
-def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+def load_zomato_from_db(config: DabbaConfig | None = None) -> pd.DataFrame:
     """Load restaurant data from the database as a DataFrame.
 
     Converts the ``Restaurant`` ORM rows back to a DataFrame with the
@@ -77,8 +76,8 @@ def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
     Raises:
         ValueError: If no restaurants exist in the database.
     """
-    from dabba.database.session import get_db
     from dabba.database.repositories import count_restaurants, get_all_restaurants
+    from dabba.database.session import get_db
 
     config = config or get_config()
 
@@ -116,7 +115,7 @@ def load_zomato_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
 
 
 def load_delivery(
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
     use_db: bool = False,
 ) -> pd.DataFrame:
     """Load the raw food delivery time dataset.
@@ -160,7 +159,7 @@ def load_delivery(
     return df
 
 
-def load_delivery_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
+def load_delivery_from_db(config: DabbaConfig | None = None) -> pd.DataFrame:
     """Load delivery order data from the database as a DataFrame.
 
     Converts the ``Order`` ORM rows back to a DataFrame with the
@@ -175,8 +174,8 @@ def load_delivery_from_db(config: Optional[DabbaConfig] = None) -> pd.DataFrame:
     Raises:
         ValueError: If no orders exist in the database.
     """
-    from dabba.database.session import get_db
     from dabba.database.repositories import get_all_orders
+    from dabba.database.session import get_db
 
     config = config or get_config()
 

@@ -99,7 +99,7 @@ class TestSlackAlertFunctions:
 
     def test_format_drift_message_with_drift(self):
         """Should format a message with drifted features."""
-        from dabba.monitoring.drift import _format_drift_message, DriftResult
+        from dabba.monitoring.drift import DriftResult, _format_drift_message
 
         result = DriftResult(
             drifted_features={"feature_a": (0.001, 0.42), "feature_b": (0.003, 0.38)},
@@ -116,7 +116,7 @@ class TestSlackAlertFunctions:
 
     def test_format_drift_message_no_drift(self):
         """Should format a clean message when no drift."""
-        from dabba.monitoring.drift import _format_drift_message, DriftResult
+        from dabba.monitoring.drift import DriftResult, _format_drift_message
 
         result = DriftResult(
             drifted_features={},

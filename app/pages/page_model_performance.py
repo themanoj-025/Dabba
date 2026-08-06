@@ -121,7 +121,7 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
 
     # Winner callout
     if "is_winner" in df.columns:
-        winner_rows = df[df["is_winner"] == True]
+        winner_rows = df[df["is_winner"]]
         if not winner_rows.empty:
             best = winner_rows.iloc[0]
         else:
@@ -215,7 +215,7 @@ def _show_ab_scenarios(path: Path) -> None:
         scenarios = list(data.keys())
 
         cols = st.columns(len(scenarios))
-        for col, (name, info) in zip(cols, data.items()):
+        for col, (name, info) in zip(cols, data.items(), strict=False):
             with col:
                 mean_score = info.get("mean_score", 0)
                 desc = info.get("description", "")
@@ -229,7 +229,7 @@ def _show_ab_scenarios(path: Path) -> None:
         tab_names = [s.replace("_", " ").title() for s in scenarios]
         tabs = st.tabs(tab_names)
 
-        for tab, (name, info) in zip(tabs, data.items()):
+        for tab, (name, info) in zip(tabs, data.items(), strict=False):
             with tab:
                 desc = info.get("description", "")
                 st.caption(desc)

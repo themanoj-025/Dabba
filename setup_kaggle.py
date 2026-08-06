@@ -18,7 +18,7 @@ def main() -> None:
     """Set up Kaggle credentials and download datasets."""
     home = Path.home()
     kaggle_dir = home / ".kaggle"
-    kaggle_json = kaggle_dir / "kaggle.json"
+    kaggle_dir / "kaggle.json"
 
     # Step 1: Find kaggle.json
     local_json = Path("kaggle.json")

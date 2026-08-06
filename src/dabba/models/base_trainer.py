@@ -67,7 +67,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import joblib
 import numpy as np
@@ -99,14 +99,14 @@ class ModelResult:
     rmse: float
     r2: float
     train_time: float
-    predictions: Optional[np.ndarray] = field(default=None, repr=False)
-    mlflow_run_id: Optional[str] = field(default=None, repr=False)
+    predictions: np.ndarray | None = field(default=None, repr=False)
+    mlflow_run_id: str | None = field(default=None, repr=False)
 
 
 # ─── Model search spaces for Optuna HPO ──────────────────────────────
 
 
-def get_model_search_spaces() -> Dict[str, Dict[str, Dict[str, Any]]]:
+def get_model_search_spaces() -> dict[str, dict[str, dict[str, Any]]]:
     """Return the Optuna search space definitions for each tunable model.
 
     Each model's entry is a dict of ``{param_name: suggest_kwargs}`` where
@@ -179,7 +179,7 @@ def get_model_search_spaces() -> Dict[str, Dict[str, Dict[str, Any]]]:
     }
 
 
-def _sample_optuna_params(trial: Any, search_space: Dict[str, Any]) -> Dict[str, Any]:
+def _sample_optuna_params(trial: Any, search_space: dict[str, Any]) -> dict[str, Any]:
     """Sample a set of hyperparameters from a search space using an Optuna trial.
 
     Args:
@@ -208,7 +208,7 @@ def _sample_optuna_params(trial: Any, search_space: Dict[str, Any]) -> Dict[str,
     return params
 
 
-def _build_model_from_params(model_name: str, params: Dict[str, Any]) -> Any:
+def _build_model_from_params(model_name: str, params: dict[str, Any]) -> Any:
     """Build a model instance from a set of tuned hyperparameters.
 
     Args:
@@ -262,11 +262,11 @@ def tune_hyperparameters(
     n_trials: int = 50,
     cv_folds: int = 5,
     random_state: int = 42,
-    timeout_minutes: Optional[int] = None,
-    search_space: Optional[Dict[str, Any]] = None,
+    timeout_minutes: int | None = None,
+    search_space: dict[str, Any] | None = None,
     progress_bar: bool = True,
-    config: Optional[DabbaConfig] = None,
-) -> Tuple[Dict[str, Any], float, float]:
+    config: DabbaConfig | None = None,
+) -> tuple[dict[str, Any], float, float]:
     """Run Optuna hyperparameter optimization for a single model.
 
     Uses :class:`optuna.Study` with ``TPESampler`` to minimize MAE over
@@ -393,9 +393,9 @@ def tune_hyperparameters(
 
         active = mlflow.active_run()
         if active is None:
-            hpo_run = mlflow.start_run(run_name=f"hpo_{model_name}")
+            mlflow.start_run(run_name=f"hpo_{model_name}")
         else:
-            hpo_run = active
+            pass
 
         mlflow.log_params({f"hpo_{model_name}_{k}": v for k, v in best_params.items()})
         mlflow.log_metrics(
@@ -421,8 +421,8 @@ def get_tuned_model(
     n_trials: int = 50,
     cv_folds: int = 5,
     random_state: int = 42,
-    config: Optional[DabbaConfig] = None,
-) -> Optional[Any]:
+    config: DabbaConfig | None = None,
+) -> Any | None:
     """Run Optuna tuning and return the best model instance.
 
     Convenience wrapper around :func:`tune_hyperparameters` that
@@ -469,12 +469,12 @@ def get_tuned_model(
 def tune_all_models(
     X: pd.DataFrame,
     y: pd.Series,
-    models_to_tune: Optional[List[str]] = None,
+    models_to_tune: list[str] | None = None,
     n_trials: int = 50,
     cv_folds: int = 5,
     random_state: int = 42,
-    config: Optional[DabbaConfig] = None,
-) -> Dict[str, Optional[Any]]:
+    config: DabbaConfig | None = None,
+) -> dict[str, Any | None]:
     """Run Optuna tuning on multiple models and return tuned instances.
 
     Tunes each model in ``models_to_tune`` and returns a dict of
@@ -498,7 +498,7 @@ def tune_all_models(
     if models_to_tune is None:
         models_to_tune = config.optuna_models_to_tune
 
-    tuned_models: Dict[str, Optional[Any]] = {}
+    tuned_models: dict[str, Any | None] = {}
 
     for model_name in models_to_tune:
         tuned = get_tuned_model(
@@ -634,8 +634,8 @@ def _log_model_to_mlflow(
     r2: float,
     elapsed: float,
     parent_run: Any,
-    additional_params: Optional[Dict[str, Any]] = None,
-) -> Optional[str]:
+    additional_params: dict[str, Any] | None = None,
+) -> str | None:
     """Log a single model's metrics to MLflow as a nested run.
 
     Args:
@@ -654,7 +654,7 @@ def _log_model_to_mlflow(
     try:
         import mlflow
 
-        params: Dict[str, Any] = {"model": name}
+        params: dict[str, Any] = {"model": name}
         if additional_params:
             params.update(additional_params)
 
@@ -688,11 +688,11 @@ def _end_mlflow_run(mlflow_run: Any) -> None:
 def train_and_evaluate_models(
     X: pd.DataFrame,
     y: pd.Series,
-    models: Dict[str, Any],
-    config: Optional[DabbaConfig] = None,
+    models: dict[str, Any],
+    config: DabbaConfig | None = None,
     use_mlflow: bool = True,
     task: str = "rating",
-) -> Tuple[List[ModelResult], Optional[ModelResult]]:
+) -> tuple[list[ModelResult], ModelResult | None]:
     """Train all candidate models with k-fold CV and return comparison.
 
     This is the core generic training pipeline used by both the rating
@@ -727,7 +727,7 @@ def train_and_evaluate_models(
     # MLflow setup
     mlflow_run = _setup_mlflow(config, task, X, y) if use_mlflow else None
 
-    results: List[ModelResult] = []
+    results: list[ModelResult] = []
 
     for name, model in models.items():
         if model is None:
@@ -837,10 +837,10 @@ def fit_best_model(
     best_name: str,
     X: pd.DataFrame,
     y: pd.Series,
-    models: Dict[str, Any],
+    models: dict[str, Any],
     save_path: Any,
     task: str = "model",
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> Any:
     """Retrain the winning model on full data and save to disk.
 

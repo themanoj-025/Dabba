@@ -24,7 +24,7 @@ Usage (FastAPI):
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ def get_all_restaurants(
     db: Session,
     limit: int = 50,
     offset: int = 0,
-) -> List[Restaurant]:
+) -> list[Restaurant]:
     """Fetch paginated list of restaurants, ordered by name.
 
     Args:
@@ -63,7 +63,7 @@ def get_all_restaurants(
     )
 
 
-def get_restaurant_by_id(db: Session, restaurant_id: int) -> Optional[Restaurant]:
+def get_restaurant_by_id(db: Session, restaurant_id: int) -> Restaurant | None:
     """Fetch a single restaurant by primary key.
 
     Args:
@@ -76,7 +76,7 @@ def get_restaurant_by_id(db: Session, restaurant_id: int) -> Optional[Restaurant
     return db.query(Restaurant).filter(Restaurant.id == restaurant_id).first()
 
 
-def get_restaurant_by_name(db: Session, name: str) -> Optional[Restaurant]:
+def get_restaurant_by_name(db: Session, name: str) -> Restaurant | None:
     """Fetch a single restaurant by name (case-insensitive).
 
     Args:
@@ -93,7 +93,7 @@ def get_restaurants_by_cuisine(
     db: Session,
     cuisine: str,
     limit: int = 20,
-) -> List[Restaurant]:
+) -> list[Restaurant]:
     """Search restaurants by cuisine keyword.
 
     Args:
@@ -132,7 +132,7 @@ def get_all_orders(
     db: Session,
     limit: int = 50,
     offset: int = 0,
-) -> List[Order]:
+) -> list[Order]:
     """Fetch paginated orders, newest first.
 
     Args:
@@ -156,7 +156,7 @@ def get_orders_by_restaurant(
     db: Session,
     restaurant_id: int,
     limit: int = 20,
-) -> List[Order]:
+) -> list[Order]:
     """Fetch orders for a specific restaurant.
 
     Args:
@@ -181,9 +181,9 @@ def get_orders_by_restaurant(
 
 def get_experiment_results(
     db: Session,
-    task: Optional[str] = None,
+    task: str | None = None,
     limit: int = 20,
-) -> List[ExperimentResult]:
+) -> list[ExperimentResult]:
     """Fetch experiment results, optionally filtered by task.
 
     Args:
@@ -200,7 +200,7 @@ def get_experiment_results(
     return q.limit(limit).all()
 
 
-def get_winning_model(db: Session, task: str) -> Optional[ExperimentResult]:
+def get_winning_model(db: Session, task: str) -> ExperimentResult | None:
     """Fetch the winning (best-performing) model for a task.
 
     Args:
@@ -223,8 +223,8 @@ def get_winning_model(db: Session, task: str) -> Optional[ExperimentResult]:
 
 def get_all_experiment_results(
     db: Session,
-    task: Optional[str] = None,
-) -> List[ExperimentResult]:
+    task: str | None = None,
+) -> list[ExperimentResult]:
     """Fetch all experiment results for a task, ordered by MAE ascending.
 
     Args:
@@ -280,7 +280,7 @@ _RESTAURANT_TOP_CUISINES: list[str] = [
 def get_all_restaurants_as_df(
     db: Session,
     with_cuisine_features: bool = True,
-) -> "pd.DataFrame":
+) -> pd.DataFrame:
     """Fetch all restaurants from DB and return as a feature-engineered DataFrame.
 
     Builds a DataFrame matching the structure of the processed CSV,
@@ -345,7 +345,7 @@ def get_all_restaurants_as_df(
     return df
 
 
-def get_prediction_by_id(db: Session, prediction_id: int) -> Optional[Prediction]:
+def get_prediction_by_id(db: Session, prediction_id: int) -> Prediction | None:
     """Fetch a single prediction by primary key.
 
     Used by the ``/v1/explain/{prediction_id}`` endpoint to retrieve
@@ -368,7 +368,7 @@ def get_recent_drift_logs(
     db: Session,
     limit: int = 50,
     only_alerted: bool = False,
-) -> List[DriftLog]:
+) -> list[DriftLog]:
     """Fetch recent drift detection events.
 
     Args:
@@ -385,7 +385,7 @@ def get_recent_drift_logs(
     return q.limit(limit).all()
 
 
-def get_drift_summary(db: Session) -> Dict[str, Any]:
+def get_drift_summary(db: Session) -> dict[str, Any]:
     """Get a summary of drift detection activity.
 
     Returns:

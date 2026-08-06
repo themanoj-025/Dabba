@@ -1,6 +1,6 @@
 """Tests for the Hinglish sentiment module (P3)."""
 
-from dabba.nlp.hinglish_sentiment import score_sentiment, add_hinglish_sentiment_scores
+from dabba.nlp.hinglish_sentiment import add_hinglish_sentiment_scores, score_sentiment
 
 
 class TestScoreSentiment:

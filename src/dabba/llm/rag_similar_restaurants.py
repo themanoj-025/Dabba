@@ -12,7 +12,6 @@ scikit-learn if FAISS index is not available.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -69,8 +68,8 @@ def _load_faiss_index(config: DabbaConfig):
 
 def build_restaurant_embeddings(
     df: pd.DataFrame,
-    feature_cols: List[str],
-    config: Optional[DabbaConfig] = None,
+    feature_cols: list[str],
+    config: DabbaConfig | None = None,
 ) -> np.ndarray:
     """Build normalized restaurant feature embeddings and save to disk.
 
@@ -115,7 +114,7 @@ def find_similar_restaurants(
     df: pd.DataFrame,
     embeddings: np.ndarray,
     top_k: int = 5,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> pd.DataFrame:
     """Find the top-k most similar restaurants to a given restaurant.
 

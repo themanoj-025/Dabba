@@ -66,7 +66,7 @@ def show() -> None:
     if len(st.session_state[f"{PAGE_NAME}_messages"]) <= 1:
         st.markdown("##### Quick examples:")
         chip_cols = st.columns(len(examples))
-        for col, example in zip(chip_cols, examples):
+        for col, example in zip(chip_cols, examples, strict=False):
             with col:
                 if st.button(
                     f"💡 {example}",

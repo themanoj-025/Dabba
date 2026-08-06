@@ -6,7 +6,6 @@ Transforms cleaned Zomato data into model-ready features.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 import numpy as np
 import pandas as pd
@@ -16,7 +15,7 @@ from dabba.config import DabbaConfig, get_config
 logger = logging.getLogger(__name__)
 
 # Canonical cuisine list — top 30 most frequent in the dataset
-TOP_CUISINES: List[str] = [
+TOP_CUISINES: list[str] = [
     "North Indian",
     "Chinese",
     "South Indian",
@@ -90,7 +89,7 @@ def encode_cuisines(df: pd.DataFrame, top_n: int = 30) -> pd.DataFrame:
 
 
 def add_restaurant_features(
-    df: pd.DataFrame, config: Optional[DabbaConfig] = None
+    df: pd.DataFrame, config: DabbaConfig | None = None
 ) -> pd.DataFrame:
     """Engineer features for the rating prediction model.
 

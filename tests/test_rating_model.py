@@ -1,10 +1,9 @@
 """Tests for rating model training, comparison, and full-data fitting."""
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
-
-import joblib
 
 from dabba.models.rating_model import (
     ModelResult,

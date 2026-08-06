@@ -7,7 +7,7 @@ live here. No hardcoded values should appear in any other source file.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
@@ -49,11 +49,11 @@ class DabbaConfig(BaseSettings):
     project_root: Path = Field(
         default_factory=lambda: Path(__file__).resolve().parent.parent.parent
     )
-    data_raw_dir: Optional[Path] = Field(default=None)
-    data_processed_dir: Optional[Path] = Field(default=None)
-    models_dir: Optional[Path] = Field(default=None)
-    reports_dir: Optional[Path] = Field(default=None)
-    reports_figures_dir: Optional[Path] = Field(default=None)
+    data_raw_dir: Path | None = Field(default=None)
+    data_processed_dir: Path | None = Field(default=None)
+    models_dir: Path | None = Field(default=None)
+    reports_dir: Path | None = Field(default=None)
+    reports_figures_dir: Path | None = Field(default=None)
 
     # --- Data ---
     zomato_filename: str = "zomato.csv"
@@ -78,10 +78,10 @@ class DabbaConfig(BaseSettings):
     hybrid_weight_reliability: float = 0.3
 
     # --- API Auth ---
-    api_key: Optional[str] = Field(default=None)
+    api_key: str | None = Field(default=None)
 
     # --- LLM Settings ---
-    anthropic_api_key: Optional[str] = Field(default=None)
+    anthropic_api_key: str | None = Field(default=None)
     llm_enabled: bool = False
     llm_model: str = "claude-sonnet-4-20250514"
     llm_max_tokens: int = 1000
@@ -115,11 +115,11 @@ class DabbaConfig(BaseSettings):
     )
 
     # --- External API Keys ---
-    tomtom_api_key: Optional[str] = Field(
+    tomtom_api_key: str | None = Field(
         default=None,
         description="TomTom Traffic API key for real-time traffic data",
     )
-    mappls_api_key: Optional[str] = Field(
+    mappls_api_key: str | None = Field(
         default=None,
         description="Mappls/MapmyIndia API key for India-specific traffic",
     )
@@ -129,7 +129,7 @@ class DabbaConfig(BaseSettings):
     drift_feature_sample: int = 100  # samples to use for drift detection
 
     # --- Slack Alerting ---
-    slack_webhook_url: Optional[str] = Field(
+    slack_webhook_url: str | None = Field(
         default=None,
         description="Slack Incoming Webhook URL for drift alerts",
     )
@@ -151,7 +151,7 @@ class DabbaConfig(BaseSettings):
         default=50,
         description="Number of Optuna trials per model during hyperparameter tuning",
     )
-    optuna_timeout_minutes: Optional[int] = Field(
+    optuna_timeout_minutes: int | None = Field(
         default=None,
         description="Optional timeout per model tuning in minutes (None = no limit)",
     )

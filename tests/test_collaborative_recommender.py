@@ -6,8 +6,8 @@ import pytest
 import torch
 
 from dabba.models.collaborative_recommender import (
-    MatrixFactorization,
     InteractionDataset,
+    MatrixFactorization,
     generate_synthetic_interactions,
 )
 

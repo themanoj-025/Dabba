@@ -11,16 +11,16 @@ CSV→DB migration ensures the serving path never reads raw CSV files.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
+from api.schemas import ChatRequest, ChatResponse
 from dabba.config import get_config
 from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.food_concierge import ConciergeTools, get_concierge_response
-from api.schemas import ChatRequest, ChatResponse
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ config = get_config()
 
 def _load_concierge_tools(
     eta_model: Any = None,
-) -> Optional[ConciergeTools]:
+) -> ConciergeTools | None:
     """Build and return ConciergeTools from the database.
 
     Called once at app startup by ``api.main``. Uses the repository
@@ -68,7 +68,7 @@ def _load_concierge_tools(
     return tools
 
 
-def get_tools(request: Request) -> Optional[ConciergeTools]:
+def get_tools(request: Request) -> ConciergeTools | None:
     """FastAPI dependency: return ConciergeTools from ``app.state``.
 
     Usage:
@@ -89,7 +89,7 @@ def get_tools(request: Request) -> Optional[ConciergeTools]:
 async def chat(
     request: Request,
     body: ChatRequest,
-    tools: Optional[ConciergeTools] = Depends(get_tools),
+    tools: ConciergeTools | None = Depends(get_tools),
 ) -> ChatResponse:
     """Send a message to the Food Concierge.
 

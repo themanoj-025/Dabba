@@ -24,13 +24,14 @@ import pandas as pd
 from dabba.config import get_config
 from dabba.data.cleaning import clean_delivery, clean_zomato
 from dabba.data.loaders import describe_dataset, load_delivery, load_zomato
-from dabba.observability import setup_logging
+from dabba.database.models import RESTAURANT_COL_MAP, ExperimentResult, Restaurant
+from dabba.database.session import get_db, init_db
 from dabba.evaluation.business_cost import (
     compute_reliability_score,
     compute_sla_analysis,
     run_ab_scenario_simulation,
 )
-from dabba.features.delivery_features import add_delivery_features
+from dabba.features.delivery_features import ETA_FEATURE_COLS, add_delivery_features
 from dabba.features.geo import compare_clustering_methods
 from dabba.features.restaurant_features import add_restaurant_features
 from dabba.models.collaborative_recommender import (
@@ -52,9 +53,7 @@ from dabba.models.rating_model import (
     train_and_evaluate_rating_models,
 )
 from dabba.nlp.sentiment import add_sentiment_scores
-from dabba.database.session import get_db, init_db
-from dabba.database.models import Restaurant, ExperimentResult, RESTAURANT_COL_MAP
-from dabba.features.delivery_features import ETA_FEATURE_COLS
+from dabba.observability import setup_logging
 
 setup_logging("INFO")
 logger = logging.getLogger("dabba.pipeline")
@@ -145,7 +144,7 @@ def generate_residual_plots(
     if top_n == 1:
         axes = [axes]
 
-    for ax, result in zip(axes, sorted_results):
+    for ax, result in zip(axes, sorted_results, strict=False):
         if result.predictions is not None:
             residuals = result.predictions - y_true
             ax.scatter(y_true, residuals, alpha=0.3, s=10)
@@ -362,17 +361,16 @@ def main() -> None:
     seen = set()
     feature_cols = []
     for c in df_zomato.columns:
-        if c.startswith("cuisine_") or c in [
+        if (c.startswith("cuisine_") or c in [
             "votes_log",
             "cost_for_two",
             "online_order_binary",
             "book_table_binary",
             "cuisine_count",
             "avg_sentiment",
-        ]:
-            if c not in seen:
-                seen.add(c)
-                feature_cols.append(c)
+        ]) and c not in seen:
+            seen.add(c)
+            feature_cols.append(c)
 
     X_rating = df_zomato[feature_cols].fillna(0)
     y_rating = df_zomato["rate"]

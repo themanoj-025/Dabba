@@ -6,7 +6,6 @@ Provides standardized metric computation for regression tasks.
 from __future__ import annotations
 
 import logging
-from typing import Dict
 
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -18,7 +17,7 @@ def compute_regression_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     prefix: str = "",
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Compute standard regression metrics.
 
     Args:

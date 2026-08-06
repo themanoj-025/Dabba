@@ -5,8 +5,6 @@ Defines request and response models for all API endpoints.
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -21,11 +19,11 @@ class HealthResponse(BaseModel):
 class RecommendRequest(BaseModel):
     """Restaurant recommendation request."""
 
-    cuisine: Optional[str] = Field(None, description="Preferred cuisine")
-    budget: Optional[float] = Field(None, ge=0, description="Max cost for two (INR)")
-    area: Optional[str] = Field(None, description="Area/neighborhood")
+    cuisine: str | None = Field(None, description="Preferred cuisine")
+    budget: float | None = Field(None, ge=0, description="Max cost for two (INR)")
+    area: str | None = Field(None, description="Area/neighborhood")
     top_n: int = Field(5, ge=1, le=50, description="Number of recommendations")
-    prioritize: Optional[str] = Field(
+    prioritize: str | None = Field(
         "balanced", description="'balanced', 'speed', or 'quality'"
     )
     use_llm_narration: bool = Field(
@@ -34,7 +32,7 @@ class RecommendRequest(BaseModel):
 
     @field_validator("prioritize")
     @classmethod
-    def validate_prioritize(cls, v: Optional[str]) -> Optional[str]:
+    def validate_prioritize(cls, v: str | None) -> str | None:
         if v is not None and v not in ("balanced", "speed", "quality"):
             raise ValueError("prioritize must be 'balanced', 'speed', or 'quality'")
         return v
@@ -44,21 +42,21 @@ class Recommendation(BaseModel):
     """A single restaurant recommendation."""
 
     name: str
-    rating: Optional[float] = None
-    bayesian_rating: Optional[float] = None
-    cost_for_two: Optional[float] = None
-    location: Optional[str] = None
-    cuisines: Optional[str] = None
-    similarity_score: Optional[float] = None
-    combined_score: Optional[float] = None
-    explanation: Optional[str] = None
+    rating: float | None = None
+    bayesian_rating: float | None = None
+    cost_for_two: float | None = None
+    location: str | None = None
+    cuisines: str | None = None
+    similarity_score: float | None = None
+    combined_score: float | None = None
+    explanation: str | None = None
 
 
 class RecommendResponse(BaseModel):
     """Restaurant recommendation response."""
 
-    recommendations: List[Recommendation] = []
-    message: Optional[str] = None
+    recommendations: list[Recommendation] = []
+    message: str | None = None
 
 
 class ETARequest(BaseModel):
@@ -71,13 +69,13 @@ class ETARequest(BaseModel):
         1, ge=0, le=3, description="Traffic density (0=Low, 1=Medium, 2=High, 3=Jam)"
     )
     is_festival: bool = Field(False, description="Whether it's a festival day")
-    delivery_person_age: Optional[float] = Field(
+    delivery_person_age: float | None = Field(
         None, ge=18, le=70, description="Delivery person age (18-70)"
     )
-    delivery_person_rating: Optional[float] = Field(
+    delivery_person_rating: float | None = Field(
         None, ge=1.0, le=5.0, description="Delivery person rating (1.0-5.0)"
     )
-    vehicle_condition: Optional[int] = Field(
+    vehicle_condition: int | None = Field(
         None, ge=0, le=3, description="Vehicle condition score (0-3)"
     )
 
@@ -110,7 +108,7 @@ class ChatRequest(BaseModel):
     message: str = Field(
         ..., min_length=1, max_length=2000, description="User's message (1-2000 chars)"
     )
-    history: Optional[List[ChatMessage]] = Field(
+    history: list[ChatMessage] | None = Field(
         default_factory=list, description="Conversation history"
     )
 
@@ -120,19 +118,19 @@ class RestaurantItem(BaseModel):
 
     id: int
     name: str
-    rate: Optional[float] = None
-    bayesian_rating: Optional[float] = None
-    cost_for_two: Optional[float] = None
-    location: Optional[str] = None
-    cuisines: Optional[str] = None
-    votes: Optional[int] = None
-    reliability_score: Optional[float] = None
+    rate: float | None = None
+    bayesian_rating: float | None = None
+    cost_for_two: float | None = None
+    location: str | None = None
+    cuisines: str | None = None
+    votes: int | None = None
+    reliability_score: float | None = None
 
 
 class RestaurantListResponse(BaseModel):
     """Paginated list of restaurants from the database."""
 
-    restaurants: List[RestaurantItem] = []
+    restaurants: list[RestaurantItem] = []
     total: int = 0
     limit: int = 50
     offset: int = 0
@@ -154,8 +152,8 @@ class ExplainResponse(BaseModel):
 
     id: int
     model_name: str
-    model_version: Optional[str] = None
-    input_data: Optional[dict] = None
+    model_version: str | None = None
+    input_data: dict | None = None
     output_value: float
-    shap_values: Optional[dict] = None
+    shap_values: dict | None = None
     created_at: str

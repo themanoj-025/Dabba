@@ -32,7 +32,7 @@ from __future__ import annotations
 import logging
 import re
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import pandas as pd
 
@@ -40,8 +40,8 @@ from dabba.config import DabbaConfig, get_config
 from dabba.features.delivery_features import build_eta_features_for_api
 from dabba.features.geo import haversine_distance
 from dabba.observability import (
-    concierge_tool_calls_total,
     concierge_loop_duration_seconds,
+    concierge_tool_calls_total,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class ConciergeTools:
         self,
         restaurants_df: pd.DataFrame,
         eta_model: Any = None,
-        config: Optional[DabbaConfig] = None,
+        config: DabbaConfig | None = None,
     ):
         self.df = restaurants_df
         self.eta_model = eta_model
@@ -65,11 +65,11 @@ class ConciergeTools:
 
     def search_restaurants(
         self,
-        cuisine: Optional[str] = None,
-        max_budget: Optional[float] = None,
-        area: Optional[str] = None,
+        cuisine: str | None = None,
+        max_budget: float | None = None,
+        area: str | None = None,
         top_n: int = 5,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Search restaurants by cuisine, budget, and/or area.
 
         Args:
@@ -92,7 +92,7 @@ class ConciergeTools:
         results = self.df[mask].head(top_n)
         return results.to_dict("records")
 
-    def get_eta_estimate(self, restaurant_name: str) -> Optional[Dict[str, Any]]:
+    def get_eta_estimate(self, restaurant_name: str) -> dict[str, Any] | None:
         """Get a predicted delivery ETA for a restaurant using the real ETA model.
 
         Builds a full feature vector (matching the training pipeline's 20+ features)
@@ -161,7 +161,7 @@ class ConciergeTools:
                 "note": "fallback (model error)",
             }
 
-    def get_reliability_score(self, restaurant_name: str) -> Optional[float]:
+    def get_reliability_score(self, restaurant_name: str) -> float | None:
         """Get the reliability score for a restaurant.
 
         Args:
@@ -184,7 +184,7 @@ class ConciergeTools:
 
 
 def _execute_tool(
-    tool_name: str, tool_input: Dict[str, Any], tools: ConciergeTools
+    tool_name: str, tool_input: dict[str, Any], tools: ConciergeTools
 ) -> str:
     """Execute a concierge tool and format the result as structured text for the LLM.
 
@@ -312,10 +312,10 @@ TOOL_DEFINITIONS = [
 
 
 def _llm_concierge_response(
-    messages: List[Dict[str, str]],
+    messages: list[dict[str, str]],
     tools: ConciergeTools,
     config: DabbaConfig,
-) -> Optional[str]:
+) -> str | None:
     """Generate a concierge response using Anthropic Claude with a ReAct tool loop.
 
     The ReAct loop works as follows:
@@ -360,13 +360,13 @@ def _llm_concierge_response(
     )
 
     # Build initial Anthropic messages from conversation history
-    anthropic_messages: List[Dict[str, Any]] = []
+    anthropic_messages: list[dict[str, Any]] = []
     for msg in messages:
         role = "user" if msg["role"] == "user" else "assistant"
         anthropic_messages.append({"role": role, "content": msg["content"]})
 
     max_steps = config.llm_max_steps
-    final_text_parts: List[str] = []
+    final_text_parts: list[str] = []
 
     for step in range(1, max_steps + 1):
         logger.debug("Concierge ReAct step %d/%d", step, max_steps)
@@ -385,8 +385,8 @@ def _llm_concierge_response(
             break
 
         # Collect assistant content blocks (text + tool_use)
-        assistant_content: List[Dict[str, Any]] = []
-        tool_calls: List[Any] = []
+        assistant_content: list[dict[str, Any]] = []
+        tool_calls: list[Any] = []
         has_tool_use = False
 
         for block in response.content:
@@ -416,7 +416,7 @@ def _llm_concierge_response(
             break
 
         # Execute each tool and add tool_result content blocks
-        tool_results: List[Dict[str, Any]] = []
+        tool_results: list[dict[str, Any]] = []
         for block in tool_calls:
             tool_start = time.monotonic()
 
@@ -488,14 +488,14 @@ _INTENT_PATTERNS = [
 ]
 
 
-def _match_intent(user_input: str) -> Tuple[str, Dict[str, str]]:
+def _match_intent(user_input: str) -> tuple[str, dict[str, str]]:
     """Match user input to an intent using simple patterns.
 
     Returns:
         Tuple of (intent_name, extracted_params).
     """
     text = user_input.lower().strip()
-    params: Dict[str, str] = {}
+    params: dict[str, str] = {}
 
     for pattern, intent in _INTENT_PATTERNS:
         # Patterns that should match anywhere in the text use re.search;
@@ -510,9 +510,7 @@ def _match_intent(user_input: str) -> Tuple[str, Dict[str, str]]:
                 params["query"] = groups[0].strip()
                 if groups[1]:
                     params["area"] = groups[1].strip()
-            elif intent == "eta" and groups[0]:
-                params["restaurant"] = groups[0].strip()
-            elif intent == "reliability" and groups[0]:
+            elif intent == "eta" and groups[0] or intent == "reliability" and groups[0]:
                 params["restaurant"] = groups[0].strip()
             elif intent == "budget_search":
                 budget_match = re.search(r"under\s+₹?(\d+)", text)
@@ -639,9 +637,9 @@ def _rules_concierge_response(
 
 def get_concierge_response(
     user_input: str,
-    conversation_history: List[Dict[str, str]],
+    conversation_history: list[dict[str, str]],
     tools: ConciergeTools,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> str:
     """Get a response from the Food Concierge.
 

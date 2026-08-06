@@ -10,18 +10,17 @@ CSV→DB migration ensures the serving path never reads raw CSV files.
 from __future__ import annotations
 
 import logging
-from typing import List, Optional
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from api.limiter import limiter
+from api.schemas import Recommendation, RecommendRequest, RecommendResponse
 from dabba.cache.redis_client import get_cache
 from dabba.config import get_config
 from dabba.database.repositories import get_all_restaurants_as_df
 from dabba.llm.recommendation_narrator import narrate_recommendation
 from dabba.models.hybrid_recommender import HybridRecommender
-from api.schemas import RecommendRequest, RecommendResponse, Recommendation
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ router = APIRouter(prefix="/recommend", tags=["recommend"])
 config = get_config()
 
 
-def _load_hybrid_recommender() -> Optional[HybridRecommender]:
+def _load_hybrid_recommender() -> HybridRecommender | None:
     """Build and return the hybrid recommender from the database.
 
     Called once at app startup by ``api.main``. Uses the repository
@@ -72,7 +71,7 @@ def _load_hybrid_recommender() -> Optional[HybridRecommender]:
     return recommender
 
 
-def get_recommender(request: Request) -> Optional[HybridRecommender]:
+def get_recommender(request: Request) -> HybridRecommender | None:
     """FastAPI dependency: return the hybrid recommender from ``app.state``.
 
     Usage:
@@ -93,7 +92,7 @@ def get_recommender(request: Request) -> Optional[HybridRecommender]:
 async def recommend(
     request: Request,
     body: RecommendRequest,
-    recommender: Optional[HybridRecommender] = Depends(get_recommender),
+    recommender: HybridRecommender | None = Depends(get_recommender),
 ) -> RecommendResponse:
     """Get hybrid restaurant recommendations with optional LLM narration.
 
@@ -136,7 +135,7 @@ async def recommend(
             message="No restaurants match your filters.",
         )
 
-    recommendations: List[Recommendation] = []
+    recommendations: list[Recommendation] = []
     for _, row in results.iterrows():
         rest_dict = row.to_dict()
 

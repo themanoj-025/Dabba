@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -53,7 +52,7 @@ def generate_synthetic_interactions(
     n_users: int = 3000,
     min_ratings: int = 5,
     max_ratings: int = 30,
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> pd.DataFrame:
     """Generate SYNTHETIC user-restaurant interaction data.
 
@@ -202,7 +201,7 @@ class InteractionDataset(Dataset):
     def __len__(self) -> int:
         return len(self.ratings)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         return self.user_ids[idx], self.item_ids[idx], self.ratings[idx]
 
 
@@ -215,7 +214,7 @@ def train_matrix_factorization(
     batch_size: int = 256,
     lr: float = 0.01,
     device: str = "cpu",
-    config: Optional[DabbaConfig] = None,
+    config: DabbaConfig | None = None,
 ) -> nn.Module:
     """Train a matrix factorization model on interaction data.
 
@@ -375,7 +374,7 @@ def load_collaborative_model(
     n_users: int,
     n_items: int,
     n_factors: int = 50,
-    path: Optional[Path] = None,
+    path: Path | None = None,
     device: str = "cpu",
 ) -> nn.Module:
     """Load a trained matrix factorization model.

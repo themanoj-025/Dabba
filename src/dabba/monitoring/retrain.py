@@ -30,7 +30,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +41,9 @@ def maybe_trigger_retraining(
     drift_result: DriftResult,
     retrain_cooldown_hours: float = 6.0,
     drift_threshold: float = 0.3,
-    project_root: Optional[Path] = None,
+    project_root: Path | None = None,
     dry_run: bool = False,
 ) -> bool:
-    from dabba.monitoring.drift import (
-        DriftResult,
-    )  # lazy import avoids circular dependency
 
     """Trigger model retraining if drift is severe enough.
 

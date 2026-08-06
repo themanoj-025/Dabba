@@ -18,7 +18,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from dabba.config import DabbaConfig, get_config
 
@@ -35,7 +35,7 @@ class CacheClient:
         config: Project configuration (for Redis URL).
     """
 
-    def __init__(self, config: Optional[DabbaConfig] = None):
+    def __init__(self, config: DabbaConfig | None = None):
         self.config = config or get_config()
         self._client: Any = None
         self._fakeredis: Any = None
@@ -112,7 +112,7 @@ class CacheClient:
         except Exception as e:
             logger.warning("Cache set failed: %s", e)
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get a cache entry.
 
         Args:
@@ -182,10 +182,10 @@ class CacheClient:
 
 
 # Module-level singleton for reuse across routers
-_cache_instance: Optional[CacheClient] = None
+_cache_instance: CacheClient | None = None
 
 
-def get_cache(config: Optional[DabbaConfig] = None) -> CacheClient:
+def get_cache(config: DabbaConfig | None = None) -> CacheClient:
     """Return a singleton CacheClient instance.
 
     Args:

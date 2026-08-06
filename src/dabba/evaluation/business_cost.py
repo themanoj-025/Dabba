@@ -8,7 +8,7 @@ in business-interpretable terms, and the Reliability Score.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ─── Weight profiles for A/B scenario simulation ───────────────────────
 
-WEIGHT_PROFILES: Dict[str, Dict[str, float]] = {
+WEIGHT_PROFILES: dict[str, dict[str, float]] = {
     "balanced": {
         "w_rating": 0.4,
         "w_sentiment": 0.3,
@@ -46,7 +46,7 @@ def compute_sla_analysis(
     y_pred: np.ndarray,
     sla_threshold: float | None = None,
     config: DabbaConfig | None = None,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Analyze SLA violation rates using predicted vs actual delivery times.
 
     Args:
@@ -107,8 +107,8 @@ def compute_reliability_score(
     rating: float | np.ndarray,
     sentiment: float | np.ndarray,
     delay_risk: float | np.ndarray,
-    weights: Optional[Dict[str, float]] = None,
-    config: Optional[DabbaConfig] = None,
+    weights: dict[str, float] | None = None,
+    config: DabbaConfig | None = None,
 ) -> float | np.ndarray:
     """Compute the Reliability Score for one or more restaurants.
 
@@ -159,7 +159,7 @@ def run_ab_scenario_simulation(
     sentiment_col: str = "avg_sentiment",
     delay_col: str = "delay_risk",
     top_n: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run Reliability Score ranking under multiple weight profiles.
 
     Simulates what a product team would A/B test: how does the
@@ -193,7 +193,7 @@ def run_ab_scenario_simulation(
     else:
         delays = df[delay_col].fillna(0.5).values
 
-    results: Dict[str, Any] = {}
+    results: dict[str, Any] = {}
 
     for profile_name, weights in WEIGHT_PROFILES.items():
         scores = compute_reliability_score(ratings, sentiments, delays, weights)

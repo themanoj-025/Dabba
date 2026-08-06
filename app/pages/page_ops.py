@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import random
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import joblib
 import numpy as np
@@ -54,7 +54,7 @@ def _load_eta_model_cached():
 
 
 @st.cache_resource
-def _build_reference_data_cached() -> Optional[pd.DataFrame]:
+def _build_reference_data_cached() -> pd.DataFrame | None:
     """Build reference distribution from the database (cached by Streamlit).
 
     Uses restaurant count and distance stats from the DB to build a
@@ -64,11 +64,11 @@ def _build_reference_data_cached() -> Optional[pd.DataFrame]:
     rng = np.random.RandomState(42)
 
     try:
-        from dabba.database.session import get_db
         from dabba.database.repositories import (
             count_restaurants,
             get_all_restaurants_as_df,
         )
+        from dabba.database.session import get_db
 
         with get_db() as db:
             n_restaurants = count_restaurants(db)
@@ -133,9 +133,9 @@ def show() -> None:
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        orders: List[Dict[str, Any]] = []
+        orders: list[dict[str, Any]] = []
         on_time_count = 0
-        on_time_history: List[float] = []
+        on_time_history: list[float] = []
 
         for i in range(n_orders):
             order = _simulate_order(sla_threshold, drift_test, model)
@@ -263,7 +263,7 @@ def _simulate_order(
     sla_threshold: float,
     inject_drift: bool = False,
     model=None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Simulate a single delivery order, optionally using the trained model.
 
     Returns a dict with a unique, monotonically increasing order_id.
