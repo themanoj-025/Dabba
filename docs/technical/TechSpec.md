@@ -149,6 +149,23 @@ sequenceDiagram
 | FAISS absence | sklearn fallback |
 | HPO cost | Early stopping + trials budget |
 
+## Deployment Topology
+
+```mermaid
+graph TD
+    CONSUMER[Consumer] --> UI[Streamlit dashboard]
+    CONSUMER --> API[FastAPI API]
+    API --> MODELS[Model registry: sklearn / XGBoost / LightGBM / CatBoost / PyTorch MF]
+    API --> NLP[NLTK VADER sentiment]
+    API --> FAISS[(FAISS vector store)]
+    API --> LLM[Claude: narratives + chat]
+    API --> MLFLOW[MLflow]
+    subgraph Deploy
+        UI --> UI_C[Dashboard container]
+        API --> API_C[API container]
+    end
+```
+
 ## 11. Related Documents
 
 | Document | Relationship |
