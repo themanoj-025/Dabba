@@ -12,7 +12,7 @@ catboost>=1.2,<2.0
 
 # Deep Learning / Embeddings
 torch>=2.0,<3.0
-faiss-cpu>=1.7,<2.0
+faiss-cpu>=1.15.0,<2.0
 skorch>=0.15,<1.0
 
 # NLP / Sentiment (Hinglish-aware)
