@@ -26,6 +26,28 @@
 
 ---
 
+## 📋 Table of Contents
+
+- [🎯 The Problem](#-the-problem)
+- [✨ Features](#-features)
+- [📊 Model Performance](#-model-performance)
+- [🚀 Quick Start](#-quick-start)
+- [📋 Environment Variables](#-environment-variables)
+- [🏗️ Architecture](#️-architecture)
+- [📁 Project Structure](#-project-structure)
+- [🧪 Testing](#-testing)
+- [📡 API Endpoints](#-api-endpoints)
+- [🗺️ Roadmap](#️-roadmap)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+- [🙏 Acknowledgements](#-acknowledgements)
+
+---
+
+> 📸 **Screenshot placeholder:** Add a screenshot of the restaurant ranking dashboard.
+
+---
+
 ## 🎯 The Problem
 
 India's food-tech landscape generates massive amounts of restaurant and delivery data, yet consumers and operators lack a unified view that combines food quality, customer sentiment, and delivery reliability into a single actionable metric.
