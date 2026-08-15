@@ -74,7 +74,7 @@ redis>=5.0,<6.0
 python-dotenv>=1.0,<2.0
 
 # Observability
-prometheus-client>=0.19,<1.0
+prometheus-client>=0.26.0,<1.0
 
 # Hyperparameter Optimization
 optuna>=3.4,<5.0
