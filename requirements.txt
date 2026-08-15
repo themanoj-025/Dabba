@@ -20,7 +20,7 @@ skorch>=0.15,<1.0
 # For production: fine-tune IndicBERT or Hinglish-RoBERTa
 
 # NLP / Sentiment
-nltk>=3.8,<4.0
+nltk>=3.10.2,<4.0
 
 # LLM Integration
 anthropic>=0.100,<1.0
