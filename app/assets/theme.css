@@ -1,0 +1,219 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Dabba — Food-Tech Theme
+   Warm off-white/cream background, appetizing orange accent,
+   rounded cards, clean Inter font (loaded via Google Fonts).
+   ═══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Base ──────────────────────────────────────────────────────────── */
+
+body, .stApp {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #faf8f5;
+    color: #2d2d2d;
+}
+
+/* ─── Sidebar ───────────────────────────────────────────────────────── */
+
+section[data-testid="stSidebar"] {
+    background-color: #ffffff;
+    border-right: 1px solid #f0ebe3;
+    padding: 1.5rem 1rem;
+}
+
+section[data-testid="stSidebar"] .stMarkdown {
+    color: #2d2d2d;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────── */
+
+div.stCard, div[data-testid="stVerticalBlock"] > div:has(> div.metric-card) {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+    border: 1px solid #f0ebe3;
+}
+
+div.stCard:hover, div[data-testid="stVerticalBlock"] > div:has(> div.metric-card):hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    transform: translateY(-2px);
+    border-color: #ff8c42;
+}
+
+/* Restaurant card */
+.restaurant-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid #f0ebe3;
+    transition: all 0.2s ease;
+}
+
+.restaurant-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border-color: #ff8c42;
+}
+
+.restaurant-card .name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d2d2d;
+    margin: 0 0 0.25rem 0;
+}
+
+.restaurant-card .details {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+}
+
+.restaurant-card .explanation {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0ebe3;
+}
+
+/* ─── Badges / Chips ────────────────────────────────────────────────── */
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.25rem;
+}
+
+.badge-rating {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-reliability {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-eta {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-cost {
+    background-color: #fce7f3;
+    color: #9d174d;
+}
+
+/* ─── Metric cards (Ops page) ──────────────────────────────────────── */
+
+.metric-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    border: 1px solid #f0ebe3;
+    text-align: center;
+}
+
+.metric-card .metric-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d2d2d;
+    line-height: 1.2;
+}
+
+.metric-card .metric-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metric-card.danger .metric-value {
+    color: #ef4444;
+}
+
+.metric-card.success .metric-value {
+    color: #10b981;
+}
+
+/* ─── Drift Alert Banner ────────────────────────────────────────────── */
+
+.drift-alert {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    color: #991b1b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ─── Chat (Food Concierge) ─────────────────────────────────────────── */
+
+.chat-bubble-user {
+    background-color: #ff8c42;
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    margin-left: auto;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.chat-bubble-assistant {
+    background-color: #f3f4f6;
+    color: #2d2d2d;
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+    margin-right: auto;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.chat-bubble-assistant strong {
+    color: #ff8c42;
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────── */
+
+.stButton > button {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.stButton > button[kind="primary"] {
+    background-color: #ff8c42;
+    border: none;
+    color: white;
+}
+
+.stButton > button[kind="primary"]:hover {
+    background-color: #e67a30;
+    box-shadow: 0 2px 8px rgba(255, 140, 66, 0.3);
+}
+
+/* ─── Dividers ──────────────────────────────────────────────────────── */
+
+hr {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #f0ebe3;
+}
+
+/* ─── Loading states ────────────────────────────────────────────────── */
+
+.stSpinner {
+    border-color: #ff8c42 !important;
+}

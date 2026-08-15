@@ -1,0 +1,99 @@
+# ─── Data (raw + processed datasets, large artifacts) ───────────────
+data/raw/
+data/processed/
+*.csv
+*.xlsx
+!data/processed/.gitkeep
+# Exception: track the README in data/raw/ for documentation
+!data/raw/README.md
+
+# ─── Model artifacts ─────────────────────────────────────────────────
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pt
+models/*.index
+models/*.onnx
+models/*.npy
+!models/.gitkeep
+
+# ─── Reports / Generated figures (including SHAP values) ─────────────
+reports/figures/*.png
+reports/figures/*.html
+reports/figures/*.json
+reports/figures/*.svg
+reports/figures/*.npy
+reports/ab_scenarios.json
+reports/*.csv
+reports/mlruns/
+!reports/figures/.gitkeep
+
+# ─── MLflow ──────────────────────────────────────────────────────────
+mlflow_data/
+mlruns/
+
+# ─── Python bytecode / build artifacts ───────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+
+# ─── Virtual environments ────────────────────────────────────────────
+.venv/
+venv/
+env/
+virtualenv/
+
+# ─── IDE / Editor ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+.history/
+
+# ─── Environment / Secrets ───────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ─── Jupyter ─────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ─── OS files ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.dmg
+
+# ─── Logs ────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Coverage / Testing ──────────────────────────────────────────────
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ─── Linting / Formatting caches ─────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.types_cache/
+
+# ─── Database files ──────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+*.sqlite3
+
+# ─── Kaggle ──────────────────────────────────────────────────────────
+kaggle.json
