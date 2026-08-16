@@ -79,10 +79,7 @@ def _simulate_traffic(
 
     # Base probability of higher traffic
     if is_weekend:
-        if 11 <= hour <= 20:
-            base_level = 1  # Medium (shopping hours)
-        else:
-            base_level = 0  # Low
+        base_level = 1 if 11 <= hour <= 20 else 0  # Medium (shopping hours) vs Low
     elif hour in {8, 9, 10, 18, 19, 20}:  # Rush hours
         base_level = 2  # High
     elif 11 <= hour <= 17:  # Mid-day
