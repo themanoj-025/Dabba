@@ -59,6 +59,22 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG"]
+# black (line-length 88) is the enforced formatter; E501 duplicates it and
+# only fires on docstrings/comments/strings. ruff's recommended black setup.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI idioms: Depends() in argument defaults and the injected `request`
+# param are required by the framework, not lint violations.
+"api/**/*.py" = ["B008", "ARG001"]
+"app/**/*.py" = ["B007", "B008", "ARG001"]
+# scikit-learn convention: X (feature matrix), y, C, R are standard names.
+"src/dabba/models/**/*.py" = ["N803", "N806", "ARG001"]
+"src/dabba/features/**/*.py" = ["N803", "ARG001"]
+"src/dabba/pipeline.py" = ["N803", "N806"]
+"tests/**/*.py" = ["N803", "N806", "ARG002"]
+# Decorator shims that intentionally forward *args/**kwargs.
+"src/dabba/observability/__init__.py" = ["ARG001", "ARG002"]
 
 [tool.black]
 line-length = 88

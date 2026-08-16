@@ -300,11 +300,11 @@ def tune_hyperparameters(
     """
     try:
         import optuna
-    except ImportError:
+    except ImportError as err:
         raise ImportError(
             "Optuna is required for hyperparameter tuning. "
             "Install it with: pip install optuna"
-        )
+        ) from err
 
     # Resolve search space
     all_spaces = get_model_search_spaces()

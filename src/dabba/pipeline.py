@@ -234,10 +234,9 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
                     if df_col in row and not pd.isna(row[df_col]):
                         setattr(restaurant, db_col, row[df_col])
 
-                if lat_col and lon_col:
-                    if not pd.isna(row.get(lat_col)) and not pd.isna(row.get(lon_col)):
-                        restaurant.latitude = float(row[lat_col])
-                        restaurant.longitude = float(row[lon_col])
+                if lat_col and lon_col and not pd.isna(row.get(lat_col)) and not pd.isna(row.get(lon_col)):
+                    restaurant.latitude = float(row[lat_col])
+                    restaurant.longitude = float(row[lon_col])
 
                 count += 1
 
