@@ -241,8 +241,8 @@ class TestFullImport:
         config = get_config()
         if not config.zomato_path.exists():
             pytest.skip("Raw Zomato CSV not available")
-        try:
-            full_import(config)
-        except Exception:
+        import contextlib
+
+        with contextlib.suppress(Exception):
             # Acceptable — may fail on delivery CSV or features
-            pass
+            full_import(config)
