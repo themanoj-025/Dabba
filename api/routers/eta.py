@@ -109,7 +109,7 @@ async def predict_eta(
     try:
         prediction = model.predict(features)[0]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     is_at_risk = prediction > config.sla_threshold_minutes
 
