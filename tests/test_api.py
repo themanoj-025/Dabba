@@ -237,14 +237,15 @@ def test_api_routers_no_csv_reads(rel_path: str) -> None:
 
     violations = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
-            if node.func.attr == "read_csv":
-                if isinstance(node.func.value, ast.Name) and node.func.value.id in (
-                    "pd",
-                    "pandas",
-                ):
-                    violations.append(
-                        f"  Line {node.lineno}: direct pd.read_csv() call"
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "read_csv"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in ("pd", "pandas")
+        ):
+            violations.append(
+                f"  Line {node.lineno}: direct pd.read_csv() call"
                     )
 
     assert not violations, (
@@ -292,14 +293,15 @@ def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
 
     violations = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
-            if node.func.attr == "read_csv":
-                if isinstance(node.func.value, ast.Name) and node.func.value.id in (
-                    "pd",
-                    "pandas",
-                ):
-                    violations.append(
-                        f"  Line {node.lineno}: direct pd.read_csv() call"
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "read_csv"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id in ("pd", "pandas")
+        ):
+            violations.append(
+                f"  Line {node.lineno}: direct pd.read_csv() call"
                     )
 
     assert not violations, (
