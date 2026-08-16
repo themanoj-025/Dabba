@@ -130,7 +130,7 @@ class TestHybridRecommenderRecommend:
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(area="Koramangala", top_n=5)
         if not result.empty and "location" in result.columns:
-            assert all("Koramangala" in str(l) for l in result["location"])
+            assert all("Koramangala" in str(loc) for loc in result["location"])
 
     def test_recommend_empty_result(self, sample_df):
         """Should return empty DataFrame when no matches."""
