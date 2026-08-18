@@ -42,7 +42,7 @@ streamlit>=1.28,<2.0
 plotly>=5.18,<6.0
 matplotlib>=3.7,<4.0
 folium>=0.15,<1.0
-seaborn>=0.13,<1.0
+seaborn>=0.13.2,<1.0
 
 # Explainability
 shap>=0.43,<1.0
