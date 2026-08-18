@@ -11,7 +11,7 @@ lightgbm>=4.0,<5.0
 catboost>=1.2,<2.0
 
 # Deep Learning / Embeddings
-torch>=2.0,<3.0
+torch>=2.13.0,<3.0
 faiss-cpu>=1.7,<2.0
 skorch>=0.15,<1.0
 
