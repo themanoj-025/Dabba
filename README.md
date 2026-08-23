@@ -44,7 +44,14 @@
 
 ---
 
-> 📸 **Screenshot placeholder:** Add a screenshot of the restaurant ranking dashboard.
+## 📸 Screenshots
+
+> _To add screenshots: run `make run-app`, capture your screen, save images to `docs/assets/`, and reference them below._
+>
+> **Suggested screenshots:**
+> - Restaurant ranking dashboard
+> - ETA prediction with confidence interval
+> - AI concierge chat interaction
 
 ---
 
