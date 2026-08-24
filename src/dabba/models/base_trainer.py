@@ -408,7 +408,7 @@ def tune_hyperparameters(
 
         if active is None:
             mlflow.end_run()
-    except Exception:
+    except (ImportError, OSError, AttributeError):
         pass
 
     return best_params, best_mae, best_rmse
