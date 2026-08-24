@@ -29,6 +29,7 @@ from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine, event
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from dabba.config import DabbaConfig, get_config
@@ -133,7 +134,7 @@ def get_db() -> Iterator[Session]:
     try:
         yield db
         db.commit()
-    except Exception:
+    except (SQLAlchemyError, OSError) as exc:
         db.rollback()
         raise
     finally:
@@ -156,7 +157,7 @@ def get_db_generator() -> Generator[Session, None, None]:
     try:
         yield db
         db.commit()
-    except Exception:
+    except (SQLAlchemyError, OSError) as exc:
         db.rollback()
         raise
     finally:
