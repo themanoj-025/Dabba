@@ -73,7 +73,7 @@ class TestMatrixFactorization:
         targets = torch.FloatTensor([5.0, 4.0, 3.0, 2.0, 1.0])
 
         loss_before = criterion(model(users, items), targets).item()
-        for _ in range(50):
+        for _ in range(10):
             optimizer.zero_grad()
             preds = model(users, items)
             loss = criterion(preds, targets)

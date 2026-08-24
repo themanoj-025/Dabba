@@ -1,9 +1,20 @@
 """Tests for ETA model training and evaluation."""
 
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
+import pytest
+from sklearn.linear_model import LinearRegression, Ridge
 
 from dabba.models.eta_model import ETAModelResult, train_and_evaluate_eta_models
+
+
+# Lightweight model dict for fast unit tests (avoids training 10+ heavy models)
+_LIGHTWEIGHT_MODELS = {
+    "LinearRegression": LinearRegression(),
+    "Ridge": Ridge(alpha=1.0),
+}
 
 
 class TestETAModelResult:
@@ -22,9 +33,10 @@ class TestETAModelResult:
 class TestETAModels:
     """Tests for the ETA model comparison pipeline."""
 
-    def test_returns_results(self):
+    @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
+    @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
+    def test_returns_results(self, _mock_nn, _mock_models):
         """Should return a list of results and a best result."""
-        # Create synthetic data
         rng = np.random.RandomState(42)
         n = 200
         df = pd.DataFrame(
@@ -39,13 +51,17 @@ class TestETAModels:
         )
         y = pd.Series(rng.uniform(15, 60, n))
 
-        results, best = train_and_evaluate_eta_models(df, y)
+        results, best = train_and_evaluate_eta_models(
+            df, y, use_mlflow=False, use_hpo=False
+        )
 
         assert len(results) > 0
         assert best is not None
         assert best.mae >= 0
 
-    def test_predictions_shape(self):
+    @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
+    @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
+    def test_predictions_shape(self, _mock_nn, _mock_models):
         """Predictions should have same length as input."""
         rng = np.random.RandomState(42)
         n = 100
@@ -57,13 +73,17 @@ class TestETAModels:
         )
         y = pd.Series(rng.uniform(15, 60, n))
 
-        results, _ = train_and_evaluate_eta_models(df, y)
+        results, _ = train_and_evaluate_eta_models(
+            df, y, use_mlflow=False, use_hpo=False
+        )
 
         for result in results:
             if result.predictions is not None:
                 assert len(result.predictions) == n
 
-    def test_mae_positive(self):
+    @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
+    @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
+    def test_mae_positive(self, _mock_nn, _mock_models):
         """MAE should always be non-negative."""
         rng = np.random.RandomState(42)
         n = 100
@@ -75,7 +95,9 @@ class TestETAModels:
         )
         y = pd.Series(rng.uniform(15, 60, n))
 
-        results, _ = train_and_evaluate_eta_models(df, y)
+        results, _ = train_and_evaluate_eta_models(
+            df, y, use_mlflow=False, use_hpo=False
+        )
 
         for result in results:
             assert result.mae >= 0
