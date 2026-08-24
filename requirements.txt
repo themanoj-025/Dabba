@@ -23,7 +23,7 @@ skorch>=0.15,<1.0
 nltk>=3.8,<4.0
 
 # LLM Integration
-anthropic>=0.100,<1.0
+anthropic>=1.0.0,<2.0
 
 # Web Framework
 fastapi>=0.104,<1.0
