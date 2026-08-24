@@ -420,7 +420,7 @@ def build_eta_features_for_api(
                 traffic_info.label,
                 traffic_info.source,
             )
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             pass  # Keep default traffic_level
 
     return pd.DataFrame([data])
