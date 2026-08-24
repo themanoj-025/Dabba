@@ -331,7 +331,7 @@ def tune_hyperparameters(
 
         try:
             model = _build_model_from_params(model_name, params)
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.warning(
                 "Failed to build %s with params: %s — %s", model_name, params, e
             )
@@ -341,7 +341,7 @@ def tune_hyperparameters(
 
         try:
             y_pred = cross_val_predict(pipe, X, y, cv=kf, method="predict")
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.warning("CV failed for trial: %s", e)
             return float("inf")
 
@@ -459,7 +459,7 @@ def get_tuned_model(
             best_params,
         )
         return _build_model_from_params(model_name, best_params)
-    except Exception as e:
+    except (ValueError, TypeError, OSError) as e:
         logger.warning(
             "Tuning failed for %s: %s — falling back to defaults", model_name, e
         )
@@ -621,7 +621,7 @@ def _setup_mlflow(
             }
         )
         return mlflow_run
-    except Exception as e:
+    except (ImportError, OSError, AttributeError) as e:
         logger.warning("MLflow tracking disabled for %s: %s", task, e)
         return None
 
@@ -669,7 +669,7 @@ def _log_model_to_mlflow(
                 }
             )
             return child_run.info.run_id
-    except Exception as e:
+    except (ImportError, OSError, AttributeError) as e:
         logger.warning("MLflow logging failed for %s: %s", name, e)
         return None
 
@@ -681,7 +681,7 @@ def _end_mlflow_run(mlflow_run: Any) -> None:
             import mlflow
 
             mlflow.end_run()
-        except Exception:
+        except (ImportError, OSError):
             pass
 
 
@@ -745,7 +745,7 @@ def train_and_evaluate_models(
 
         try:
             y_pred = cross_val_predict(pipe, X, y, cv=kf, method="predict")
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             logger.error("Failed to train %s: %s", name, e)
             continue
 
@@ -808,7 +808,7 @@ def train_and_evaluate_models(
 
             mlflow.set_tag("winning_model", best.name)
             mlflow.log_metrics({f"best_{metric_name}": getattr(best, metric_name)})
-        except Exception:
+        except (ImportError, OSError, AttributeError):
             pass
 
     _end_mlflow_run(mlflow_run)

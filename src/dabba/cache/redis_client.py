@@ -52,7 +52,7 @@ class CacheClient:
             )
             self._client.ping()
             logger.info("Redis cache connected: %s", url)
-        except Exception:
+        except (OSError, ConnectionError):
             logger.warning(
                 "Redis unavailable at %s — falling back to fakeredis (in-memory)", url
             )
@@ -109,7 +109,7 @@ class CacheClient:
         try:
             serialized = json.dumps(value, default=str)
             r.setex(key, ttl_seconds, serialized)
-        except Exception as e:
+        except (OSError, ConnectionError, TypeError) as e:
             logger.warning("Cache set failed: %s", e)
 
     def get(self, key: str) -> Any | None:
@@ -129,7 +129,7 @@ class CacheClient:
             if raw is None:
                 return None
             return json.loads(raw)
-        except Exception as e:
+        except (OSError, ConnectionError, ValueError) as e:
             logger.warning("Cache get failed: %s", e)
             return None
 
@@ -144,7 +144,7 @@ class CacheClient:
             return
         try:
             r.delete(key)
-        except Exception as e:
+        except (OSError, ConnectionError) as e:
             logger.warning("Cache delete failed: %s", e)
 
     def flush(self) -> None:
@@ -155,7 +155,7 @@ class CacheClient:
         try:
             r.flushdb()
             logger.info("Cache flushed")
-        except Exception as e:
+        except (OSError, ConnectionError) as e:
             logger.warning("Cache flush failed: %s", e)
 
     def make_eta_key(self, eta_request: dict) -> str:
