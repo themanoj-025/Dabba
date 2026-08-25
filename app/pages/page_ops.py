@@ -77,7 +77,7 @@ def _build_reference_data_cached() -> pd.DataFrame | None:
                 n = min(500, len(rest_df))
             else:
                 n = 500
-    except Exception:
+    except (OSError, ValueError):
         n = 500
 
     return pd.DataFrame(
@@ -289,7 +289,7 @@ def _simulate_order(
         )
         try:
             predicted_time = float(model.predict(features)[0])
-        except Exception:
+        except (ValueError, TypeError):
             predicted_time = max(10, base_time + random.uniform(-3, 3))
     else:
         predicted_time = max(10, base_time + random.uniform(-3, 3))
