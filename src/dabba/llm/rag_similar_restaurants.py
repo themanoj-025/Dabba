@@ -48,7 +48,7 @@ def _build_faiss_index(
         logger.warning("FAISS not available — using sklearn fallback")
 
 
-def _load_faiss_index(config: DabbaConfig):
+def _load_faiss_index(config: DabbaConfig) -> None:
     """Load the FAISS index from disk."""
     global _faiss_index
     if _faiss_index is not None:

@@ -249,7 +249,7 @@ def _execute_tool(
 _anthropic_client = None
 
 
-def _get_llm_client(config: DabbaConfig):
+def _get_llm_client(config: DabbaConfig) -> Any:
     """Lazy Anthropic client init."""
     global _anthropic_client
     if _anthropic_client is not None:
