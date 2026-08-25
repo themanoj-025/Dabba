@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 _anthropic_client = None
 
 
-def _get_anthropic_client(config: DabbaConfig):
+def _get_anthropic_client(config: DabbaConfig) -> Any:
     """Initialize Anthropic client if API key is configured."""
     global _anthropic_client
     if _anthropic_client is not None:

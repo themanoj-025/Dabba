@@ -17,7 +17,7 @@ from dabba.config import DabbaConfig, get_config
 logger = logging.getLogger(__name__)
 
 
-def _get_vader():
+def _get_vader() -> None:
     """Safely import and return VADER SentimentIntensityAnalyzer."""
     try:
         from nltk.sentiment.vader import SentimentIntensityAnalyzer

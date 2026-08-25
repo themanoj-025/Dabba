@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 _PIPELINE = None
 
 
-def _get_transformer_pipeline():
+def _get_transformer_pipeline() -> None:
     """Lazy-load the HuggingFace multilingual sentiment pipeline.
 
     Returns:
@@ -71,7 +71,7 @@ def _get_transformer_pipeline():
         return None
 
 
-def _get_vader():
+def _get_vader() -> Any:
     """Get VADER analyzer (same import pattern as sentiment.py)."""
     try:
         from nltk.sentiment.vader import SentimentIntensityAnalyzer
