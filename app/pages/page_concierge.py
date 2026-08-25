@@ -142,5 +142,5 @@ def _load_data() -> pd.DataFrame:
 
         with get_db() as db:
             return get_all_restaurants_as_df(db, with_cuisine_features=False)
-    except Exception:
+    except (OSError, ValueError):
         return pd.DataFrame()

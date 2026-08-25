@@ -108,7 +108,7 @@ def _load_experiment_results(task: str):
                     }
                 )
             return pd.DataFrame(rows)
-    except Exception:
+    except (OSError, ValueError, TypeError):
         return None
 
 
@@ -149,8 +149,8 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
         try:
             fig = pio.read_json(chart_path)
             st.plotly_chart(fig, use_container_width=True)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError):
+            pass  # Fallback to plotly express below
 
     # Fallback: plotly express
     fig = px.bar(
@@ -185,7 +185,7 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
             fig_res = pio.read_json(resid_json)
             st.subheader("Residual Plots (Top 3 Models)")
             st.plotly_chart(fig_res, use_container_width=True)
-        except Exception:
+        except (OSError, ValueError, KeyError):
             pass
 
     # SHAP summary
