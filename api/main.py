@@ -60,6 +60,34 @@ app = FastAPI(
     title="Dabba API",
     description="India-focused restaurant recommendation and delivery ETA API",
     version="0.5.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "recommend",
+            "description": "Hybrid restaurant recommendations (collaborative + content-based filtering)",
+        },
+        {
+            "name": "eta",
+            "description": "Delivery ETA prediction using trained regression models",
+        },
+        {
+            "name": "chat",
+            "description": "Food concierge chat powered by LLM for order assistance",
+        },
+        {
+            "name": "explain",
+            "description": "Model explainability — SHAP feature importance for predictions",
+        },
+        {
+            "name": "model-info",
+            "description": "Deployed model metadata and configuration",
+        },
+        {
+            "name": "restaurants",
+            "description": "Restaurant listing and search endpoints",
+        },
+    ],
 )
 
 # ─── Rate limiter ─────────────────────────────────────────────────────
