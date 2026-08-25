@@ -13,12 +13,21 @@ import os
 import tempfile
 from collections.abc import Generator
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 import pytest
 
 # Silence noisy loggers during tests by default
 logging.getLogger("dabba").setLevel(logging.WARNING)
 logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
+
+
+@pytest.fixture(autouse=True)
+def _skip_redis_connection():
+    """Skip real Redis connection attempts in tests — use fakeredis instead."""
+    with patch("redis.from_url") as mock_from_url:
+        mock_from_url.side_effect = ConnectionError("Skip real Redis in tests")
+        yield
 
 
 @pytest.fixture(scope="session", autouse=True)
