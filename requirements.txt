@@ -13,7 +13,7 @@ catboost>=1.2,<2.0
 # Deep Learning / Embeddings
 torch>=2.0,<3.0
 faiss-cpu>=1.7,<2.0
-skorch>=0.15,<1.0
+skorch>=1.4.0,<2.0
 
 # NLP / Sentiment (Hinglish-aware)
 # scikit-learn already provides TF-IDF features
