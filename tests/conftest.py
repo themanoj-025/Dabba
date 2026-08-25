@@ -84,5 +84,5 @@ def test_db() -> Generator[Path, None, None]:
         import shutil
 
         shutil.rmtree(tmp_dir, ignore_errors=True)
-    except Exception:
+    except OSError:
         pass
