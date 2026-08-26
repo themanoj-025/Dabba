@@ -23,6 +23,8 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
+from dabba.database.models import Base
+
 # Alembic Config object
 config = context.config
 
@@ -35,9 +37,6 @@ if config.config_file_name is not None:
 _env_db_url = os.getenv("DABBA_DATABASE_URL")
 if _env_db_url:
     config.set_main_option("sqlalchemy.url", _env_db_url)
-
-# Import all models so Alembic can detect them
-from dabba.database.models import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
