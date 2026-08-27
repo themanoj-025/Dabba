@@ -66,7 +66,7 @@ def _get_transformer_pipeline() -> None:
             "transformers not installed — falling back to VADER for sentiment"
         )
         return None
-    except Exception as e:
+    except (OSError, RuntimeError) as e:
         logger.warning("Failed to load multilingual sentiment model: %s", e)
         return None
 
@@ -126,7 +126,7 @@ def score_sentiment(text: str, vader_analyzer=None) -> float:
             neg = scores.get("NEGATIVE", scores.get("LABEL_0", 0.5))
             # Convert to [-1, 1] range
             return float(round(pos - neg, 4))
-        except Exception as e:
+        except (ValueError, RuntimeError) as e:
             logger.debug("Transformer sentiment failed: %s — falling back to VADER", e)
 
     # Fallback: English VADER
@@ -136,7 +136,7 @@ def score_sentiment(text: str, vader_analyzer=None) -> float:
     try:
         scores = vader_analyzer.polarity_scores(text)
         return float(scores["compound"])
-    except Exception as e:
+    except (ValueError, OSError) as e:
         logger.warning("VADER sentiment failed: %s", e)
         return 0.0
 

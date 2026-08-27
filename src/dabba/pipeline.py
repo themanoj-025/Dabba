@@ -245,7 +245,7 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
                     db.flush()
 
             logger.info("Saved/updated %d restaurants to database", count)
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.warning("Database save skipped: %s", e)
 
 
@@ -276,7 +276,7 @@ def _save_experiment_results(
                 len(results),
                 task,
             )
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.warning("Experiment results DB save skipped: %s", e)
 
 
@@ -322,7 +322,7 @@ def compute_shap_explanations(
 
         # Save shap values for UI
         np.save(output_dir / f"{task}_shap_values.npy", shap_values.values)
-    except Exception as e:
+    except (ValueError, OSError, RuntimeError) as e:
         logger.warning("SHAP computation failed for %s: %s", task, e)
 
 
@@ -525,7 +525,7 @@ def main() -> None:
         )
         save_collaborative_model(mf_model, config.best_collaborative_model_path)
         logger.info("✅ Collaborative filtering model saved")
-    except Exception as e:
+    except (ValueError, OSError) as e:
         logger.error("Collaborative filtering training failed: %s", e)
 
     # ─── Stage 6: Geographic Clustering ──────────────────────────────

@@ -129,7 +129,7 @@ def _send_slack_alert(
                     sent=False,
                     reason=f"HTTP {status}",
                 )
-    except Exception as e:
+    except (OSError, ConnectionError) as e:
         logger.warning("Failed to send Slack alert: %s", e)
         return AlertResult(
             channel=channel or "default",
@@ -215,7 +215,7 @@ def _save_drift_log(
                 result.drifted_count,
                 alerted,
             )
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.warning("Failed to persist drift log to database: %s", e)
 
 
@@ -435,7 +435,7 @@ class DriftDetector:
                     dry_run=self.config.slack_webhook_url
                     is None,  # dry-run if no Slack configured
                 )
-            except Exception as e:
+            except (OSError, ValueError) as e:
                 logger.warning("Retrain trigger failed (non-fatal): %s", e)
 
         return result

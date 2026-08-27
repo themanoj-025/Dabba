@@ -153,6 +153,6 @@ def maybe_trigger_retraining(
         )
         return True
 
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.error("Failed to spawn retrain subprocess: %s", e)
         return False

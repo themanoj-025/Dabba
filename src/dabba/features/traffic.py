@@ -152,7 +152,7 @@ def _tomtom_traffic(
             speed_ratio=round(speed_ratio, 2),
             source="tomtom",
         )
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError) as e:
         logger.warning("TomTom traffic request failed: %s", e)
         return None
 
@@ -197,7 +197,7 @@ def _mappls_traffic(
             speed_ratio=1.0 - (level * 0.25),
             source="mappls",
         )
-    except Exception as e:
+    except (requests.RequestException, ValueError, KeyError) as e:
         logger.warning("Mappls traffic request failed: %s", e)
         return None
 

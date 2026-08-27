@@ -265,7 +265,7 @@ def full_import(config: DabbaConfig | None = None) -> None:
         logger.info("Saved processed delivery data to %s", del_path)
     except FileNotFoundError:
         logger.warning("Delivery CSV not found — skipping delivery import")
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.warning("Delivery import failed: %s", e)
 
     logger.info("=== Full Import Complete ===")
