@@ -82,7 +82,7 @@ class HybridRecommender:
                     "Collaborative scores computed for %d restaurants",
                     len(self.collaborative_scores),
                 )
-            except Exception as e:
+            except (ValueError, OSError) as e:
                 logger.warning("Failed to compute collaborative scores: %s", e)
 
         logger.info("HybridRecommender initialized with %d restaurants", len(self.df))

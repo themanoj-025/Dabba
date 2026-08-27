@@ -39,7 +39,7 @@ def load_zomato(
     if use_db:
         try:
             return load_zomato_from_db(config)
-        except Exception as e:
+        except (OSError, ValueError) as e:
             logger.warning(
                 "DB load failed for Zomato data (%s) — falling back to CSV", e
             )
@@ -138,7 +138,7 @@ def load_delivery(
     if use_db:
         try:
             return load_delivery_from_db(config)
-        except Exception as e:
+        except (OSError, ValueError) as e:
             logger.warning(
                 "DB load failed for delivery data (%s) — falling back to CSV", e
             )

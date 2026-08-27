@@ -149,7 +149,7 @@ class ConciergeTools:
                 "is_at_risk": prediction > sla_threshold,
                 "note": "estimated from restaurant data",
             }
-        except Exception as e:
+        except (ValueError, OSError) as e:
             logger.warning(
                 "ETA model prediction failed for '%s': %s — falling back to formula",
                 restaurant_name,
@@ -261,7 +261,7 @@ def _get_llm_client(config: DabbaConfig) -> Any:
 
         _anthropic_client = anthropic.Anthropic(api_key=config.anthropic_api_key)
         return _anthropic_client
-    except Exception as e:
+    except (ImportError, OSError) as e:
         logger.warning("Failed to init Anthropic for concierge: %s", e)
         return None
 
@@ -380,7 +380,7 @@ def _llm_concierge_response(
                 messages=anthropic_messages,
                 tools=TOOL_DEFINITIONS,
             )
-        except Exception as e:
+        except (OSError, ValueError) as e:
             logger.warning("LLM call failed at ReAct step %d: %s", step, e)
             break
 

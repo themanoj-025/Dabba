@@ -36,7 +36,7 @@ def _get_anthropic_client(config: DabbaConfig) -> Any:
         _anthropic_client = anthropic.Anthropic(api_key=config.anthropic_api_key)
         logger.info("Anthropic client initialized")
         return _anthropic_client
-    except Exception as e:
+    except (ImportError, OSError) as e:
         logger.warning("Failed to initialize Anthropic client: %s", e)
         return None
 
@@ -82,7 +82,7 @@ def _llm_narrate(
         text = response.content[0].text.strip()
         logger.info("LLM narration generated for %s", restaurant.get("name"))
         return text
-    except Exception as e:
+    except (OSError, ValueError) as e:
         logger.warning("LLM narration failed for %s: %s", restaurant.get("name"), e)
         return None
 
