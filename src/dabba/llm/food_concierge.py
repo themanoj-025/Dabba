@@ -318,6 +318,8 @@ def _llm_concierge_response(
 ) -> str | None:
     """Generate a concierge response using Anthropic Claude with a ReAct tool loop.
 
+    Uses circuit breaker to prevent cascading LLM failures.
+
     The ReAct loop works as follows:
 
         1. Send the accumulated conversation (including any tool results
@@ -342,8 +344,15 @@ def _llm_concierge_response(
         The final response text, or ``None`` if the LLM call completely
         failed (triggers fallback in caller).
     """
+    from dabba.llm.circuit_breaker import llm_breaker
+
     client = _get_llm_client(config)
     if client is None:
+        return None
+
+    # Check circuit breaker before making LLM call
+    if llm_breaker.is_open():
+        logger.warning("LLM circuit breaker open — skipping concierge response")
         return None
 
     system_prompt = (
@@ -381,6 +390,7 @@ def _llm_concierge_response(
                 tools=TOOL_DEFINITIONS,
             )
         except (OSError, ValueError) as e:
+            llm_breaker.record_failure()
             logger.warning("LLM call failed at ReAct step %d: %s", step, e)
             break
 
@@ -460,6 +470,7 @@ def _llm_concierge_response(
     if not final_text_parts:
         return None
 
+    llm_breaker.record_success()
     return "\n".join(final_text_parts).strip()
 
 

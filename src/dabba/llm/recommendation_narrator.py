@@ -52,8 +52,15 @@ def _llm_narrate(
     config: DabbaConfig,
 ) -> str | None:
     """Generate a natural-language recommendation explanation via Claude."""
+    from dabba.llm.circuit_breaker import llm_breaker
+
     client = _get_anthropic_client(config)
     if client is None:
+        return None
+
+    # Check circuit breaker
+    if llm_breaker.is_open():
+        logger.warning("LLM circuit breaker open — skipping narration for %s", restaurant.get("name"))
         return None
 
     prompt = (
@@ -80,9 +87,11 @@ def _llm_narrate(
             messages=[{"role": "user", "content": prompt}],
         )
         text = response.content[0].text.strip()
+        llm_breaker.record_success()
         logger.info("LLM narration generated for %s", restaurant.get("name"))
         return text
     except (OSError, ValueError) as e:
+        llm_breaker.record_failure()
         logger.warning("LLM narration failed for %s: %s", restaurant.get("name"), e)
         return None
 
