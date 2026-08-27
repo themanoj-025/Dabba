@@ -246,5 +246,5 @@ def _show_ab_scenarios(path: Path) -> None:
                 f"Balanced↔Speed: {meta.get('balanced_vs_speed_overlap', '?')} | "
                 f"Quality↔Speed: {meta.get('quality_vs_speed_overlap', '?')}"
             )
-    except Exception as e:
+    except (ValueError, KeyError) as e:
         st.warning(f"Could not load A/B scenarios: {e}")

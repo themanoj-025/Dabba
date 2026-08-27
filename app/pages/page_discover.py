@@ -226,6 +226,6 @@ def _load_data() -> pd.DataFrame | None:
 
         with get_db() as db:
             return get_all_restaurants_as_df(db, with_cuisine_features=True)
-    except Exception as e:
+    except (ValueError, KeyError) as e:
         st.warning(f"Could not load restaurant data from database: {e}")
         return None

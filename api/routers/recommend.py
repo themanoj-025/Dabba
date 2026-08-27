@@ -44,7 +44,7 @@ def _load_hybrid_recommender() -> HybridRecommender | None:
     try:
         with get_db() as db:
             df = get_all_restaurants_as_df(db, with_cuisine_features=True)
-    except Exception as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Failed to load restaurant data from DB: %s", e)
         return None
 

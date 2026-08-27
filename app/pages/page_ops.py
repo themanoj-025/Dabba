@@ -47,7 +47,7 @@ def _load_eta_model_cached():
             model = joblib.load(model_path)
             st.caption(f"✅ Using trained model: {model_path.name}")
             return model
-        except Exception as e:
+        except (ValueError, KeyError) as e:
             st.caption(f"⚠️ Model load failed ({e}), using formula fallback")
             return None
     return None
