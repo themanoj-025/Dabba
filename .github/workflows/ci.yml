@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
-          cache: pip
         with:
+          cache: pip
           python-version: '3.12'
       - name: Install ruff
         run: pip install ruff
@@ -36,8 +36,8 @@ jobs:
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v7
-          cache: pip
         with:
+          cache: pip
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
@@ -102,8 +102,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
-          cache: pip
         with:
+          cache: pip
           python-version: "3.11"
       - name: Install dependencies
         run: |
@@ -119,8 +119,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
-          cache: pip
         with:
+          cache: pip
           python-version: "3.11"
       - name: Install dependencies
         run: |
@@ -135,8 +135,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
-          cache: pip
         with:
+          cache: pip
           python-version: '3.12'
       - name: Install bandit
         run: pip install bandit
