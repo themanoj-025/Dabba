@@ -51,7 +51,7 @@ def _load_concierge_tools(
     try:
         with get_db() as db:
             df = get_all_restaurants_as_df(db, with_cuisine_features=False)
-    except Exception as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Failed to load restaurant data from DB: %s", e)
         df = pd.DataFrame()
 

@@ -183,7 +183,7 @@ async def startup() -> None:
     try:
         init_database()
         logger.info("Database initialized")
-    except Exception as e:
+    except (RuntimeError, ValueError) as e:
         logger.warning("Database init failed (non-fatal): %s", e)
 
     # Load each model and store in app.state
