@@ -26,6 +26,7 @@ import random
 
 from dabba.config import DabbaConfig, get_config
 from circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,13 @@ def _tomtom_traffic(
         logger.debug("TomTom circuit breaker open — falling back to simulation")
         return None
 
-    try:
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=0.5, min=0.5, max=2.0),
+        retry=retry_if_exception_type((requests.RequestException, ValueError)),
+        reraise=True,
+    )
+    def _fetch_tomtom() -> TrafficInfo:
         import requests
 
         url = (
@@ -138,7 +145,6 @@ def _tomtom_traffic(
         )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
-        _tomtom_breaker.record_success()
         data = resp.json()
 
         flow = data.get("flowSegmentData", {})
@@ -162,11 +168,16 @@ def _tomtom_traffic(
             speed_ratio=round(speed_ratio, 2),
             source="tomtom",
         )
+
+    try:
+        result = _fetch_tomtom()
+        _tomtom_breaker.record_success()
+        return result
     except CircuitBreakerOpenError:
         return None
     except (requests.RequestException, ValueError, KeyError) as e:
         _tomtom_breaker.record_failure()
-        logger.warning("TomTom traffic request failed: %s", e)
+        logger.warning("TomTom traffic request failed (after retries): %s", e)
         return None
 
 
@@ -189,7 +200,13 @@ def _mappls_traffic(
         logger.debug("Mappls circuit breaker open — falling back to simulation")
         return None
 
-    try:
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=0.5, min=0.5, max=2.0),
+        retry=retry_if_exception_type((requests.RequestException, ValueError)),
+        reraise=True,
+    )
+    def _fetch_mappls() -> TrafficInfo:
         import requests
 
         url = (
@@ -198,7 +215,6 @@ def _mappls_traffic(
         )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
-        _mappls_breaker.record_success()
         data = resp.json()
 
         # Parse Mappls response format
@@ -215,11 +231,16 @@ def _mappls_traffic(
             speed_ratio=1.0 - (level * 0.25),
             source="mappls",
         )
+
+    try:
+        result = _fetch_mappls()
+        _mappls_breaker.record_success()
+        return result
     except CircuitBreakerOpenError:
         return None
     except (requests.RequestException, ValueError, KeyError) as e:
         _mappls_breaker.record_failure()
-        logger.warning("Mappls traffic request failed: %s", e)
+        logger.warning("Mappls traffic request failed (after retries): %s", e)
         return None
 
 
