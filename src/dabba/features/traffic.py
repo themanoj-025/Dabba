@@ -25,8 +25,13 @@ import logging
 import random
 
 from dabba.config import DabbaConfig, get_config
+from circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
 
 logger = logging.getLogger(__name__)
+
+# Circuit breakers for external traffic APIs (open after 5 failures, recover after 60s)
+_tomtom_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60.0, name="tomtom")
+_mappls_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60.0, name="mappls")
 
 
 # ─── Data types ──────────────────────────────────────────────────────
@@ -119,6 +124,10 @@ def _tomtom_traffic(
     Returns:
         TrafficInfo or None if the request fails.
     """
+    if _tomtom_breaker.is_open():
+        logger.debug("TomTom circuit breaker open — falling back to simulation")
+        return None
+
     try:
         import requests
 
@@ -129,6 +138,7 @@ def _tomtom_traffic(
         )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
+        _tomtom_breaker.record_success()
         data = resp.json()
 
         flow = data.get("flowSegmentData", {})
@@ -152,7 +162,10 @@ def _tomtom_traffic(
             speed_ratio=round(speed_ratio, 2),
             source="tomtom",
         )
+    except CircuitBreakerOpenError:
+        return None
     except (requests.RequestException, ValueError, KeyError) as e:
+        _tomtom_breaker.record_failure()
         logger.warning("TomTom traffic request failed: %s", e)
         return None
 
@@ -172,6 +185,10 @@ def _mappls_traffic(
     Returns:
         TrafficInfo or None.
     """
+    if _mappls_breaker.is_open():
+        logger.debug("Mappls circuit breaker open — falling back to simulation")
+        return None
+
     try:
         import requests
 
@@ -181,6 +198,7 @@ def _mappls_traffic(
         )
         resp = requests.get(url, timeout=5)
         resp.raise_for_status()
+        _mappls_breaker.record_success()
         data = resp.json()
 
         # Parse Mappls response format
@@ -197,7 +215,10 @@ def _mappls_traffic(
             speed_ratio=1.0 - (level * 0.25),
             source="mappls",
         )
+    except CircuitBreakerOpenError:
+        return None
     except (requests.RequestException, ValueError, KeyError) as e:
+        _mappls_breaker.record_failure()
         logger.warning("Mappls traffic request failed: %s", e)
         return None
 
