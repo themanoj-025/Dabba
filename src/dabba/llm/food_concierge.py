@@ -58,7 +58,7 @@ class ConciergeTools:
         restaurants_df: pd.DataFrame,
         eta_model: Any = None,
         config: DabbaConfig | None = None,
-    ):
+    ) -> Any:
         self.df = restaurants_df
         self.eta_model = eta_model
         self.config = config or get_config()

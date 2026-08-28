@@ -78,7 +78,7 @@ def get_recommender(request: Request) -> HybridRecommender | None:
         .. code-block:: python
 
             @router.post(...)
-            async def recommend(body: Request, recommender = Depends(get_recommender)):
+            async def recommend(body: Request, recommender = Depends(get_recommender)) -> Any:
                 ...
 
     Returns:

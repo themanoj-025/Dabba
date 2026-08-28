@@ -156,7 +156,7 @@ def show() -> None:
         st.session_state[name_key] = None
         st.session_state[filter_key] = current_hash
 
-    def _on_find_similar(restaurant_name: str):
+    def _on_find_similar(restaurant_name: str) -> Any:
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
         if not matches.empty:
             idx = df.index.get_loc(matches.index[0])

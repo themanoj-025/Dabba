@@ -17,7 +17,7 @@ Usage (FastAPI):
         @app.get("/v1/restaurants")
         def list_restaurants(
             db: Session = Depends(get_db_generator),
-        ):
+        ) -> Any:
             return get_all_restaurants(db, limit=20)
 """
 

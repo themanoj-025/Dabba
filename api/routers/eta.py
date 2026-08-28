@@ -53,7 +53,7 @@ def get_eta_model(request: Request) -> object | None:
         .. code-block:: python
 
             @router.post(...)
-            async def predict(body: ETARequest, model = Depends(get_eta_model)):
+            async def predict(body: ETARequest, model = Depends(get_eta_model)) -> Any:
                 ...
 
     Returns:

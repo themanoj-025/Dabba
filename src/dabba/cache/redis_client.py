@@ -35,7 +35,7 @@ class CacheClient:
         config: Project configuration (for Redis URL).
     """
 
-    def __init__(self, config: DabbaConfig | None = None):
+    def __init__(self, config: DabbaConfig | None = None) -> Any:
         self.config = config or get_config()
         self._client: Any = None
         self._fakeredis: Any = None

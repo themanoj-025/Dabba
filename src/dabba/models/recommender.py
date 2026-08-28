@@ -66,7 +66,7 @@ class RestaurantRecommender:
         df: pd.DataFrame,
         feature_cols: list[str],
         config: DabbaConfig | None = None,
-    ):
+    ) -> Any:
         """Initialize the recommender.
 
         Args:

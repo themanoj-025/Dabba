@@ -78,7 +78,7 @@ def show() -> None:
         """)
 
 
-def _load_experiment_results(task: str):
+def _load_experiment_results(task: str) -> Any:
     """Load experiment results from the database.
 
     Args:

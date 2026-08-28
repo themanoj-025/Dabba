@@ -164,7 +164,7 @@ def _get_pytorch_nn(input_dim: int) -> Any:
         import torch.nn as nn
 
         class TabularNN(nn.Module):
-            def __init__(self, dim: int):
+            def __init__(self, dim: int) -> Any:
                 super().__init__()
                 self.net = nn.Sequential(
                     nn.Linear(dim, 64),

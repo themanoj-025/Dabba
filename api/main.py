@@ -110,7 +110,7 @@ app.add_middleware(
 
 # ─── Observability middleware (request ID + Prometheus) ───────────────
 @app.middleware("http")
-async def observability_middleware(request: Request, call_next):
+async def observability_middleware(request: Request, call_next) -> Any:
     request_id = generate_request_id()
     set_request_id(request_id)
     start_time = time.time()
@@ -136,7 +136,7 @@ async def observability_middleware(request: Request, call_next):
 
 # ─── Security Headers ────────────────────────────────────────────────
 @app.middleware("http")
-async def add_security_headers(request, call_next):
+async def add_security_headers(request, call_next) -> Any:
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"

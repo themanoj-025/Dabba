@@ -238,7 +238,7 @@ class DriftDetector:
         self,
         reference_data: pd.DataFrame,
         config: DabbaConfig | None = None,
-    ):
+    ) -> Any:
         self.config = config or get_config()
         self.reference_stats: dict[str, dict] = {}
         # Per-feature cooldown tracking: {feature_name: last_alert_timestamp}
