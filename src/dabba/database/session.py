@@ -18,7 +18,7 @@ Usage (FastAPI):
         from src.dabba.database.session import get_db
 
         @app.get("/restaurants")
-        def list_restaurants(db: Session = Depends(get_db)):
+        def list_restaurants(db: Session = Depends(get_db)) -> Any:
             return db.query(Restaurant).all()
 """
 
@@ -75,7 +75,7 @@ def _get_engine(config: DabbaConfig | None = None) -> None:
     if url.startswith("sqlite"):
 
         @event.listens_for(_engine, "connect")
-        def _set_sqlite_pragma(dbapi_connection, _connection_record):
+        def _set_sqlite_pragma(dbapi_connection, _connection_record) -> Any:
             cursor = dbapi_connection.cursor()
             cursor.execute("PRAGMA journal_mode=WAL")
             cursor.execute("PRAGMA foreign_keys=ON")
@@ -149,7 +149,7 @@ def get_db_generator() -> Generator[Session, None, None]:
 
             from fastapi import Depends
             @app.get("/items")
-            def list_items(db: Session = Depends(get_db_generator)):
+            def list_items(db: Session = Depends(get_db_generator)) -> Any:
                 ...
     """
     session_maker = _get_sessionmaker()

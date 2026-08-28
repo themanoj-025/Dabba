@@ -40,7 +40,7 @@ class HybridRecommender:
         content_feature_cols: list[str],
         collaborative_model: MatrixFactorization | None = None,
         config: DabbaConfig | None = None,
-    ):
+    ) -> Any:
         self.config = config or get_config()
         self.df = restaurants_df.copy()
         self.content_feature_cols = content_feature_cols

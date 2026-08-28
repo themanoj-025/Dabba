@@ -75,7 +75,7 @@ def get_tools(request: Request) -> ConciergeTools | None:
         .. code-block:: python
 
             @router.post(...)
-            async def chat(body: ChatRequest, tools = Depends(get_tools)):
+            async def chat(body: ChatRequest, tools = Depends(get_tools)) -> Any:
                 ...
 
     Returns:

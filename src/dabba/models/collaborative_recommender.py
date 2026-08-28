@@ -165,7 +165,7 @@ class MatrixFactorization(nn.Module):
     rating predictions as the dot product of user and item embeddings.
     """
 
-    def __init__(self, n_users: int, n_items: int, n_factors: int = 50):
+    def __init__(self, n_users: int, n_items: int, n_factors: int = 50) -> Any:
         super().__init__()
         self.user_embeddings = nn.Embedding(n_users, n_factors)
         self.item_embeddings = nn.Embedding(n_items, n_factors)
@@ -192,7 +192,7 @@ class MatrixFactorization(nn.Module):
 class InteractionDataset(Dataset):
     """PyTorch Dataset for user-item interaction data."""
 
-    def __init__(self, interactions: pd.DataFrame):
+    def __init__(self, interactions: pd.DataFrame) -> Any:
         # Use user_idx/item_idx (mapped to contiguous 0..N-1), not raw IDs
         self.user_ids = torch.LongTensor(interactions["user_idx"].values)
         self.item_ids = torch.LongTensor(interactions["item_idx"].values)

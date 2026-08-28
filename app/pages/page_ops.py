@@ -39,7 +39,7 @@ def _get_next_order_id() -> int:
 
 
 @st.cache_resource
-def _load_eta_model_cached():
+def _load_eta_model_cached() -> Any:
     """Load the winning ETA model (cached by Streamlit, not module-level global)."""
     model_path = config.best_eta_model_path
     if model_path.exists():
