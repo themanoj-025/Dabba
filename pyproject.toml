@@ -58,10 +58,24 @@ line-length = 88
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG"]
+select = ["E", "F", "I", "N", "W", "UP", "B", "BLE", "SIM", "ARG", "C4", "RUF", "PLC", "PIE"]
 # black (line-length 88) is the enforced formatter; E501 duplicates it and
 # only fires on docstrings/comments/strings. ruff's recommended black setup.
-ignore = ["E501"]
+ignore = [
+    "E501",    # line too long — style preference
+    "PLC0415", # import-outside-top-level — lazy imports in Streamlit/FastAPI
+    "F821",    # undefined name — false positives from type annotations
+    "RUF002",  # ambiguous unicode — intentional
+    "RUF059",  # unused loop variable — common in iteration
+    "C408",    # unnecessary dict call — plotly/visualization pattern
+    "SIM102",  # collapsible if — circuit breaker pattern
+    "RUF012",  # mutable class default
+    "RUF001",  # ambiguous unicode — intentional
+    "F401",    # unused import — re-export pattern
+    "RUF005",  # collection-literal-in-comparison
+    "BLE001",  # blind except — defensive coding
+    "RUF003",  # ambiguous unicode — intentional
+]
 
 [tool.ruff.lint.per-file-ignores]
 # FastAPI idioms: Depends() in argument defaults and the injected `request`

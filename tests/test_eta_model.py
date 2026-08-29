@@ -4,11 +4,9 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
 from sklearn.linear_model import LinearRegression, Ridge
 
 from dabba.models.eta_model import ETAModelResult, train_and_evaluate_eta_models
-
 
 # Lightweight model dict for fast unit tests (avoids training 10+ heavy models)
 _LIGHTWEIGHT_MODELS = {

@@ -13,12 +13,12 @@ import logging
 from pathlib import Path
 
 import streamlit as st
-
-from dabba.config import get_config
 from pages import page_concierge as concierge
 from pages import page_discover as discover
 from pages import page_model_performance as model_perf
 from pages import page_ops as ops
+
+from dabba.config import get_config
 
 logger = logging.getLogger(__name__)
 

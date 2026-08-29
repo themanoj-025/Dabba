@@ -24,9 +24,15 @@ import datetime
 import logging
 import random
 
-from dabba.config import DabbaConfig, get_config
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
 from circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)
 

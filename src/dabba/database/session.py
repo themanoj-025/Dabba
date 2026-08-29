@@ -134,7 +134,7 @@ def get_db() -> Iterator[Session]:
     try:
         yield db
         db.commit()
-    except (SQLAlchemyError, OSError) as exc:
+    except (SQLAlchemyError, OSError):
         db.rollback()
         raise
     finally:
@@ -157,7 +157,7 @@ def get_db_generator() -> Generator[Session, None, None]:
     try:
         yield db
         db.commit()
-    except (SQLAlchemyError, OSError) as exc:
+    except (SQLAlchemyError, OSError):
         db.rollback()
         raise
     finally:
