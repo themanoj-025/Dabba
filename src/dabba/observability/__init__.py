@@ -174,7 +174,7 @@ except ImportError:
     PROMETHEUS_AVAILABLE = False
 
     # Stub classes for when prometheus_client is not installed
-    class Counter:  # noqa: F811 — fallback stub when prometheus_client is absent
+    class Counter:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
@@ -184,7 +184,7 @@ except ImportError:
         def inc(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    class Histogram:  # noqa: F811 — fallback stub when prometheus_client is absent
+    class Histogram:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
@@ -194,7 +194,7 @@ except ImportError:
         def observe(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    class Gauge:  # noqa: F811 — fallback stub when prometheus_client is absent
+    class Gauge:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
