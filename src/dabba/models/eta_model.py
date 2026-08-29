@@ -55,12 +55,12 @@ ETAModelResult = ModelResult
 __all__ = [
     "ETAModelResult",
     "ModelResult",
+    "_get_pytorch_nn",
+    "fit_best_eta_model",
     "get_eta_models",
     "get_tuned_eta_models",
-    "train_and_evaluate_eta_models",
-    "fit_best_eta_model",
     "save_eta_model",
-    "_get_pytorch_nn",
+    "train_and_evaluate_eta_models",
 ]
 
 

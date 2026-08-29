@@ -50,11 +50,11 @@ logger = logging.getLogger(__name__)
 # Re-export for backward compatibility
 __all__ = [
     "ModelResult",
+    "fit_best_rating_model",
     "get_rating_models",
     "get_tuned_rating_models",
-    "train_and_evaluate_rating_models",
-    "fit_best_rating_model",
     "save_model",
+    "train_and_evaluate_rating_models",
 ]
 
 

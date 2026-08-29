@@ -521,7 +521,7 @@ def _match_intent(user_input: str) -> tuple[str, dict[str, str]]:
                 params["query"] = groups[0].strip()
                 if groups[1]:
                     params["area"] = groups[1].strip()
-            elif intent == "eta" and groups[0] or intent == "reliability" and groups[0]:
+            elif (intent == "eta" and groups[0]) or (intent == "reliability" and groups[0]):
                 params["restaurant"] = groups[0].strip()
             elif intent == "budget_search":
                 budget_match = re.search(r"under\s+₹?(\d+)", text)

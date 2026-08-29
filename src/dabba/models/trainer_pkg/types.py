@@ -64,19 +64,14 @@ HPO Search Spaces (default ranges, all tunable via :func:`get_model_search_space
 from __future__ import annotations
 
 import logging
-import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Any
 
-import joblib
 import numpy as np
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import KFold, cross_val_predict
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from dabba.config import DabbaConfig, get_config
 
