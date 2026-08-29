@@ -62,7 +62,7 @@ jobs:
             --ignore=tests/test_optuna_tuning.py \
             --ignore=tests/test_hinglish_sentiment.py \
             -k "not optuna and not train and not full_import" \
-            --cov=src/dabba --cov-report=xml
+            --cov=src/dabba --cov-report=xml --cov-fail-under=65
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
