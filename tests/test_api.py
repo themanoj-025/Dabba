@@ -11,6 +11,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+
+pytestmark = pytest.mark.slow
 @pytest.fixture
 def client():
     """Create a test client for the FastAPI app.
@@ -271,6 +273,7 @@ def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
     the database via repository functions, not from CSV files.
     """
     import ast
+
 
     root = Path(__file__).resolve().parent.parent
     file_path = root / rel_path

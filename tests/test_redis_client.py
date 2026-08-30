@@ -2,9 +2,12 @@
 
 import pytest
 
+
+pytestmark = pytest.mark.slow
 pytest.importorskip("fakeredis", reason="fakeredis required for cache tests")
 
 from dabba.cache.redis_client import CacheClient, get_cache
+
 
 
 class TestCacheClientInit:
