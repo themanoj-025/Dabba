@@ -66,17 +66,6 @@ app = FastAPI(
         {
             "name": "recommend",
             "description": "Hybrid restaurant recommendations (collaborative + content-based filtering)",
-
-# --- OpenTelemetry distributed tracing (OTEL_ENABLED=true) ---
-try:
-    from dabba.tracing import setup_tracing
-    _otel_ok = setup_tracing("dabba-api")
-    if _otel_ok:
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-        FastAPIInstrumentor.instrument_app(app)
-except ImportError:
-    pass
-
         },
         {
             "name": "eta",
@@ -100,6 +89,16 @@ except ImportError:
         },
     ],
 )
+
+# --- OpenTelemetry distributed tracing (OTEL_ENABLED=true) ---
+try:
+    from dabba.tracing import setup_tracing
+    _otel_ok = setup_tracing("dabba-api")
+    if _otel_ok:
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
 
 # ─── Rate limiter ─────────────────────────────────────────────────────
 app.state.limiter = limiter
