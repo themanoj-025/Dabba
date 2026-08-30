@@ -63,7 +63,7 @@ def _make_memory_config():
 class TestLoadZomatoFromDb:
     """Tests for load_zomato_from_db()."""
 
-    def test_loads_from_seeded_db(self):
+    def test_loads_from_seeded_db(self) -> None:
         """Should return a DataFrame when restaurants exist in DB."""
         from dabba.data.loaders import load_zomato_from_db
 
@@ -87,7 +87,7 @@ class TestLoadZomatoFromDb:
         assert "name" in result.columns
         assert "rate" in result.columns
 
-    def test_raises_when_empty(self):
+    def test_raises_when_empty(self) -> None:
         """Should raise ValueError when no restaurants in DB."""
         from dabba.data.loaders import load_zomato_from_db
 
@@ -99,7 +99,7 @@ class TestLoadZomatoFromDb:
 class TestLoadDeliveryFromDb:
     """Tests for load_delivery_from_db()."""
 
-    def test_loads_from_seeded_db(self):
+    def test_loads_from_seeded_db(self) -> None:
         """Should return a DataFrame when orders exist in DB."""
         from dabba.data.loaders import load_delivery_from_db
 
@@ -123,7 +123,7 @@ class TestLoadDeliveryFromDb:
         assert "haversine_distance_km" in result.columns
         assert "time_taken_min" in result.columns
 
-    def test_raises_when_empty(self):
+    def test_raises_when_empty(self) -> None:
         """Should raise ValueError when no orders in DB."""
         from dabba.data.loaders import load_delivery_from_db
 
@@ -135,7 +135,7 @@ class TestLoadDeliveryFromDb:
 class TestLoadWithUseDbFlag:
     """Tests for the use_db parameter on load_zomato/load_delivery."""
 
-    def test_use_db_false_ignores_db(self):
+    def test_use_db_false_ignores_db(self) -> None:
         """use_db=False should always load from CSV (not DB)."""
         from dabba.config import DabbaConfig
         from dabba.data.loaders import load_zomato
@@ -150,7 +150,7 @@ class TestLoadWithUseDbFlag:
         with pytest.raises(FileNotFoundError):
             load_zomato(config, use_db=False)
 
-    def test_use_db_true_falls_back_to_csv(self):
+    def test_use_db_true_falls_back_to_csv(self) -> None:
         """use_db=True should fall back to CSV when DB is empty."""
         # This test requires the CSV to exist; if not, it should raise
         # FileNotFoundError after the DB fallback fails.
@@ -179,7 +179,7 @@ class TestRestaurantsEndpoint:
     the same engine as the seed functions.
     """
 
-    def test_list_restaurants_structure(self, client, api_key):
+    def test_list_restaurants_structure(self, client, api_key) -> None:
         """Should return valid JSON with expected keys."""
         response = client.get(
             "/v1/restaurants",
@@ -195,7 +195,7 @@ class TestRestaurantsEndpoint:
             assert "limit" in data
             assert "offset" in data
 
-    def test_get_restaurant_not_found(self, client, api_key):
+    def test_get_restaurant_not_found(self, client, api_key) -> None:
         """Should return 404 for non-existent restaurant ID."""
         response = client.get(
             "/v1/restaurants/999999",
@@ -203,7 +203,7 @@ class TestRestaurantsEndpoint:
         )
         assert response.status_code in [404, 503]
 
-    def test_search_restaurants_structure(self, client, api_key):
+    def test_search_restaurants_structure(self, client, api_key) -> None:
         """Should return valid search response structure."""
         response = client.get(
             "/v1/restaurants/search/Indian",
@@ -221,7 +221,7 @@ class TestRestaurantsEndpoint:
 class TestFullImport:
     """Tests for the full_import() function."""
 
-    def test_full_import_handles_missing_csv(self):
+    def test_full_import_handles_missing_csv(self) -> None:
         """Should exit gracefully when raw CSVs are not available."""
         from dabba.config import DabbaConfig
         from dabba.database.seed import full_import
@@ -234,7 +234,7 @@ class TestFullImport:
         # Should return without crashing (logs error, returns early)
         full_import(config)
 
-    def test_full_import_runs_when_csv_exists(self):
+    def test_full_import_runs_when_csv_exists(self) -> None:
         """Should complete when raw CSVs are available."""
         from dabba.config import get_config
         from dabba.database.seed import full_import

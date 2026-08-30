@@ -23,7 +23,7 @@ def reference_data():
 class TestDriftDetector:
     """Tests for the DriftDetector class."""
 
-    def test_fit_extracts_stats(self, reference_data):
+    def test_fit_extracts_stats(self, reference_data) -> None:
         """fit() should extract reference statistics."""
         detector = DriftDetector(reference_data)
         assert len(detector.reference_stats) == 3
@@ -32,7 +32,7 @@ class TestDriftDetector:
             assert "mean" in detector.reference_stats[col]
             assert "std" in detector.reference_stats[col]
 
-    def test_no_drift_on_same_distribution(self, reference_data):
+    def test_no_drift_on_same_distribution(self, reference_data) -> None:
         """Same distribution should not trigger drift."""
         detector = DriftDetector(reference_data)
         batch = reference_data.sample(100, random_state=42).reset_index(drop=True)
@@ -40,7 +40,7 @@ class TestDriftDetector:
         assert result.has_drift is False
         assert result.drifted_count == 0
 
-    def test_drift_on_shifted_distribution(self, reference_data):
+    def test_drift_on_shifted_distribution(self, reference_data) -> None:
         """Shifted distribution should trigger drift."""
         detector = DriftDetector(reference_data)
         rng = np.random.RandomState(42)
@@ -55,7 +55,7 @@ class TestDriftDetector:
         # At least one feature should drift
         assert result.drifted_count > 0
 
-    def test_drift_generates_message(self, reference_data):
+    def test_drift_generates_message(self, reference_data) -> None:
         """Drift result should include a human-readable message."""
         detector = DriftDetector(reference_data)
         rng = np.random.RandomState(42)
@@ -70,7 +70,7 @@ class TestDriftDetector:
         assert len(result.message) > 0
         assert result.has_drift == (result.drifted_count > 0)
 
-    def test_generate_drift_batch(self, reference_data):
+    def test_generate_drift_batch(self, reference_data) -> None:
         """generate_drift_batch should produce shifted data."""
         detector = DriftDetector(reference_data)
         batch = detector.generate_drift_batch(n_samples=50, shift_scale=3.0)
@@ -78,7 +78,7 @@ class TestDriftDetector:
         result = detector.detect(batch)
         assert result.has_drift
 
-    def test_empty_batch_does_not_crash(self, reference_data):
+    def test_empty_batch_does_not_crash(self, reference_data) -> None:
         """Empty batch should not crash."""
         detector = DriftDetector(reference_data)
         empty = pd.DataFrame()
@@ -86,7 +86,7 @@ class TestDriftDetector:
         assert result.total_features == 0
         assert result.has_drift is False
 
-    def test_partial_column_overlap(self, reference_data):
+    def test_partial_column_overlap(self, reference_data) -> None:
         """Batch with subset of reference columns should work."""
         detector = DriftDetector(reference_data)
         partial = reference_data[["feature_a"]].head(50)
@@ -97,7 +97,7 @@ class TestDriftDetector:
 class TestSlackAlertFunctions:
     """Tests for Slack alerting functions (no webhook needed)."""
 
-    def test_format_drift_message_with_drift(self):
+    def test_format_drift_message_with_drift(self) -> None:
         """Should format a message with drifted features."""
         from dabba.monitoring.drift import DriftResult, _format_drift_message
 
@@ -114,7 +114,7 @@ class TestSlackAlertFunctions:
         assert "feature_b" in msg
         assert "2/5" in msg
 
-    def test_format_drift_message_no_drift(self):
+    def test_format_drift_message_no_drift(self) -> None:
         """Should format a clean message when no drift."""
         from dabba.monitoring.drift import DriftResult, _format_drift_message
 
@@ -128,7 +128,7 @@ class TestSlackAlertFunctions:
         msg = _format_drift_message(result)
         assert "No drift detected" in msg
 
-    def test_send_slack_invalid_url(self):
+    def test_send_slack_invalid_url(self) -> None:
         """Should return not-sent when webhook URL is unreachable."""
         from dabba.monitoring.drift import _send_slack_alert
 
@@ -155,20 +155,20 @@ class TestDetectAndAlert:
         )
         return DriftDetector(ref)
 
-    def test_detect_and_alert_no_drift(self, detector):
+    def test_detect_and_alert_no_drift(self, detector) -> None:
         """Should return clean result when no drift."""
         batch = detector.generate_drift_batch(n_samples=50, shift_scale=0.0)
         result = detector.detect_and_alert(batch)
         assert result.has_drift is False
 
-    def test_detect_and_alert_with_drift(self, detector):
+    def test_detect_and_alert_with_drift(self, detector) -> None:
         """Should detect drift on shifted data."""
         batch = detector.generate_drift_batch(n_samples=50, shift_scale=3.0)
         result = detector.detect_and_alert(batch)
         # Should detect drift (but may not alert without Slack configured)
         assert result.drifted_count > 0 or result.has_drift is False
 
-    def test_cooldown_suppresses_duplicate(self, detector):
+    def test_cooldown_suppresses_duplicate(self, detector) -> None:
         """Same feature alerted twice should respect cooldown."""
 
         batch = detector.generate_drift_batch(n_samples=50, shift_scale=3.0)

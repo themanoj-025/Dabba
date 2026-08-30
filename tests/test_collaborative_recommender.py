@@ -35,7 +35,7 @@ def sample_restaurants():
 class TestSyntheticDataGenerator:
     """Tests for synthetic interaction data generation."""
 
-    def test_generates_dataframe(self, sample_restaurants):
+    def test_generates_dataframe(self, sample_restaurants) -> None:
         """Should generate a DataFrame with user_id, restaurant_id, rating."""
         df = generate_synthetic_interactions(sample_restaurants, n_users=50)
         assert isinstance(df, pd.DataFrame)
@@ -44,7 +44,7 @@ class TestSyntheticDataGenerator:
         assert "rating" in df.columns
         assert len(df) > 0
 
-    def test_ratings_in_range(self, sample_restaurants):
+    def test_ratings_in_range(self, sample_restaurants) -> None:
         """Ratings should be in [1, 5] range."""
         df = generate_synthetic_interactions(sample_restaurants, n_users=50)
         assert df["rating"].min() >= 1.0
@@ -54,7 +54,7 @@ class TestSyntheticDataGenerator:
 class TestMatrixFactorization:
     """Tests for PyTorch matrix factorization model."""
 
-    def test_forward_shape(self):
+    def test_forward_shape(self) -> None:
         """Forward pass should return correct shape."""
         model = MatrixFactorization(n_users=10, n_items=20, n_factors=8)
         user_ids = torch.LongTensor([0, 1, 2])
@@ -62,7 +62,7 @@ class TestMatrixFactorization:
         preds = model(user_ids, item_ids)
         assert preds.shape == (3,)
 
-    def test_training_loop(self):
+    def test_training_loop(self) -> None:
         """Training should reduce loss."""
         model = MatrixFactorization(n_users=10, n_items=20, n_factors=8)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -87,7 +87,7 @@ class TestMatrixFactorization:
 class TestInteractionDataset:
     """Tests for the PyTorch Dataset."""
 
-    def test_length(self):
+    def test_length(self) -> None:
         """Dataset length should match number of interactions."""
         df = pd.DataFrame(
             {
@@ -99,7 +99,7 @@ class TestInteractionDataset:
         dataset = InteractionDataset(df)
         assert len(dataset) == 3
 
-    def test_getitem(self):
+    def test_getitem(self) -> None:
         """Dataset should return user, item, rating tensors."""
         df = pd.DataFrame(
             {

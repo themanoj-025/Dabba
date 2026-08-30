@@ -15,13 +15,13 @@ from dabba.data.cleaning import (
 class TestCleanZomatoRating:
     """Tests for the Zomato rating parser."""
 
-    def test_valid_ratings(self):
+    def test_valid_ratings(self) -> None:
         """Standard 'X.X/5' format should parse correctly."""
         series = pd.Series(["4.1/5", "3.5/5", "5.0/5"])
         result = clean_zomato_rating(series)
         assert result.tolist() == [4.1, 3.5, 5.0]
 
-    def test_new_and_dash_sentinels(self):
+    def test_new_and_dash_sentinels(self) -> None:
         """Non-numeric sentinels should become NaN."""
         series = pd.Series(["NEW", "-", "4.1/5"])
         result = clean_zomato_rating(series)
@@ -29,13 +29,13 @@ class TestCleanZomatoRating:
         assert pd.isna(result.iloc[1])
         assert result.iloc[2] == 4.1
 
-    def test_null_input(self):
+    def test_null_input(self) -> None:
         """NaN input should remain NaN."""
         series = pd.Series([np.nan, None])
         result = clean_zomato_rating(series)
         assert result.isna().all()
 
-    def test_whitespace_handling(self):
+    def test_whitespace_handling(self) -> None:
         """Extra whitespace should be handled gracefully."""
         series = pd.Series(["  4.1 / 5  ", "3.5/5"])
         result = clean_zomato_rating(series)
@@ -46,20 +46,20 @@ class TestCleanZomatoRating:
 class TestCleanZomatoCost:
     """Tests for the Zomato cost parser."""
 
-    def test_comma_separated(self):
+    def test_comma_separated(self) -> None:
         """Cost with commas should parse correctly."""
         series = pd.Series(["1,200", "300", "5,500"])
         result = clean_zomato_cost(series)
         assert result.tolist() == [1200.0, 300.0, 5500.0]
 
-    def test_rupee_symbol(self):
+    def test_rupee_symbol(self) -> None:
         """Cost with ₹ symbol should parse correctly."""
         series = pd.Series(["₹400", "₹1,500"])
         result = clean_zomato_cost(series)
         assert result.iloc[0] == 400.0
         assert result.iloc[1] == 1500.0
 
-    def test_null_and_invalid(self):
+    def test_null_and_invalid(self) -> None:
         """Null and unparseable values should become NaN."""
         series = pd.Series([np.nan, "abc", ""])
         result = clean_zomato_cost(series)
@@ -69,7 +69,7 @@ class TestCleanZomatoCost:
 class TestCleanZomato:
     """Tests for the full Zomato cleaning pipeline."""
 
-    def test_removes_duplicates(self):
+    def test_removes_duplicates(self) -> None:
         """Duplicate rows should be removed."""
         df = pd.DataFrame(
             {
@@ -81,7 +81,7 @@ class TestCleanZomato:
         result = clean_zomato(df)
         assert len(result) == 2
 
-    def test_drops_missing_target(self):
+    def test_drops_missing_target(self) -> None:
         """Rows with missing rate should be dropped."""
         df = pd.DataFrame(
             {
@@ -93,7 +93,7 @@ class TestCleanZomato:
         result = clean_zomato(df)
         assert len(result) == 2
 
-    def test_snake_case_columns(self):
+    def test_snake_case_columns(self) -> None:
         """Column names should be normalized to snake_case."""
         df = pd.DataFrame(
             {
@@ -110,7 +110,7 @@ class TestCleanZomato:
 class TestCleanDelivery:
     """Tests for the delivery data cleaning pipeline."""
 
-    def test_parses_time_taken(self):
+    def test_parses_time_taken(self) -> None:
         """Time_taken column should be parsed to float."""
         df = pd.DataFrame(
             {
@@ -125,7 +125,7 @@ class TestCleanDelivery:
         assert "time_taken_min" in result.columns
         assert result["time_taken_min"].iloc[0] == 25.0
 
-    def test_removes_invalid_latlong(self):
+    def test_removes_invalid_latlong(self) -> None:
         """Rows with invalid lat/long should be removed."""
         df = pd.DataFrame(
             {
@@ -139,7 +139,7 @@ class TestCleanDelivery:
         result = clean_delivery(df)
         assert len(result) == 2
 
-    def test_removes_extreme_times(self):
+    def test_removes_extreme_times(self) -> None:
         """Delivery times > 120 min should be removed as outliers."""
         df = pd.DataFrame(
             {

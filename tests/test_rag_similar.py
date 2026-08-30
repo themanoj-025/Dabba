@@ -26,14 +26,14 @@ class TestBuildRestaurantEmbeddings:
             }
         )
 
-    def test_returns_numpy_array(self, sample_df):
+    def test_returns_numpy_array(self, sample_df) -> None:
         """Should return a numpy array."""
         embeddings = build_restaurant_embeddings(
             sample_df, ["rate", "cost_for_two", "votes_log"]
         )
         assert isinstance(embeddings, np.ndarray)
 
-    def test_shape_matches_rows_and_features(self, sample_df):
+    def test_shape_matches_rows_and_features(self, sample_df) -> None:
         """Shape should be (n_restaurants, n_features)."""
         n_features = 3
         embeddings = build_restaurant_embeddings(
@@ -41,7 +41,7 @@ class TestBuildRestaurantEmbeddings:
         )
         assert embeddings.shape == (len(sample_df), n_features)
 
-    def test_normalized_vectors(self, sample_df):
+    def test_normalized_vectors(self, sample_df) -> None:
         """L2 norm of each embedding should be approximately 1."""
         embeddings = build_restaurant_embeddings(
             sample_df, ["rate", "cost_for_two", "votes_log"]
@@ -49,19 +49,19 @@ class TestBuildRestaurantEmbeddings:
         norms = np.linalg.norm(embeddings, axis=1)
         assert np.allclose(norms, 1.0, atol=1e-5)
 
-    def test_empty_feature_cols(self, sample_df):
+    def test_empty_feature_cols(self, sample_df) -> None:
         """Empty feature columns should return a zero matrix."""
         embeddings = build_restaurant_embeddings(sample_df, [])
         assert embeddings.shape == (len(sample_df), 1)
 
-    def test_partial_feature_cols(self, sample_df):
+    def test_partial_feature_cols(self, sample_df) -> None:
         """Only existing columns should be used."""
         embeddings = build_restaurant_embeddings(
             sample_df, ["rate", "cost_for_two", "nonexistent_col"]
         )
         assert embeddings.shape == (len(sample_df), 2)
 
-    def test_deterministic(self, sample_df):
+    def test_deterministic(self, sample_df) -> None:
         """Same input should produce same embeddings."""
         e1 = build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
         e2 = build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
@@ -91,39 +91,39 @@ class TestFindSimilarRestaurants:
         """Build embeddings for the sample DataFrame."""
         return build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
 
-    def test_returns_dataframe(self, sample_df, embeddings):
+    def test_returns_dataframe(self, sample_df, embeddings) -> None:
         """Should return a DataFrame."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=3)
         assert isinstance(result, pd.DataFrame)
 
-    def test_returns_correct_number(self, sample_df, embeddings):
+    def test_returns_correct_number(self, sample_df, embeddings) -> None:
         """Should return top_k similar restaurants (excluding itself)."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=3)
         assert len(result) == 3
 
-    def test_does_not_include_self(self, sample_df, embeddings):
+    def test_does_not_include_self(self, sample_df, embeddings) -> None:
         """The query restaurant should not appear in results."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=5)
         assert sample_df.iloc[0]["name"] not in result["name"].values
 
-    def test_has_similarity_score_column(self, sample_df, embeddings):
+    def test_has_similarity_score_column(self, sample_df, embeddings) -> None:
         """Result should have a similarity_score column."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=3)
         assert "similarity_score" in result.columns
 
-    def test_scores_in_zero_to_one(self, sample_df, embeddings):
+    def test_scores_in_zero_to_one(self, sample_df, embeddings) -> None:
         """Similarity scores should be in (0, 1] range."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=3)
         for score in result["similarity_score"]:
             assert 0 < score <= 1.0
 
-    def test_sorted_by_score_descending(self, sample_df, embeddings):
+    def test_sorted_by_score_descending(self, sample_df, embeddings) -> None:
         """Results should be sorted by similarity score descending."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=5)
         scores = result["similarity_score"].values
         assert all(scores[i] >= scores[i + 1] for i in range(len(scores) - 1))
 
-    def test_different_query_different_results(self, sample_df, embeddings):
+    def test_different_query_different_results(self, sample_df, embeddings) -> None:
         """Different query indices should return different results (usually)."""
         result_0 = find_similar_restaurants(0, sample_df, embeddings, top_k=3)
         result_1 = find_similar_restaurants(1, sample_df, embeddings, top_k=3)
@@ -133,7 +133,7 @@ class TestFindSimilarRestaurants:
         # They might share some but shouldn't be identical
         assert names_0 != names_1 or len(names_0) < 3
 
-    def test_top_k_greater_than_available(self, sample_df, embeddings):
+    def test_top_k_greater_than_available(self, sample_df, embeddings) -> None:
         """When top_k > available items, should not crash."""
         result = find_similar_restaurants(0, sample_df, embeddings, top_k=100)
         assert isinstance(result, pd.DataFrame)

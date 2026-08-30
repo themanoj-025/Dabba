@@ -10,7 +10,7 @@ from dabba.models.recommender import RestaurantRecommender, bayesian_average
 class TestBayesianAverage:
     """Tests for Bayesian average rating computation."""
 
-    def test_basic_computation(self):
+    def test_basic_computation(self) -> None:
         """Should blend restaurant rating toward global mean for low-vote restaurants."""
         ratings = pd.Series([5.0, 3.0])
         vote_counts = pd.Series([10, 1000])
@@ -22,7 +22,7 @@ class TestBayesianAverage:
         assert result.iloc[0] < 5.0
         assert result.iloc[0] > 3.0
 
-    def test_equal_votes(self):
+    def test_equal_votes(self) -> None:
         """With equal high votes, Bayesian average should equal raw rating."""
         ratings = pd.Series([4.0, 4.0])
         vote_counts = pd.Series([1000, 1000])
@@ -61,27 +61,27 @@ class TestRestaurantRecommender:
             }
         )
 
-    def test_recommend_returns_dataframe(self, sample_df):
+    def test_recommend_returns_dataframe(self, sample_df) -> None:
         """recommend() should return a DataFrame."""
         rec = RestaurantRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="North Indian", top_n=3)
         assert isinstance(result, pd.DataFrame)
 
-    def test_recommend_respects_budget(self, sample_df):
+    def test_recommend_respects_budget(self, sample_df) -> None:
         """Recommendations should respect the budget filter."""
         rec = RestaurantRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(budget=400, top_n=10)
         if not result.empty and "cost_for_two" in result.columns:
             assert (result["cost_for_two"] <= 400).all()
 
-    def test_recommend_respects_cuisine(self, sample_df):
+    def test_recommend_respects_cuisine(self, sample_df) -> None:
         """Recommendations should filter by cuisine."""
         rec = RestaurantRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="Italian", top_n=5)
         if not result.empty and "cuisines" in result.columns:
             assert all("Italian" in str(c) for c in result["cuisines"])
 
-    def test_recommend_empty_result(self, sample_df):
+    def test_recommend_empty_result(self, sample_df) -> None:
         """Should return empty DataFrame when no matches."""
         rec = RestaurantRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="Thai", area="Nonexistent")
@@ -107,25 +107,25 @@ class TestRecommenderSimilarity:
         )
         return RestaurantRecommender(df, ["votes_log", "cost_for_two"])
 
-    def test_returns_numpy_array(self, recommender):
+    def test_returns_numpy_array(self, recommender) -> None:
         """Should return a numpy array."""
         query = np.array([5.0, 600.0])
         sim = recommender._compute_similarity(query)
         assert isinstance(sim, np.ndarray)
 
-    def test_length_matches_dataframe(self, recommender):
+    def test_length_matches_dataframe(self, recommender) -> None:
         """Should return one score per restaurant."""
         query = np.array([5.0, 600.0])
         sim = recommender._compute_similarity(query)
         assert len(sim) == len(recommender.df)
 
-    def test_similarity_between_zero_and_one(self, recommender):
+    def test_similarity_between_zero_and_one(self, recommender) -> None:
         """Cosine similarity should be in [0, 1] for non-negative features."""
         query = np.array([5.0, 600.0])
         sim = recommender._compute_similarity(query)
         assert all(-0.01 <= s <= 1.01 for s in sim)
 
-    def test_identical_query_returns_one(self, recommender):
+    def test_identical_query_returns_one(self, recommender) -> None:
         """Query equal to a restaurant should yield similarity ~1."""
         query = recommender.feature_matrix[0]
         sim = recommender._compute_similarity(query)
@@ -143,11 +143,11 @@ class TestRecommenderLoadModel:
         )
         return RestaurantRecommender(df, ["cost_for_two"])
 
-    def test_model_none_initially(self, recommender):
+    def test_model_none_initially(self, recommender) -> None:
         """Model should be None before loading."""
         assert recommender.rating_model is None
 
-    def test_load_nonexistent_path(self, recommender):
+    def test_load_nonexistent_path(self, recommender) -> None:
         """Loading a nonexistent path should not crash."""
         recommender.load_rating_model(model_path="/nonexistent/path/model.pkl")
         assert recommender.rating_model is None
