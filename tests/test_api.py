@@ -46,14 +46,14 @@ def auth_headers(api_key: str | None) -> dict[str, str]:
 class TestHealthEndpoint:
     """Tests for the /health endpoint (no auth required)."""
 
-    def test_health_returns_ok(self, client):
+    def test_health_returns_ok(self, client) -> None:
         """Health endpoint should return 200 with status ok."""
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
 
-    def test_health_always_accessible_without_key(self, client):
+    def test_health_always_accessible_without_key(self, client) -> None:
         """Health should work without any auth header."""
         response = client.get("/health", headers={})
         assert response.status_code == 200
@@ -65,7 +65,7 @@ class TestHealthEndpoint:
 class TestModelInfoEndpoint:
     """Tests for the /v1/model-info endpoint."""
 
-    def test_model_info_returns_json(self, client, api_key):
+    def test_model_info_returns_json(self, client, api_key) -> None:
         """Model info endpoint should return JSON with model data."""
         response = client.get("/v1/model-info", headers=auth_headers(api_key))
         assert response.status_code == 200
@@ -73,7 +73,7 @@ class TestModelInfoEndpoint:
         assert "rating_model" in data
         assert "eta_model" in data
 
-    def test_model_info_requires_auth_when_configured(self, client, monkeypatch):
+    def test_model_info_requires_auth_when_configured(self, client, monkeypatch) -> None:
         """If DABBA_API_KEY is set, requests without it should 401."""
         monkeypatch.setenv("DABBA_API_KEY", "test-key-123")
         # Reimport to pick up the new env var
@@ -98,7 +98,7 @@ class TestModelInfoEndpoint:
 class TestETAEndpoint:
     """Tests for the /v1/predict-eta endpoint."""
 
-    def test_predict_eta_without_model(self, client, api_key):
+    def test_predict_eta_without_model(self, client, api_key) -> None:
         """Should return 503 if model is not loaded."""
         response = client.post(
             "/v1/predict-eta",
@@ -112,7 +112,7 @@ class TestETAEndpoint:
         # Either 503 (no model) or 200 (model loaded)
         assert response.status_code in [200, 503]
 
-    def test_predict_eta_schema(self, client, api_key):
+    def test_predict_eta_schema(self, client, api_key) -> None:
         """Request should be validated by Pydantic schema."""
         response = client.post(
             "/v1/predict-eta",
@@ -130,7 +130,7 @@ class TestETAEndpoint:
 class TestRecommendEndpoint:
     """Tests for the /v1/recommend endpoint."""
 
-    def test_recommend_schema(self, client, api_key):
+    def test_recommend_schema(self, client, api_key) -> None:
         """Invalid request should return 422."""
         response = client.post(
             "/v1/recommend",
@@ -139,7 +139,7 @@ class TestRecommendEndpoint:
         )
         assert response.status_code == 422
 
-    def test_recommend_valid(self, client, api_key):
+    def test_recommend_valid(self, client, api_key) -> None:
         """Valid request should return 200 or 503 (model not loaded)."""
         response = client.post(
             "/v1/recommend",
@@ -159,7 +159,7 @@ class TestRecommendEndpoint:
 class TestChatEndpoint:
     """Tests for the /v1/chat endpoint."""
 
-    def test_chat_schema_validation(self, client, api_key):
+    def test_chat_schema_validation(self, client, api_key) -> None:
         """Empty message should return 422."""
         response = client.post(
             "/v1/chat",
@@ -168,7 +168,7 @@ class TestChatEndpoint:
         )
         assert response.status_code == 422
 
-    def test_chat_valid(self, client, api_key):
+    def test_chat_valid(self, client, api_key) -> None:
         """Valid request should return 200 or 503 (tools not loaded)."""
         response = client.post(
             "/v1/chat",
@@ -185,7 +185,7 @@ class TestChatEndpoint:
 class TestAuthBehavior:
     """Tests for API key authentication behavior."""
 
-    def test_v1_endpoint_accessible_in_dev_mode(self, client):
+    def test_v1_endpoint_accessible_in_dev_mode(self, client) -> None:
         """When DABBA_API_KEY is not set, v1 endpoints should work without key."""
         # This test validates the dev-mode behavior: no key = no auth
         response = client.get("/v1/model-info")

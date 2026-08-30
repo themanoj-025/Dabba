@@ -26,7 +26,7 @@ from dabba.monitoring.drift import DriftDetector
 class TestCleaningToFeaturesFlow:
     """E2E test: raw data → cleaned → feature-engineered."""
 
-    def test_zomato_flow_preserves_rows(self):
+    def test_zomato_flow_preserves_rows(self) -> None:
         """Clean Zomato-like data should survive cleaning + features."""
         raw = pd.DataFrame(
             {
@@ -58,7 +58,7 @@ class TestCleaningToFeaturesFlow:
         assert "cuisine_count" in featured.columns
         assert "cost_for_two_bucket" in featured.columns
 
-    def test_delivery_flow_adds_all_features(self):
+    def test_delivery_flow_adds_all_features(self) -> None:
         """Delivery data should get all engineered features."""
         raw = pd.DataFrame(
             {
@@ -101,7 +101,7 @@ class TestCleaningToFeaturesFlow:
 class TestModelTrainingWorkflow:
     """E2E test: features → train → predict on small data."""
 
-    def test_rating_model_trains_on_small_data(self):
+    def test_rating_model_trains_on_small_data(self) -> None:
         """Should train all rating models on ~200 synthetic rows."""
         from dabba.models.rating_model import train_and_evaluate_rating_models
 
@@ -127,7 +127,7 @@ class TestModelTrainingWorkflow:
         assert best.mae >= 0
         assert best.r2 >= -1  # Reasonable R² range
 
-    def test_eta_model_trains_with_new_features(self):
+    def test_eta_model_trains_with_new_features(self) -> None:
         """Should train ETA models with the expanded feature set."""
         from dabba.models.eta_model import train_and_evaluate_eta_models
 
@@ -170,7 +170,7 @@ class TestModelTrainingWorkflow:
 class TestDriftE2E:
     """E2E test: drift detection → alert result."""
 
-    def test_drift_detection_with_non_drifting_data(self):
+    def test_drift_detection_with_non_drifting_data(self) -> None:
         """Same distribution should not trigger drift."""
         rng = np.random.RandomState(42)
         ref = pd.DataFrame({"feat_a": rng.normal(0, 1, 500)})
@@ -182,7 +182,7 @@ class TestDriftE2E:
         assert result.has_drift is False
         assert result.drifted_count == 0
 
-    def test_drift_alert_with_drifting_data(self):
+    def test_drift_alert_with_drifting_data(self) -> None:
         """Shifted distribution should trigger drift and cooldown."""
         rng = np.random.RandomState(42)
         ref = pd.DataFrame(
@@ -204,7 +204,7 @@ class TestDriftE2E:
         # Should detect drift (features shifted)
         assert result.drifted_count > 0 or result.has_drift
 
-    def test_model_comparison_to_dataframe(self):
+    def test_model_comparison_to_dataframe(self) -> None:
         """Model results should convert to clean DataFrame."""
         from dabba.models.base_trainer import ModelResult
 

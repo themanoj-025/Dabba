@@ -42,7 +42,7 @@ def _make_memory_config():
 
 
 @pytest.fixture
-def in_memory_db():
+def in_memory_db() -> None:
     """Create tables on an in-memory SQLite database and yield a session."""
     engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(bind=engine)
@@ -94,13 +94,13 @@ def sample_delivery_df() -> pd.DataFrame:
 class TestSeedRestaurants:
     """Tests for the seed_restaurants function."""
 
-    def test_creates_restaurant_rows(self, sample_restaurants_df):
+    def test_creates_restaurant_rows(self, sample_restaurants_df) -> None:
         """Should create database rows from DataFrame."""
         config = _make_memory_config()
         n = seed_restaurants(sample_restaurants_df, config)
         assert n == 3
 
-    def test_upsert_same_name(self):
+    def test_upsert_same_name(self) -> None:
         """Seeding the same restaurant name twice should update, not duplicate."""
         df = pd.DataFrame(
             {
@@ -136,7 +136,7 @@ class TestSeedRestaurants:
 class TestSeedOrders:
     """Tests for the seed_orders function."""
 
-    def test_creates_order_rows(self):
+    def test_creates_order_rows(self) -> None:
         """Should create order rows from a delivery DataFrame."""
         df = pd.DataFrame(
             {
@@ -153,7 +153,7 @@ class TestSeedOrders:
         n = seed_orders(df, config=config)
         assert n == 2
 
-    def test_accepts_predictions(self):
+    def test_accepts_predictions(self) -> None:
         """Should use provided predictions array."""
         df = pd.DataFrame(
             {
@@ -178,7 +178,7 @@ class TestSeedOrders:
 class TestRestaurantRepository:
     """Tests for restaurant repository functions."""
 
-    def test_get_all_restaurants(self, in_memory_db):
+    def test_get_all_restaurants(self, in_memory_db) -> None:
         """Should return all restaurants."""
         db = in_memory_db
         for name in ["A", "B", "C"]:
@@ -188,7 +188,7 @@ class TestRestaurantRepository:
         results = get_all_restaurants(db)
         assert len(results) == 3
 
-    def test_get_all_restaurants_pagination(self, in_memory_db):
+    def test_get_all_restaurants_pagination(self, in_memory_db) -> None:
         """Should respect limit and offset."""
         db = in_memory_db
         for i in range(10):
@@ -198,7 +198,7 @@ class TestRestaurantRepository:
         page = get_all_restaurants(db, limit=3, offset=0)
         assert len(page) == 3
 
-    def test_get_restaurant_by_id(self, in_memory_db):
+    def test_get_restaurant_by_id(self, in_memory_db) -> None:
         """Should fetch by primary key."""
         db = in_memory_db
         r = Restaurant(name="Found Me", rate=4.5)
@@ -209,11 +209,11 @@ class TestRestaurantRepository:
         assert result is not None
         assert result.name == "Found Me"
 
-    def test_get_restaurant_by_id_missing(self, in_memory_db):
+    def test_get_restaurant_by_id_missing(self, in_memory_db) -> None:
         """Should return None for missing ID."""
         assert get_restaurant_by_id(in_memory_db, 999) is None
 
-    def test_get_restaurant_by_name(self, in_memory_db):
+    def test_get_restaurant_by_name(self, in_memory_db) -> None:
         """Should find by name (case-insensitive)."""
         db = in_memory_db
         db.add(Restaurant(name="Udupi Palace", rate=4.0))
@@ -223,7 +223,7 @@ class TestRestaurantRepository:
         assert result is not None
         assert result.name == "Udupi Palace"
 
-    def test_get_restaurants_by_cuisine(self, in_memory_db):
+    def test_get_restaurants_by_cuisine(self, in_memory_db) -> None:
         """Should search cuisines text."""
         db = in_memory_db
         db.add(Restaurant(name="A", cuisines="North Indian, Chinese"))
@@ -234,7 +234,7 @@ class TestRestaurantRepository:
         assert len(results) == 1
         assert results[0].name == "A"
 
-    def test_count_restaurants(self, in_memory_db):
+    def test_count_restaurants(self, in_memory_db) -> None:
         """Should return correct count."""
         db = in_memory_db
         for i in range(5):
@@ -243,7 +243,7 @@ class TestRestaurantRepository:
 
         assert count_restaurants(db) == 5
 
-    def test_count_restaurants_empty(self, in_memory_db):
+    def test_count_restaurants_empty(self, in_memory_db) -> None:
         """Empty table should return 0."""
         assert count_restaurants(in_memory_db) == 0
 
@@ -251,7 +251,7 @@ class TestRestaurantRepository:
 class TestExperimentRepository:
     """Tests for experiment result repository functions."""
 
-    def test_get_winning_model(self, in_memory_db):
+    def test_get_winning_model(self, in_memory_db) -> None:
         """Should return the winning model for a task."""
         db = in_memory_db
         db.add(
@@ -282,7 +282,7 @@ class TestExperimentRepository:
         assert winner is not None
         assert winner.model_name == "XGBoost"
 
-    def test_get_winning_model_no_winner(self, in_memory_db):
+    def test_get_winning_model_no_winner(self, in_memory_db) -> None:
         """Should return None if no winner flagged."""
         db = in_memory_db
         db.add(
@@ -304,7 +304,7 @@ class TestExperimentRepository:
 class TestDriftLogRepository:
     """Tests for drift log repository functions."""
 
-    def test_get_recent_drift_logs(self, in_memory_db):
+    def test_get_recent_drift_logs(self, in_memory_db) -> None:
         """Should return drift logs ordered by time."""
         db = in_memory_db
         db.add(
@@ -334,7 +334,7 @@ class TestDriftLogRepository:
         logs = get_recent_drift_logs(db)
         assert len(logs) == 2
 
-    def test_get_drift_summary(self, in_memory_db):
+    def test_get_drift_summary(self, in_memory_db) -> None:
         """Should return aggregate summary."""
         db = in_memory_db
         db.add(

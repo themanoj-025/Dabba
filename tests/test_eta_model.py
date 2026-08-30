@@ -18,7 +18,7 @@ _LIGHTWEIGHT_MODELS = {
 class TestETAModelResult:
     """Tests for the ETAModelResult dataclass."""
 
-    def test_creation(self):
+    def test_creation(self) -> None:
         """Should create an ETAModelResult with all fields."""
         result = ETAModelResult(
             name="TestModel", mae=5.0, rmse=7.0, r2=0.8, train_time=1.5
@@ -33,7 +33,7 @@ class TestETAModels:
 
     @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
     @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
-    def test_returns_results(self, _mock_nn, _mock_models):
+    def test_returns_results(self, _mock_nn, _mock_models) -> None:
         """Should return a list of results and a best result."""
         rng = np.random.RandomState(42)
         n = 200
@@ -59,7 +59,7 @@ class TestETAModels:
 
     @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
     @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
-    def test_predictions_shape(self, _mock_nn, _mock_models):
+    def test_predictions_shape(self, _mock_nn, _mock_models) -> None:
         """Predictions should have same length as input."""
         rng = np.random.RandomState(42)
         n = 100
@@ -81,7 +81,7 @@ class TestETAModels:
 
     @patch("dabba.models.eta_model.get_eta_models", return_value=_LIGHTWEIGHT_MODELS)
     @patch("dabba.models.eta_model._get_pytorch_nn", return_value=None)
-    def test_mae_positive(self, _mock_nn, _mock_models):
+    def test_mae_positive(self, _mock_nn, _mock_models) -> None:
         """MAE should always be non-negative."""
         rng = np.random.RandomState(42)
         n = 100

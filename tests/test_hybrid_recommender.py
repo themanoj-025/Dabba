@@ -30,13 +30,13 @@ class TestHybridRecommenderInit:
             }
         )
 
-    def test_initializes_with_dataframe(self, sample_df):
+    def test_initializes_with_dataframe(self, sample_df) -> None:
         """Should initialize with a DataFrame and feature columns."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         assert len(rec.df) == 4
         assert "bayesian_rating" in rec.df.columns
 
-    def test_bayesian_rating_computed(self, sample_df):
+    def test_bayesian_rating_computed(self, sample_df) -> None:
         """Bayesian rating should be computed during init."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         assert "bayesian_rating" in rec.df.columns
@@ -45,23 +45,23 @@ class TestHybridRecommenderInit:
         # High-vote restaurant should stay close to its rating
         assert abs(rec.df["bayesian_rating"].iloc[0] - rec.df["rate"].iloc[0]) < 0.1
 
-    def test_collaborative_model_none_by_default(self, sample_df):
+    def test_collaborative_model_none_by_default(self, sample_df) -> None:
         """Collaborative model should be None if not provided."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         assert rec.collaborative_model is None
         assert rec.collaborative_scores is None
 
-    def test_random_seed_from_config(self, sample_df):
+    def test_random_seed_from_config(self, sample_df) -> None:
         """Random state should use config's random_seed."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         assert rec.rng is not None
 
-    def test_empty_feature_cols(self, sample_df):
+    def test_empty_feature_cols(self, sample_df) -> None:
         """Should handle empty feature columns gracefully."""
         rec = HybridRecommender(sample_df, [])
         assert len(rec.df) == 4
 
-    def test_missing_vote_column(self):
+    def test_missing_vote_column(self) -> None:
         """Should fall back to raw rating when vote column is missing."""
         df = pd.DataFrame(
             {
@@ -105,60 +105,60 @@ class TestHybridRecommenderRecommend:
             }
         )
 
-    def test_recommend_returns_dataframe(self, sample_df):
+    def test_recommend_returns_dataframe(self, sample_df) -> None:
         """recommend() should return a DataFrame."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="North Indian", top_n=3)
         assert isinstance(result, pd.DataFrame)
 
-    def test_recommend_respects_budget(self, sample_df):
+    def test_recommend_respects_budget(self, sample_df) -> None:
         """Recommendations should respect the budget filter."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(budget=400, top_n=10)
         if not result.empty and "cost_for_two" in result.columns:
             assert (result["cost_for_two"] <= 400).all()
 
-    def test_recommend_respects_cuisine(self, sample_df):
+    def test_recommend_respects_cuisine(self, sample_df) -> None:
         """Recommendations should filter by cuisine."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="Italian", top_n=5)
         if not result.empty and "cuisines" in result.columns:
             assert all("Italian" in str(c) for c in result["cuisines"])
 
-    def test_recommend_respects_area(self, sample_df):
+    def test_recommend_respects_area(self, sample_df) -> None:
         """Recommendations should filter by area."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(area="Koramangala", top_n=5)
         if not result.empty and "location" in result.columns:
             assert all("Koramangala" in str(loc) for loc in result["location"])
 
-    def test_recommend_empty_result(self, sample_df):
+    def test_recommend_empty_result(self, sample_df) -> None:
         """Should return empty DataFrame when no matches."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="Thai", area="Nonexistent")
         assert result.empty
 
-    def test_recommend_has_explanation_column(self, sample_df):
+    def test_recommend_has_explanation_column(self, sample_df) -> None:
         """Result should include an explanation column."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="North Indian", top_n=3)
         if not result.empty:
             assert "explanation" in result.columns
 
-    def test_recommend_has_combined_score(self, sample_df):
+    def test_recommend_has_combined_score(self, sample_df) -> None:
         """Result should include a combined_score column."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(cuisine="North Indian", top_n=3)
         if not result.empty:
             assert "combined_score" in result.columns
 
-    def test_top_n_respected(self, sample_df):
+    def test_top_n_respected(self, sample_df) -> None:
         """Should return at most top_n results."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         result = rec.recommend(top_n=2)
         assert len(result) <= 2
 
-    def test_different_prioritize_modes(self, sample_df):
+    def test_different_prioritize_modes(self, sample_df) -> None:
         """Different prioritize modes should return results."""
         rec = HybridRecommender(sample_df, ["votes_log", "cost_for_two"])
         for mode in ["balanced", "speed", "quality"]:
@@ -182,25 +182,25 @@ class TestGetWeightProfile:
         )
         return HybridRecommender(df, ["cost_for_two"])
 
-    def test_balanced_has_all_weights(self, recommender):
+    def test_balanced_has_all_weights(self, recommender) -> None:
         """Balanced profile should have content, collaborative, reliability, bayesian keys."""
         weights = recommender._get_weight_profile("balanced")
         for key in ["content", "collaborative", "reliability", "bayesian"]:
             assert key in weights
 
-    def test_speed_profile_higher_reliability(self, recommender):
+    def test_speed_profile_higher_reliability(self, recommender) -> None:
         """Speed profile should weight reliability higher than balanced."""
         balanced = recommender._get_weight_profile("balanced")
         speed = recommender._get_weight_profile("speed")
         assert speed["reliability"] > balanced["reliability"]
 
-    def test_quality_profile_higher_bayesian(self, recommender):
+    def test_quality_profile_higher_bayesian(self, recommender) -> None:
         """Quality profile should weight bayesian higher than speed."""
         quality = recommender._get_weight_profile("quality")
         speed = recommender._get_weight_profile("speed")
         assert quality["bayesian"] > speed["bayesian"]
 
-    def test_unknown_profile_falls_back_to_balanced(self, recommender):
+    def test_unknown_profile_falls_back_to_balanced(self, recommender) -> None:
         """Unknown prioritize mode should fall back to balanced."""
         balanced = recommender._get_weight_profile("balanced")
         unknown = recommender._get_weight_profile("unknown_mode")

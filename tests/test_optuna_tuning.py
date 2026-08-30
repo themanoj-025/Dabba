@@ -29,7 +29,7 @@ from dabba.models.base_trainer import (
 class TestModelSearchSpaces:
     """Tests for the HPO search space definitions."""
 
-    def test_has_expected_models(self):
+    def test_has_expected_models(self) -> None:
         """Should contain search spaces for all ensemble models."""
         spaces = get_model_search_spaces()
         expected = {
@@ -41,7 +41,7 @@ class TestModelSearchSpaces:
         }
         assert expected.issubset(set(spaces.keys()))
 
-    def test_each_space_has_valid_params(self):
+    def test_each_space_has_valid_params(self) -> None:
         """Each model's search space should have well-formed param specs."""
         spaces = get_model_search_spaces()
         for model_name, space in spaces.items():
@@ -55,7 +55,7 @@ class TestModelSearchSpaces:
                 elif spec["type"] == "categorical":
                     assert "choices" in spec
 
-    def test_search_spaces_have_overlapping_params(self):
+    def test_search_spaces_have_overlapping_params(self) -> None:
         """Models should share commonly tuned params for fair comparison."""
         spaces = get_model_search_spaces()
         for model_name in ["XGBoost", "LightGBM", "CatBoost", "GradientBoosting"]:
@@ -67,7 +67,7 @@ class TestModelSearchSpaces:
 class TestSampleOptunaParams:
     """Tests for sampling parameters from a search space."""
 
-    def test_samples_all_params(self):
+    def test_samples_all_params(self) -> None:
         """Should return a value for every param in the search space."""
         try:
             import optuna
@@ -81,7 +81,7 @@ class TestSampleOptunaParams:
         params = _sample_optuna_params(trial, space)
         assert set(params.keys()) == set(space.keys())
 
-    def test_int_param_within_range(self):
+    def test_int_param_within_range(self) -> None:
         """Integer params should be sampled within [low, high]."""
         try:
             import optuna
@@ -103,7 +103,7 @@ class TestSampleOptunaParams:
 class TestBuildModelFromParams:
     """Tests for building model instances from tuned params."""
 
-    def test_build_xgboost(self):
+    def test_build_xgboost(self) -> None:
         """Should build an XGBRegressor from tuned params."""
         try:
             from xgboost import XGBRegressor
@@ -116,7 +116,7 @@ class TestBuildModelFromParams:
         assert model.n_estimators == 200
         assert model.max_depth == 8
 
-    def test_build_randomforest(self):
+    def test_build_randomforest(self) -> None:
         """Should build a RandomForestRegressor from tuned params."""
         from sklearn.ensemble import RandomForestRegressor
 
@@ -132,7 +132,7 @@ class TestBuildModelFromParams:
         assert model.n_estimators == 150
         assert model.max_depth == 15
 
-    def test_build_catboost(self):
+    def test_build_catboost(self) -> None:
         """Should build a CatBoostRegressor from tuned params."""
         try:
             from catboost import CatBoostRegressor
@@ -146,7 +146,7 @@ class TestBuildModelFromParams:
         assert model.get_params()["n_estimators"] == 300
         assert model.get_params()["max_depth"] == 8
 
-    def test_build_gradientboosting(self):
+    def test_build_gradientboosting(self) -> None:
         """Should build a GradientBoostingRegressor from tuned params."""
         from sklearn.ensemble import GradientBoostingRegressor
 
@@ -155,7 +155,7 @@ class TestBuildModelFromParams:
         assert isinstance(model, GradientBoostingRegressor)
         assert model.n_estimators == 250
 
-    def test_build_lightgbm(self):
+    def test_build_lightgbm(self) -> None:
         """Should build an LGBMRegressor from tuned params."""
         try:
             from lightgbm import LGBMRegressor
@@ -167,7 +167,7 @@ class TestBuildModelFromParams:
         assert isinstance(model, LGBMRegressor)
         assert model.n_estimators == 180
 
-    def test_unknown_model_raises(self):
+    def test_unknown_model_raises(self) -> None:
         """Should raise ValueError for unknown model name."""
         with pytest.raises(ValueError, match="Unknown model"):
             _build_model_from_params("UnknownModel", {})
@@ -177,7 +177,7 @@ class TestTuneHyperparameters:
     """Integration tests for Optuna HPO on synthetic data."""
 
     @pytest.fixture
-    def sample_data(self):
+    def sample_data(self) -> tuple[object, ...]:
         """Create synthetic regression data for tuning."""
         rng = np.random.RandomState(42)
         n = 300
@@ -195,7 +195,7 @@ class TestTuneHyperparameters:
         )
         return df, y
 
-    def test_tune_returns_params_and_metrics(self, sample_data):
+    def test_tune_returns_params_and_metrics(self, sample_data) -> None:
         """Should return best params, best MAE, and best RMSE."""
         try:
             pass
@@ -212,13 +212,13 @@ class TestTuneHyperparameters:
         assert best_rmse >= 0
         assert best_rmse >= best_mae  # RMSE >= MAE always
 
-    def test_unknown_model_raises(self, sample_data):
+    def test_unknown_model_raises(self, sample_data) -> None:
         """Should raise ValueError for unsupported model."""
         X, y = sample_data
         with pytest.raises(ValueError, match="not supported"):
             tune_hyperparameters(X, y, "UnsupportedModel", n_trials=2)
 
-    def test_get_tuned_model_returns_estimator(self, sample_data):
+    def test_get_tuned_model_returns_estimator(self, sample_data) -> None:
         """get_tuned_model should return an unfitted estimator."""
         try:
             pass
@@ -234,7 +234,7 @@ class TestTuneHyperparameters:
         # Should not be fitted yet (the pipeline fits during CV, model is fresh)
         assert hasattr(model, "n_estimators")
 
-    def test_tune_all_models_returns_dict(self, sample_data):
+    def test_tune_all_models_returns_dict(self, sample_data) -> None:
         """tune_all_models should return tuned models for requested list."""
         try:
             pass
@@ -254,7 +254,7 @@ class TestTuneHyperparameters:
         assert tuned["XGBoost"] is not None
         assert tuned["RandomForest"] is not None
 
-    def test_custom_search_space(self, sample_data):
+    def test_custom_search_space(self, sample_data) -> None:
         """Should use a custom search space when provided."""
         try:
             pass
@@ -272,7 +272,7 @@ class TestTuneHyperparameters:
         assert 10 <= best_params["n_estimators"] <= 20
         assert 2 <= best_params["max_depth"] <= 5
 
-    def test_tuning_with_categorical_features(self, sample_data):
+    def test_tuning_with_categorical_features(self, sample_data) -> None:
         """Should handle DataFrames with categorical columns."""
         try:
             pass
@@ -286,7 +286,7 @@ class TestTuneHyperparameters:
         )
         assert best_mae >= 0
 
-    def test_tune_returns_better_than_baseline(self, sample_data):
+    def test_tune_returns_better_than_baseline(self, sample_data) -> None:
         """Tuning with enough trials should beat default params on synthetic data."""
         try:
             pass
@@ -328,14 +328,14 @@ class TestTuneWithMlflow:
     """Tests that tuning handles MLflow failures gracefully."""
 
     @pytest.fixture
-    def sample_data(self):
+    def sample_data(self) -> tuple[object, ...]:
         rng = np.random.RandomState(42)
         n = 100
         df = pd.DataFrame({"x1": rng.rand(n), "x2": rng.rand(n)})
         y = pd.Series(3 * df["x1"] + rng.normal(0, 0.2, n))
         return df, y
 
-    def test_tuning_succeeds_without_mlflow(self, sample_data):
+    def test_tuning_succeeds_without_mlflow(self, sample_data) -> None:
         """Tuning should succeed even when MLflow is not available.
 
         MLflow is imported locally inside tune_hyperparameters and the logging
@@ -355,7 +355,7 @@ class TestTuneWithMlflow:
         )
         assert best_mae >= 0  # Tuning succeeded despite no active MLflow run
 
-    def test_tuning_works_with_mlflow_import_error(self, sample_data):
+    def test_tuning_works_with_mlflow_import_error(self, sample_data) -> None:
         """Tuning should survive MLflow import failures via try/except."""
         try:
             pass
@@ -378,19 +378,19 @@ class TestTuneWithMlflow:
 class TestHpoIntegration:
     """Tests that HPO is wired correctly through rating/eta model modules."""
 
-    def test_rating_models_export_hpo_function(self):
+    def test_rating_models_export_hpo_function(self) -> None:
         """Rating model module should export get_tuned_rating_models."""
         from dabba.models.rating_model import get_tuned_rating_models
 
         assert callable(get_tuned_rating_models)
 
-    def test_eta_models_export_hpo_function(self):
+    def test_eta_models_export_hpo_function(self) -> None:
         """ETA model module should export get_tuned_eta_models."""
         from dabba.models.eta_model import get_tuned_eta_models
 
         assert callable(get_tuned_eta_models)
 
-    def test_rating_train_accepts_use_hpo_flag(self):
+    def test_rating_train_accepts_use_hpo_flag(self) -> None:
         """train_and_evaluate_rating_models should accept use_hpo kwarg."""
         import inspect
 
@@ -399,7 +399,7 @@ class TestHpoIntegration:
         sig = inspect.signature(train_and_evaluate_rating_models)
         assert "use_hpo" in sig.parameters
 
-    def test_eta_train_accepts_use_hpo_flag(self):
+    def test_eta_train_accepts_use_hpo_flag(self) -> None:
         """train_and_evaluate_eta_models should accept use_hpo kwarg."""
         import inspect
 
@@ -408,7 +408,7 @@ class TestHpoIntegration:
         sig = inspect.signature(train_and_evaluate_eta_models)
         assert "use_hpo" in sig.parameters
 
-    def test_tuned_rating_models_include_all_defaults(self, sample_data):
+    def test_tuned_rating_models_include_all_defaults(self, sample_data) -> None:
         """get_tuned_rating_models should include all the same models as defaults."""
         try:
             pass
@@ -429,7 +429,7 @@ class TestHpoIntegration:
             assert name in tuned_models, f"{name} missing from tuned models"
 
     @pytest.fixture
-    def sample_data(self):
+    def sample_data(self) -> tuple[object, ...]:
         rng = np.random.RandomState(42)
         n = 100
         df = pd.DataFrame({"x1": rng.rand(n), "x2": rng.choice(["a", "b", "c"], n)})

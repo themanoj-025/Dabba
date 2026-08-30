@@ -14,21 +14,21 @@ from dabba.models.optimizer import (
 class TestOptimizeAssignments:
     """Tests for the Hungarian algorithm optimizer."""
 
-    def test_returns_assignment_and_total(self):
+    def test_returns_assignment_and_total(self) -> None:
         """Should return an assignment array and total time."""
         cost = np.array([[5.0, 9.0], [10.0, 6.0]])
         assignment, total = optimize_assignments(cost)
         assert isinstance(assignment, np.ndarray)
         assert isinstance(total, float)
 
-    def test_optimal_assignment_2x2(self):
+    def test_optimal_assignment_2x2(self) -> None:
         """Should find the optimal assignment for a 2x2 matrix."""
         cost = np.array([[5.0, 9.0], [10.0, 6.0]])
         assignment, total = optimize_assignments(cost)
         # Optimal: order0→partner0 (5), order1→partner1 (6) = 11
         assert total == pytest.approx(11.0)
 
-    def test_optimal_assignment_3x3(self):
+    def test_optimal_assignment_3x3(self) -> None:
         """Should find optimal assignment for a 3x3 matrix."""
         cost = np.array(
             [
@@ -41,20 +41,20 @@ class TestOptimizeAssignments:
         assert total > 0
         assert len(assignment) == 3
 
-    def test_assignment_count_matches_orders(self):
+    def test_assignment_count_matches_orders(self) -> None:
         """Number of assignments should match min(orders, partners)."""
         cost = np.random.RandomState(42).rand(5, 3)
         assignment, total = optimize_assignments(cost)
         assert len(assignment) == min(*cost.shape)
 
-    def test_single_order(self):
+    def test_single_order(self) -> None:
         """Single order should return the cheapest partner."""
         cost = np.array([[10.0, 5.0, 8.0]])
         assignment, total = optimize_assignments(cost)
         assert assignment[0] == 1  # partner 1 is cheapest at 5.0
         assert total == pytest.approx(5.0)
 
-    def test_square_matrix(self):
+    def test_square_matrix(self) -> None:
         """Square matrix should match each partner to exactly one order."""
         cost = np.array(
             [
@@ -71,26 +71,26 @@ class TestOptimizeAssignments:
 class TestNaiveAssignments:
     """Tests for the naive (first-available) assignment strategy."""
 
-    def test_returns_total_time(self):
+    def test_returns_total_time(self) -> None:
         """Should return a float total time."""
         cost = np.array([[5.0, 9.0], [10.0, 6.0]])
         total = naive_assignments(cost)
         assert isinstance(total, float)
 
-    def test_naive_worse_or_equal_to_optimal(self):
+    def test_naive_worse_or_equal_to_optimal(self) -> None:
         """Naive assignment should be >= optimal assignment."""
         cost = np.random.RandomState(42).rand(4, 3)
         _, optimal = optimize_assignments(cost)
         naive = naive_assignments(cost)
         assert naive >= optimal - 1e-10
 
-    def test_single_order_single_partner(self):
+    def test_single_order_single_partner(self) -> None:
         """Single order with one partner should return that cost."""
         cost = np.array([[15.0]])
         total = naive_assignments(cost)
         assert total == pytest.approx(15.0)
 
-    def test_orders_fewer_than_partners(self):
+    def test_orders_fewer_than_partners(self) -> None:
         """Should handle more partners than orders."""
         cost = np.random.RandomState(42).rand(2, 5)
         total = naive_assignments(cost)
@@ -116,7 +116,7 @@ class TestCompareAssignmentStrategies:
             }
         )
 
-    def test_returns_dict_with_keys(self, orders_df):
+    def test_returns_dict_with_keys(self, orders_df) -> None:
         """Should return dict with expected keys."""
         model = self.MockModel()
         result = compare_assignment_strategies(
@@ -127,7 +127,7 @@ class TestCompareAssignmentStrategies:
         assert "naive_total_min" in result
         assert "improvement_pct" in result
 
-    def test_optimized_less_than_or_equal_naive(self, orders_df):
+    def test_optimized_less_than_or_equal_naive(self, orders_df) -> None:
         """Optimized total should be <= naive total."""
         model = self.MockModel()
         result = compare_assignment_strategies(
@@ -135,7 +135,7 @@ class TestCompareAssignmentStrategies:
         )
         assert result["optimized_total_min"] <= result["naive_total_min"] + 0.01
 
-    def test_improvement_positive_or_zero(self, orders_df):
+    def test_improvement_positive_or_zero(self, orders_df) -> None:
         """Improvement should be >= 0."""
         model = self.MockModel()
         result = compare_assignment_strategies(
@@ -143,7 +143,7 @@ class TestCompareAssignmentStrategies:
         )
         assert result["improvement_pct"] >= 0
 
-    def test_empty_dataframe(self):
+    def test_empty_dataframe(self) -> None:
         """Empty DataFrame should return zeros."""
         model = self.MockModel()
         df_empty = pd.DataFrame(columns=["distance_km"])

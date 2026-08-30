@@ -20,12 +20,12 @@ from dabba.features.restaurant_features import (
 class TestHaversineDistance:
     """Tests for the haversine distance calculation."""
 
-    def test_same_point(self):
+    def test_same_point(self) -> None:
         """Distance from a point to itself should be zero."""
         result = haversine_distance(12.97, 77.59, 12.97, 77.59)
         assert result == pytest.approx(0.0, abs=0.01)
 
-    def test_known_distance(self):
+    def test_known_distance(self) -> None:
         """Test a known distance (Koramangala to MG Road ~3 km)."""
         lat1, lon1 = BANGALORE_CENTROIDS["Koramangala"]
         lat2, lon2 = BANGALORE_CENTROIDS["MG Road"]
@@ -33,7 +33,7 @@ class TestHaversineDistance:
         # Should be roughly 3-4 km
         assert 2.0 < result < 5.0
 
-    def test_array_input(self):
+    def test_array_input(self) -> None:
         """Should work with numpy arrays."""
         lats = np.array([12.97, 12.97])
         lons = np.array([77.59, 77.64])
@@ -45,19 +45,19 @@ class TestHaversineDistance:
 class TestGeocodeLocation:
     """Tests for Bangalore neighborhood geocoding."""
 
-    def test_exact_match(self):
+    def test_exact_match(self) -> None:
         """Exact neighborhood name should return coordinates."""
         result = geocode_location("Koramangala")
         assert result is not None
         assert len(result) == 2
         assert 6 < result[0] < 37  # Valid lat range for India
 
-    def test_case_insensitive(self):
+    def test_case_insensitive(self) -> None:
         """Matching should be case-insensitive."""
         result = geocode_location("koramangala")
         assert result is not None
 
-    def test_unknown_location(self):
+    def test_unknown_location(self) -> None:
         """Unknown location should return None."""
         result = geocode_location("Atlantis")
         assert result is None
@@ -66,7 +66,7 @@ class TestGeocodeLocation:
 class TestClusteringMethods:
     """Tests for clustering comparison."""
 
-    def test_returns_all_methods(self):
+    def test_returns_all_methods(self) -> None:
         """Should return results for KMeans, DBSCAN, and Agglomerative."""
         X = np.random.RandomState(42).rand(100, 2)
         results = compare_clustering_methods(X, k_range=range(2, 6))
@@ -74,7 +74,7 @@ class TestClusteringMethods:
         assert "Agglomerative" in results
         # DBSCAN may or may not find clusters depending on data
 
-    def test_silhouette_scores(self):
+    def test_silhouette_scores(self) -> None:
         """Silhouette scores should be between -1 and 1."""
         X = np.random.RandomState(42).rand(100, 2)
         results = compare_clustering_methods(X, k_range=range(2, 6))
@@ -86,7 +86,7 @@ class TestClusteringMethods:
 class TestRestaurantFeatures:
     """Tests for restaurant feature engineering."""
 
-    def test_encode_cuisines(self):
+    def test_encode_cuisines(self) -> None:
         """Should create binary columns for top cuisines."""
         df = pd.DataFrame(
             {
@@ -97,7 +97,7 @@ class TestRestaurantFeatures:
         assert "cuisine_north_indian" in result.columns
         assert result["cuisine_north_indian"].iloc[0] == 1
 
-    def test_add_restaurant_features(self):
+    def test_add_restaurant_features(self) -> None:
         """Should add all expected feature columns."""
         df = pd.DataFrame(
             {
@@ -119,7 +119,7 @@ class TestRestaurantFeatures:
 class TestCyclicalEncode:
     """Tests for cyclical encoding helper."""
 
-    def test_hour_encoding(self):
+    def test_hour_encoding(self) -> None:
         """Hours 0 and 24 should produce same sin/cos values."""
         from dabba.features.delivery_features import cyclical_encode
 
@@ -128,7 +128,7 @@ class TestCyclicalEncode:
         assert sin_0[0] == pytest.approx(sin_24[0], abs=1e-10)
         assert cos_0[0] == pytest.approx(cos_24[0], abs=1e-10)
 
-    def test_hour_6_and_18_opposite(self):
+    def test_hour_6_and_18_opposite(self) -> None:
         """Hours 6 and 18 should have opposite sin values."""
         from dabba.features.delivery_features import cyclical_encode
 
@@ -140,21 +140,21 @@ class TestCyclicalEncode:
 class TestCityZone:
     """Tests for Bangalore city zone assignment."""
 
-    def test_central_zone(self):
+    def test_central_zone(self) -> None:
         """MG Road area should be central."""
         from dabba.features.delivery_features import _assign_city_zone
 
         zone = _assign_city_zone(12.97, 77.61)
         assert zone == "central"
 
-    def test_north_zone(self):
+    def test_north_zone(self) -> None:
         """Yelahanka area should be north."""
         from dabba.features.delivery_features import _assign_city_zone
 
         zone = _assign_city_zone(13.10, 77.57)
         assert zone == "north"
 
-    def test_unknown_zone(self):
+    def test_unknown_zone(self) -> None:
         """NaN coordinates should return unknown."""
         from dabba.features.delivery_features import _assign_city_zone
 
@@ -165,7 +165,7 @@ class TestCityZone:
 class TestDeliveryFeatures:
     """Tests for delivery feature engineering."""
 
-    def test_add_delivery_features(self):
+    def test_add_delivery_features(self) -> None:
         """Should add expected feature columns."""
         df = pd.DataFrame(
             {
@@ -200,7 +200,7 @@ class TestDeliveryFeatures:
         # New spatial features
         assert "city_zone" in result.columns
 
-    def test_rush_hour_flag(self):
+    def test_rush_hour_flag(self) -> None:
         """Hour 9 should be rush hour, hour 3 should not."""
         df = pd.DataFrame(
             {
@@ -217,7 +217,7 @@ class TestDeliveryFeatures:
         assert result["is_rush_hour"].iloc[0] == 1  # 9 AM = rush
         assert result["is_rush_hour"].iloc[1] == 0  # 3 AM = not rush
 
-    def test_traffic_interaction(self):
+    def test_traffic_interaction(self) -> None:
         """Distance × traffic should be higher with more traffic."""
         df = pd.DataFrame(
             {

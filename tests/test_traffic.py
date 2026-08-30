@@ -10,7 +10,7 @@ from dabba.features.traffic import (
 class TestTrafficInfo:
     """Tests for the TrafficInfo dataclass."""
 
-    def test_created_with_fields(self):
+    def test_created_with_fields(self) -> None:
         info = TrafficInfo(level=1, label="Medium", speed_ratio=0.7, source="test")
         assert info.level == 1
         assert info.label == "Medium"
@@ -21,14 +21,14 @@ class TestTrafficInfo:
 class TestSimulateTraffic:
     """Tests for the simulated traffic provider."""
 
-    def test_returns_traffic_info(self):
+    def test_returns_traffic_info(self) -> None:
         result = _simulate_traffic(12.97, 77.59, hour=14, day_of_week=2)
         assert isinstance(result, TrafficInfo)
         assert 0 <= result.level <= 3
         assert result.label in ("Low", "Medium", "High", "Jam")
         assert result.source == "simulated"
 
-    def test_rush_hour_higher_traffic(self):
+    def test_rush_hour_higher_traffic(self) -> None:
         """Rush hour should generally have higher traffic than late night."""
         _simulate_traffic(12.97, 77.59, hour=18, day_of_week=2)
         _simulate_traffic(12.97, 77.59, hour=3, day_of_week=2)
@@ -43,12 +43,12 @@ class TestSimulateTraffic:
         ]
         assert sum(rush_levels) >= sum(night_levels)  # Statistical tendency
 
-    def test_weekend_pattern(self):
+    def test_weekend_pattern(self) -> None:
         """Weekend traffic should be moderate during mid-day."""
         weekend = _simulate_traffic(12.97, 77.59, hour=14, day_of_week=6)
         assert weekend.level >= 0
 
-    def test_valid_range_all_hours(self):
+    def test_valid_range_all_hours(self) -> None:
         """All hours of day should return valid levels."""
         for hour in range(24):
             result = _simulate_traffic(12.97, 77.59, hour=hour, day_of_week=3)
@@ -59,7 +59,7 @@ class TestSimulateTraffic:
 class TestGetTrafficLevel:
     """Tests for the public get_traffic_level() function."""
 
-    def test_falls_back_to_simulated(self):
+    def test_falls_back_to_simulated(self) -> None:
         """Without API keys, should fall back to simulated."""
         from dabba.config import get_config
 
@@ -73,11 +73,11 @@ class TestGetTrafficLevel:
         assert result.source == "simulated"
         assert 0 <= result.level <= 3
 
-    def test_returns_traffic_info_object(self):
+    def test_returns_traffic_info_object(self) -> None:
         result = get_traffic_level()
         assert isinstance(result, TrafficInfo)
 
-    def test_defaults_to_current_time(self):
+    def test_defaults_to_current_time(self) -> None:
         """Should use current time when no hour/dow provided."""
         result = get_traffic_level()
         assert 0 <= result.level <= 3

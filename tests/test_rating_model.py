@@ -17,7 +17,7 @@ from dabba.models.rating_model import (
 class TestModelResult:
     """Tests for the ModelResult dataclass."""
 
-    def test_creation(self):
+    def test_creation(self) -> None:
         """Should create a ModelResult with all fields."""
         result = ModelResult(
             name="TestModel", mae=5.0, rmse=7.0, r2=0.8, train_time=1.5
@@ -26,7 +26,7 @@ class TestModelResult:
         assert result.mae == 5.0
         assert result.predictions is None
 
-    def test_with_predictions(self):
+    def test_with_predictions(self) -> None:
         """Should store predictions when provided."""
         preds = np.array([1.0, 2.0, 3.0])
         result = ModelResult(
@@ -39,13 +39,13 @@ class TestModelResult:
 class TestGetRatingModels:
     """Tests for candidate model dictionary."""
 
-    def test_returns_dict(self):
+    def test_returns_dict(self) -> None:
         """Should return a dictionary of models."""
         models = get_rating_models()
         assert isinstance(models, dict)
         assert len(models) >= 5  # At least 5 models even without xgb/lgbm
 
-    def test_has_required_models(self):
+    def test_has_required_models(self) -> None:
         """Should include the required base models."""
         models = get_rating_models()
         assert "LinearRegression" in models
@@ -60,7 +60,7 @@ class TestTrainAndEvaluateRatingModels:
     """Tests for the full model comparison pipeline."""
 
     @pytest.fixture
-    def sample_data(self):
+    def sample_data(self) -> tuple[object, ...]:
         """Create synthetic rating prediction data."""
         rng = np.random.RandomState(42)
         n = 200
@@ -77,7 +77,7 @@ class TestTrainAndEvaluateRatingModels:
         y = pd.Series(rng.uniform(2.5, 5.0, n))
         return df, y
 
-    def test_returns_results_and_best(self, sample_data):
+    def test_returns_results_and_best(self, sample_data) -> None:
         """Should return a list of results and a best result."""
         X, y = sample_data
         results, best = train_and_evaluate_rating_models(X, y)
@@ -85,7 +85,7 @@ class TestTrainAndEvaluateRatingModels:
         assert best is not None
         assert best.mae >= 0
 
-    def test_predictions_length_matches_input(self, sample_data):
+    def test_predictions_length_matches_input(self, sample_data) -> None:
         """Predictions should have same length as input."""
         X, y = sample_data
         results, _ = train_and_evaluate_rating_models(X, y)
@@ -93,7 +93,7 @@ class TestTrainAndEvaluateRatingModels:
             if result.predictions is not None:
                 assert len(result.predictions) == len(y)
 
-    def test_mae_positive(self, sample_data):
+    def test_mae_positive(self, sample_data) -> None:
         """MAE should always be non-negative."""
         X, y = sample_data
         results, _ = train_and_evaluate_rating_models(X, y)
@@ -106,7 +106,7 @@ class TestFitBestRatingModel:
     """Tests for fitting the winning model on full data."""
 
     @pytest.fixture
-    def sample_data(self):
+    def sample_data(self) -> tuple[object, ...]:
         """Create synthetic data."""
         rng = np.random.RandomState(42)
         n = 200
@@ -120,7 +120,7 @@ class TestFitBestRatingModel:
         y = pd.Series(rng.uniform(2.5, 5.0, n))
         return df, y
 
-    def test_fits_and_saves(self, sample_data, tmp_path):
+    def test_fits_and_saves(self, sample_data, tmp_path) -> None:
         """Should fit on full data and save to disk."""
         X, y = sample_data
         save_path = tmp_path / "best_rating_model.pkl"
@@ -135,7 +135,7 @@ class TestFitBestRatingModel:
         preds = loaded.predict(X)
         assert len(preds) == len(y)
 
-    def test_invalid_model_name_raises(self, sample_data, tmp_path):
+    def test_invalid_model_name_raises(self, sample_data, tmp_path) -> None:
         """Should raise ValueError for unknown model name."""
         X, y = sample_data
         save_path = tmp_path / "model.pkl"
@@ -143,7 +143,7 @@ class TestFitBestRatingModel:
         with pytest.raises(ValueError, match="not found"):
             fit_best_rating_model("NonexistentModel", X, y, save_path)
 
-    def test_saves_to_parent_dirs(self, sample_data, tmp_path):
+    def test_saves_to_parent_dirs(self, sample_data, tmp_path) -> None:
         """Should create parent directories if they don't exist."""
         X, y = sample_data
         save_path = tmp_path / "nested" / "dir" / "model.pkl"
@@ -155,7 +155,7 @@ class TestFitBestRatingModel:
 class TestSaveModel:
     """Tests for model persistence."""
 
-    def test_save_and_load(self, tmp_path):
+    def test_save_and_load(self, tmp_path) -> None:
         """Should save and load a model successfully."""
         from sklearn.linear_model import LinearRegression
 

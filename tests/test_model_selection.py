@@ -26,7 +26,7 @@ class MockResult:
 class TestComparisonToDataframe:
     """Tests for converting results to a comparison DataFrame."""
 
-    def test_creates_dataframe(self):
+    def test_creates_dataframe(self) -> None:
         """Should return a DataFrame with expected columns."""
         results = [
             MockResult("A", 5.0, 7.0, 0.8),
@@ -36,7 +36,7 @@ class TestComparisonToDataframe:
         assert isinstance(df, pd.DataFrame)
         assert set(df.columns) == {"model", "mae", "rmse", "r2", "train_time_s"}
 
-    def test_sorted_by_mae(self):
+    def test_sorted_by_mae(self) -> None:
         """Results should be sorted by MAE ascending."""
         results = [
             MockResult("A", 5.0, 7.0, 0.8),
@@ -52,7 +52,7 @@ class TestComparisonToDataframe:
 class TestSelectBestModel:
     """Tests for automatic best model selection."""
 
-    def test_selects_lowest_mae(self):
+    def test_selects_lowest_mae(self) -> None:
         """Should select the model with lowest MAE by default."""
         results = [
             MockResult("LinearRegression", 5.0, 7.0, 0.8),
@@ -62,7 +62,7 @@ class TestSelectBestModel:
         best = select_best_model(results, metric="mae")
         assert best == "XGBoost"
 
-    def test_selects_lowest_rmse(self):
+    def test_selects_lowest_rmse(self) -> None:
         """Should select by RMSE when metric='rmse'."""
         results = [
             MockResult("A", 5.0, 8.0, 0.8),
@@ -72,7 +72,7 @@ class TestSelectBestModel:
         best = select_best_model(results, metric="rmse")
         assert best == "B"
 
-    def test_selects_highest_r2(self):
+    def test_selects_highest_r2(self) -> None:
         """Should select highest R² when metric='r2'."""
         results = [
             MockResult("A", 5.0, 7.0, 0.7),
@@ -82,12 +82,12 @@ class TestSelectBestModel:
         best = select_best_model(results, metric="r2")
         assert best == "B"
 
-    def test_empty_results(self):
+    def test_empty_results(self) -> None:
         """Should return None for empty results."""
         best = select_best_model([])
         assert best is None
 
-    def test_single_model(self):
+    def test_single_model(self) -> None:
         """Should select the only model when there's just one."""
         results = [MockResult("OnlyModel", 5.0, 7.0, 0.8)]
         best = select_best_model(results)
@@ -97,7 +97,7 @@ class TestSelectBestModel:
 class TestSaveComparisonCsv:
     """Tests for saving comparison CSV."""
 
-    def test_saves_csv(self, tmp_path):
+    def test_saves_csv(self, tmp_path) -> None:
         """Should save a valid CSV file."""
         df = pd.DataFrame(
             {
