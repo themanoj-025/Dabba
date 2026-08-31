@@ -103,11 +103,11 @@ class TestCompareAssignmentStrategies:
     class MockModel:
         """A mock ETA model that returns predictions from a feature column."""
 
-        def predict(self, X):
+        def predict(self, X) -> None:
             return X.iloc[:, 0].values * 2 + 5
 
     @pytest.fixture
-    def orders_df(self):
+    def orders_df(self) -> None:
         """Create a sample orders DataFrame."""
         return pd.DataFrame(
             {

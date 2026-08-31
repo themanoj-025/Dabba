@@ -14,7 +14,7 @@ from dabba.models.model_selection import (
 class MockResult:
     """Lightweight mock for ModelResult/ETAModelResult."""
 
-    def __init__(self, name, mae, rmse, r2, train_time=1.0):
+    def __init__(self, name, mae, rmse, r2, train_time=1.0) -> None:
         self.name = name
         self.mae = mae
         self.rmse = rmse

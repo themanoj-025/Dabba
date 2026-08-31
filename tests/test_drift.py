@@ -8,7 +8,7 @@ from dabba.monitoring.drift import DriftDetector
 
 
 @pytest.fixture
-def reference_data():
+def reference_data() -> None:
     """Create reference data with known distribution."""
     rng = np.random.RandomState(42)
     return pd.DataFrame(
@@ -145,7 +145,7 @@ class TestDetectAndAlert:
     """Tests for detect_and_alert with cooldown logic."""
 
     @pytest.fixture
-    def detector(self):
+    def detector(self) -> None:
         rng = np.random.RandomState(42)
         ref = pd.DataFrame(
             {

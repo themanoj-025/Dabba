@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 pytestmark = pytest.mark.slow
 @pytest.fixture
-def client():
+def client() -> None:
     """Create a test client for the FastAPI app.
 
     Uses DABBA_API_KEY from environment if set, otherwise

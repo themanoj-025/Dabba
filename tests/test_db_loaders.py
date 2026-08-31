@@ -21,7 +21,7 @@ pytestmark = pytest.mark.slow
 
 
 @pytest.fixture
-def client():
+def client() -> None:
     """Create a test client for the FastAPI app."""
     from fastapi.testclient import TestClient
 
@@ -46,7 +46,7 @@ def auth_headers(api_key: str | None) -> dict[str, str]:
 # ─── Helpers ─────────────────────────────────────────────────────────
 
 
-def _make_memory_config():
+def _make_memory_config() -> None:
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
     from dabba.database.session import dispose_engine, init_db

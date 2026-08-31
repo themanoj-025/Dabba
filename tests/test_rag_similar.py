@@ -14,7 +14,7 @@ class TestBuildRestaurantEmbeddings:
     """Tests for build_restaurant_embeddings()."""
 
     @pytest.fixture
-    def sample_df(self):
+    def sample_df(self) -> None:
         """Create a small restaurant DataFrame with feature columns."""
         return pd.DataFrame(
             {
@@ -72,7 +72,7 @@ class TestFindSimilarRestaurants:
     """Tests for find_similar_restaurants()."""
 
     @pytest.fixture
-    def sample_df(self):
+    def sample_df(self) -> None:
         """Create a restaurant DataFrame with distinct restaurants."""
         rng = np.random.RandomState(42)
         n = 10
@@ -87,7 +87,7 @@ class TestFindSimilarRestaurants:
         )
 
     @pytest.fixture
-    def embeddings(self, sample_df):
+    def embeddings(self, sample_df) -> None:
         """Build embeddings for the sample DataFrame."""
         return build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
 

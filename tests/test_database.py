@@ -27,7 +27,7 @@ from dabba.database.seed import seed_orders, seed_restaurants
 # ─── Helpers ─────────────────────────────────────────────────────────
 
 
-def _make_memory_config():
+def _make_memory_config() -> None:
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
     from dabba.database.session import dispose_engine, init_db
