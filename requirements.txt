@@ -57,7 +57,7 @@ pytest-cov>=7.1.0,<8.0
 # Linting / Formatting
 ruff>=0.16.4,<1.0
 black>=26.5.1,<27.0
-isort>=8.0.1,<9.0
+isort>=9.0.1,<10.0
 
 # Kaggle API (for dataset download)
 kaggle>=1.5,<3.0
