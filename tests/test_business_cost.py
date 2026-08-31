@@ -152,7 +152,7 @@ class TestAbScenarioSimulation:
     """Tests for run_ab_scenario_simulation()."""
 
     @pytest.fixture
-    def sample_df(self):
+    def sample_df(self) -> None:
         """Create a sample restaurant DataFrame for A/B testing."""
         rng = np.random.RandomState(42)
         n = 10

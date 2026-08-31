@@ -15,7 +15,7 @@ from dabba.models.collaborative_recommender import (
 
 
 @pytest.fixture
-def sample_restaurants():
+def sample_restaurants() -> None:
     """Create a small sample restaurant DataFrame."""
     rng = np.random.RandomState(42)
     n = 20

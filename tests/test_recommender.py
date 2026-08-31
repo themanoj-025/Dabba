@@ -34,7 +34,7 @@ class TestRestaurantRecommender:
     """Tests for the hybrid recommender."""
 
     @pytest.fixture
-    def sample_df(self):
+    def sample_df(self) -> None:
         """Create a sample restaurant DataFrame."""
         return pd.DataFrame(
             {
@@ -92,7 +92,7 @@ class TestRecommenderSimilarity:
     """Tests for the _compute_similarity method."""
 
     @pytest.fixture
-    def recommender(self):
+    def recommender(self) -> None:
         """Create a recommender with a small DataFrame."""
         df = pd.DataFrame(
             {
@@ -136,7 +136,7 @@ class TestRecommenderLoadModel:
     """Tests for load_rating_model()."""
 
     @pytest.fixture
-    def recommender(self):
+    def recommender(self) -> None:
         """Create a basic recommender."""
         df = pd.DataFrame(
             {"name": ["A"], "rate": [4.0], "votes": [100], "cost_for_two": [500]}
