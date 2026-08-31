@@ -7,7 +7,7 @@
 #
 # See docker-compose.yml for the recommended way to run all services.
 
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
