@@ -50,7 +50,7 @@ dependencies = [
 where = ["src"]
 
 [tool.pytest.ini_options]
-addopts = "-m 'not slow'"
+addopts = "-m 'not slow' --cov --cov-fail-under=50"
 testpaths = ["tests"]
 pythonpath = ["src"]
 
