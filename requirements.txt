@@ -77,7 +77,7 @@ python-dotenv>=1.0,<2.0
 prometheus-client>=0.19,<1.0
 
 # Hyperparameter Optimization
-optuna>=3.4,<5.0
+optuna>=4.9.0,<5.0
 
 # Retry with exponential backoff
 tenacity>=8.0,<10.0
