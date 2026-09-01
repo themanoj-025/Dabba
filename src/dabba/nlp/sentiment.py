@@ -55,7 +55,7 @@ def add_sentiment_scores(
     df: pd.DataFrame,
     review_col: str = "reviews_list",
     config: DabbaConfig | None = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Add per-restaurant average sentiment scores to the DataFrame.
 
     Processes the reviews_list column (which contains a stringified list of

@@ -36,7 +36,7 @@ async def list_restaurants(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Pagination offset"),
     db: Session = Depends(get_db_generator),
-) -> RestaurantListResponse:
+) -> RestaurantListResponse -> None:
     """List all restaurants from the database (paginated).
 
     This endpoint proves the CSV→DB migration by reading from
@@ -81,7 +81,7 @@ async def get_restaurant(
     request: Request,
     restaurant_id: int,
     db: Session = Depends(get_db_generator),
-) -> RestaurantItem:
+) -> RestaurantItem -> None:
     """Get a single restaurant by ID.
 
     Args:
@@ -119,7 +119,7 @@ async def search_restaurants(
     query: str,
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db_generator),
-) -> RestaurantListResponse:
+) -> RestaurantListResponse -> None:
     """Search restaurants by name or cuisine.
 
     Args:

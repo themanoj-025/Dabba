@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def load_zomato(
     config: DabbaConfig | None = None,
     use_db: bool = False,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Load the raw Zomato Bangalore Restaurants dataset.
 
     When ``use_db=True``, tries to load from the database first;
@@ -117,7 +117,7 @@ def load_zomato_from_db(config: DabbaConfig | None = None) -> pd.DataFrame:
 def load_delivery(
     config: DabbaConfig | None = None,
     use_db: bool = False,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Load the raw food delivery time dataset.
 
     When ``use_db=True``, tries to load from the database first;

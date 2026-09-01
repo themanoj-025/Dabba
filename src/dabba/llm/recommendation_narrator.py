@@ -165,7 +165,7 @@ def narrate_recommendation(
     sentiment_avg: float = 0.0,
     eta_prediction: float | None = None,
     config: DabbaConfig | None = None,
-) -> str:
+) -> str -> None:
     """Generate a natural-language recommendation explanation.
 
     Tries LLM first (if configured), falls back to template-based rules.

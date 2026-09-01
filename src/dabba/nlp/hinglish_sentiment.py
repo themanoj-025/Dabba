@@ -148,7 +148,7 @@ def add_hinglish_sentiment_scores(
     df: pd.DataFrame,
     review_col: str = "reviews_list",
     config: DabbaConfig | None = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Add per-restaurant average sentiment scores using Hinglish-aware model.
 
     Works identically to ``sentiment.add_sentiment_scores()`` but

@@ -70,7 +70,7 @@ def build_restaurant_embeddings(
     df: pd.DataFrame,
     feature_cols: list[str],
     config: DabbaConfig | None = None,
-) -> np.ndarray:
+) -> np.ndarray -> None:
     """Build normalized restaurant feature embeddings and save to disk.
 
     Args:
@@ -115,7 +115,7 @@ def find_similar_restaurants(
     embeddings: np.ndarray,
     top_k: int = 5,
     config: DabbaConfig | None = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Find the top-k most similar restaurants to a given restaurant.
 
     Args:

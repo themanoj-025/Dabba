@@ -93,7 +93,7 @@ async def recommend(
     request: Request,
     body: RecommendRequest,
     recommender: HybridRecommender | None = Depends(get_recommender),
-) -> RecommendResponse:
+) -> RecommendResponse -> None:
     """Get hybrid restaurant recommendations with optional LLM narration.
 
     Args:

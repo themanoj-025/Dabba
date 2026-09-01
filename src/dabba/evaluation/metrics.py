@@ -17,7 +17,7 @@ def compute_regression_metrics(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     prefix: str = "",
-) -> dict[str, float]:
+) -> dict[str, float] -> None:
     """Compute standard regression metrics.
 
     Args:

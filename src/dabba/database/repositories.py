@@ -16,8 +16,8 @@ Usage (FastAPI):
 
         @app.get("/v1/restaurants")
         def list_restaurants(
-            db: Session = Depends(get_db_generator),
-        ) -> Any:
+            db -> None:
+        ) -> Any -> None:
             return get_all_restaurants(db, limit=20)
 """
 
@@ -48,7 +48,7 @@ def get_all_restaurants(
     db: Session,
     limit: int = 50,
     offset: int = 0,
-) -> list[Restaurant]:
+) -> list[Restaurant] -> None:
     """Fetch paginated list of restaurants, ordered by name.
 
     Args:
@@ -94,7 +94,7 @@ def get_restaurants_by_cuisine(
     db: Session,
     cuisine: str,
     limit: int = 20,
-) -> list[Restaurant]:
+) -> list[Restaurant] -> None:
     """Search restaurants by cuisine keyword.
 
     Args:
@@ -133,7 +133,7 @@ def get_all_orders(
     db: Session,
     limit: int = 50,
     offset: int = 0,
-) -> list[Order]:
+) -> list[Order] -> None:
     """Fetch paginated orders, newest first.
 
     Args:
@@ -157,7 +157,7 @@ def get_orders_by_restaurant(
     db: Session,
     restaurant_id: int,
     limit: int = 20,
-) -> list[Order]:
+) -> list[Order] -> None:
     """Fetch orders for a specific restaurant.
 
     Args:
@@ -184,7 +184,7 @@ def get_experiment_results(
     db: Session,
     task: str | None = None,
     limit: int = 20,
-) -> list[ExperimentResult]:
+) -> list[ExperimentResult] -> None:
     """Fetch experiment results, optionally filtered by task.
 
     Args:
@@ -225,7 +225,7 @@ def get_winning_model(db: Session, task: str) -> ExperimentResult | None:
 def get_all_experiment_results(
     db: Session,
     task: str | None = None,
-) -> list[ExperimentResult]:
+) -> list[ExperimentResult] -> None:
     """Fetch all experiment results for a task, ordered by MAE ascending.
 
     Args:
@@ -281,7 +281,7 @@ _RESTAURANT_TOP_CUISINES: list[str] = [
 def get_all_restaurants_as_df(
     db: Session,
     with_cuisine_features: bool = True,
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Fetch all restaurants from DB and return as a feature-engineered DataFrame.
 
     Builds a DataFrame matching the structure of the processed CSV,
@@ -367,7 +367,7 @@ def get_recent_drift_logs(
     db: Session,
     limit: int = 50,
     only_alerted: bool = False,
-) -> list[DriftLog]:
+) -> list[DriftLog] -> None:
     """Fetch recent drift detection events.
 
     Args:

@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 def seed_restaurants(
     df: pd.DataFrame,
     config: DabbaConfig | None = None,
-) -> int:
+) -> int -> None:
     """Upsert all restaurants from a DataFrame into the database.
 
     Each row is matched by ``name`` — existing rows are updated,
@@ -96,7 +96,7 @@ def seed_orders(
     df: pd.DataFrame,
     predictions: np.ndarray | None = None,
     config: DabbaConfig | None = None,
-) -> int:
+) -> int -> None:
     """Insert delivery orders into the database.
 
     Args:

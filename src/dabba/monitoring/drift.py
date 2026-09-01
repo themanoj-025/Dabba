@@ -357,7 +357,7 @@ class DriftDetector:
     def detect_and_alert(
         self,
         batch: pd.DataFrame,
-    ) -> DriftResult:
+    ) -> DriftResult -> None:
         """Drift detection + Slack notification + DB logging.
 
         Combines :meth:`detect` with the full alerting pipeline:
@@ -444,7 +444,7 @@ class DriftDetector:
         self,
         n_samples: int = 100,
         shift_scale: float = 2.0,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame -> None:
         """Generate a synthetic batch with intentional drift for testing.
 
         Args:
