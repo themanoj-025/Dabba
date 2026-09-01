@@ -63,7 +63,7 @@ def generate_comparison_charts(
     results: list,
     task: str = "rating",
     output_dir: Path | None = None,
-) -> None -> None:
+) -> None:
     """Generate comparison charts — both matplotlib (saved) and
     Plotly JSON (for interactive display in UI)."""
     if output_dir is None:
@@ -133,7 +133,7 @@ def generate_residual_plots(
     task: str = "rating",
     top_n: int = 3,
     output_dir: Path | None = None,
-) -> None -> None:
+) -> None:
     """Generate residual plots for top N models."""
     if output_dir is None:
         output_dir = get_config().reports_figures_dir
@@ -285,7 +285,7 @@ def compute_shap_explanations(
     X: pd.DataFrame,
     task: str = "rating",
     output_dir: Path | None = None,
-) -> None -> None:
+) -> None:
     """Compute and save SHAP explanations for the winning model."""
     try:
         import shap

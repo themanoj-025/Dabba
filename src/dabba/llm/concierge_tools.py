@@ -69,7 +69,7 @@ class ConciergeTools:
         max_budget: float | None = None,
         area: str | None = None,
         top_n: int = 5,
-    ) -> list[dict[str, Any]] -> None:
+    ) -> list[dict[str, Any]]:
         """Search restaurants by cuisine, budget, and/or area.
 
         Args:

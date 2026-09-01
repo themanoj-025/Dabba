@@ -87,7 +87,7 @@ def _age_bucket(age: float) -> str:
 
 def cyclical_encode(
     hours: np.ndarray, period: int = 24
-) -> tuple[np.ndarray, np.ndarray] -> None:
+) -> tuple[np.ndarray, np.ndarray]:
     """Convert a cyclical feature (hour, day) to sin/cos components.
 
     Args:
@@ -147,7 +147,7 @@ WEATHER_ENCODING = {
 
 def add_delivery_features(
     df: pd.DataFrame, config: DabbaConfig | None = None
-) -> pd.DataFrame -> None:
+) -> pd.DataFrame:
     """Engineer features for the ETA prediction model.
 
     Features created fall into five groups:
@@ -330,7 +330,7 @@ def build_eta_features_for_api(
     weather_encoded: int = 1,
     city_zone: str = "unknown",
     config: DabbaConfig | None = None,
-) -> pd.DataFrame -> None:
+) -> pd.DataFrame:
     """Build the full ETA feature vector from API-level inputs.
 
     Constructs all features that the winning ETA model expects

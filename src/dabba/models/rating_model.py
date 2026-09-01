@@ -87,7 +87,7 @@ def get_tuned_rating_models(
     y: pd.Series,
     config: DabbaConfig | None = None,
     models_to_tune: list[str] | None = None,
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Return rating models with Optuna-tuned hyperparameters.
 
     Runs Optuna HPO on ensemble models, then replaces their defaults
@@ -144,7 +144,7 @@ def train_and_evaluate_rating_models(
     config: DabbaConfig | None = None,
     use_mlflow: bool = True,
     use_hpo: bool | None = None,
-) -> tuple[list, ModelResult | None] -> None:
+) -> tuple[list, ModelResult | None]:
     """Train all candidate rating models with k-fold CV.
 
     If ``use_hpo`` is ``True`` (or ``None`` and ``config.optuna_enabled``),
@@ -196,7 +196,7 @@ def fit_best_rating_model(
     y: pd.Series,
     save_path: Any,
     config: DabbaConfig | None = None,
-) -> Any -> None:
+) -> Any:
     """Retrain the winning rating model on full data and save.
 
     Args:

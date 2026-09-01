@@ -53,7 +53,7 @@ def generate_synthetic_interactions(
     min_ratings: int = 5,
     max_ratings: int = 30,
     config: DabbaConfig | None = None,
-) -> pd.DataFrame -> None:
+) -> pd.DataFrame:
     """Generate SYNTHETIC user-restaurant interaction data.
 
     **IMPORTANT: This generates simulated, not real, user behavior.**
@@ -215,7 +215,7 @@ def train_matrix_factorization(
     lr: float = 0.01,
     device: str = "cpu",
     config: DabbaConfig | None = None,
-) -> nn.Module -> None:
+) -> nn.Module:
     """Train a matrix factorization model on interaction data.
 
     Args:
@@ -289,7 +289,7 @@ def predict_user_ratings(
     user_id: int,
     n_items: int,
     device: str = "cpu",
-) -> np.ndarray -> None:
+) -> np.ndarray:
     """Predict ratings for all items for a given user.
 
     Args:
@@ -314,7 +314,7 @@ def get_collaborative_scores(
     n_users: int,
     restaurant_ids: np.ndarray,
     device: str = "cpu",
-) -> np.ndarray -> None:
+) -> np.ndarray:
     """Compute average collaborative filtering score per restaurant.
 
     Averages predicted ratings across all synthetic users for each
@@ -358,7 +358,7 @@ def get_collaborative_scores(
 def save_collaborative_model(
     model: nn.Module,
     path: Path,
-) -> None -> None:
+) -> None:
     """Save the trained matrix factorization model.
 
     Args:
@@ -376,7 +376,7 @@ def load_collaborative_model(
     n_factors: int = 50,
     path: Path | None = None,
     device: str = "cpu",
-) -> nn.Module -> None:
+) -> nn.Module:
     """Load a trained matrix factorization model.
 
     Args:

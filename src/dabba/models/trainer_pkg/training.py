@@ -10,7 +10,7 @@ def train_and_evaluate_models(
     config: DabbaConfig | None = None,
     use_mlflow: bool = True,
     task: str = "rating",
-) -> tuple[list[ModelResult], ModelResult | None] -> None:
+) -> tuple[list[ModelResult], ModelResult | None]:
     """Train all candidate models with k-fold CV and return comparison.
 
     This is the core generic training pipeline used by both the rating
@@ -159,7 +159,7 @@ def fit_best_model(
     save_path: Any,
     task: str = "model",
     config: DabbaConfig | None = None,
-) -> Any -> None:
+) -> Any:
     """Retrain the winning model on full data and save to disk.
 
     Args:

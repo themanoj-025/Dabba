@@ -90,7 +90,7 @@ async def chat(
     request: Request,
     body: ChatRequest,
     tools: ConciergeTools | None = Depends(get_tools),
-) -> ChatResponse -> None:
+) -> ChatResponse:
     """Send a message to the Food Concierge.
 
     Args:

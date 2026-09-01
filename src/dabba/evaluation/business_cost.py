@@ -46,7 +46,7 @@ def compute_sla_analysis(
     y_pred: np.ndarray,
     sla_threshold: float | None = None,
     config: DabbaConfig | None = None,
-) -> dict[str, float] -> None:
+) -> dict[str, float]:
     """Analyze SLA violation rates using predicted vs actual delivery times.
 
     Args:
@@ -109,7 +109,7 @@ def compute_reliability_score(
     delay_risk: float | np.ndarray,
     weights: dict[str, float] | None = None,
     config: DabbaConfig | None = None,
-) -> float | np.ndarray -> None:
+) -> float | np.ndarray:
     """Compute the Reliability Score for one or more restaurants.
 
     Formula:
@@ -159,7 +159,7 @@ def run_ab_scenario_simulation(
     sentiment_col: str = "avg_sentiment",
     delay_col: str = "delay_risk",
     top_n: int = 10,
-) -> dict[str, Any] -> None:
+) -> dict[str, Any]:
     """Run Reliability Score ranking under multiple weight profiles.
 
     Simulates what a product team would A/B test: how does the
