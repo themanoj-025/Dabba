@@ -23,7 +23,7 @@ def bayesian_average(
     vote_counts: pd.Series,
     C: float | None = None,
     m: float | None = None,
-) -> pd.Series -> None:
+) -> pd.Series:
     """Compute Bayesian average rating to prevent low-vote restaurants from ranking high.
 
     Formula: weighted_rating = (v / (v + m)) * R + (m / (v + m)) * C
@@ -131,7 +131,7 @@ class RestaurantRecommender:
         budget: float | None = None,
         area: str | None = None,
         top_n: int = 5,
-    ) -> pd.DataFrame -> None:
+    ) -> pd.DataFrame:
         """Generate ranked restaurant recommendations with explanations.
 
         Args:

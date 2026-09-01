@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def optimize_assignments(
     cost_matrix: np.ndarray,
-) -> tuple[np.ndarray, float] -> None:
+) -> tuple[np.ndarray, float]:
     """Assign delivery partners to orders using the Hungarian algorithm.
 
     Args:
@@ -66,7 +66,7 @@ def compare_assignment_strategies(
     orders_df: pd.DataFrame,
     eta_model: object,
     feature_cols: list[str],
-) -> dict[str, float] -> None:
+) -> dict[str, float]:
     """Compare optimized vs naive assignment on a set of simulated orders.
 
     Args:

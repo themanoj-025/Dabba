@@ -47,7 +47,7 @@ def maybe_trigger_retraining(
     drift_threshold: float = 0.3,
     project_root: Path | None = None,
     dry_run: bool = False,
-) -> bool -> None:
+) -> bool:
 
     """Trigger model retraining if drift is severe enough.
 

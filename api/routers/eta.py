@@ -68,7 +68,7 @@ async def predict_eta(
     request: Request,
     body: ETARequest,
     model: object | None = Depends(get_eta_model),
-) -> ETAResponse -> None:
+) -> ETAResponse:
     """Predict delivery time for an order.
 
     Args:

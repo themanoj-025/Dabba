@@ -60,7 +60,7 @@ def select_best_model(
     results: list,
     metric: str = "mae",
     task: str = "rating",
-) -> str | None -> None:
+) -> str | None:
     """Select the best model by the given metric.
 
     Args:

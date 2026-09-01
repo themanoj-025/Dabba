@@ -32,7 +32,7 @@ async def explain_prediction(
     request: Request,
     prediction_id: int,
     db: Session = Depends(get_db_generator),
-) -> ExplainResponse -> None:
+) -> ExplainResponse:
     """Retrieve a stored model prediction with SHAP explanations.
 
     Args:

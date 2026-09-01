@@ -25,7 +25,7 @@ router = APIRouter(prefix="/model-info", tags=["model-info"])
 async def model_info(
     request: Request,
     db: Session = Depends(get_db_generator),
-) -> dict -> None:
+) -> dict:
     """Return which models are deployed and their metrics.
 
     Reads from the ExperimentResult table which stores data from the
