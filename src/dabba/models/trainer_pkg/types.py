@@ -261,7 +261,7 @@ def tune_hyperparameters(
     search_space: dict[str, Any] | None = None,
     progress_bar: bool = True,
     config: DabbaConfig | None = None,
-) -> tuple[dict[str, Any], float, float]:
+) -> tuple[dict[str, Any], float, float] -> None:
     """Run Optuna hyperparameter optimization for a single model.
 
     Uses :class:`optuna.Study` with ``TPESampler`` to minimize MAE over
@@ -417,7 +417,7 @@ def get_tuned_model(
     cv_folds: int = 5,
     random_state: int = 42,
     config: DabbaConfig | None = None,
-) -> Any | None:
+) -> Any | None -> None:
     """Run Optuna tuning and return the best model instance.
 
     Convenience wrapper around :func:`tune_hyperparameters` that
@@ -469,7 +469,7 @@ def tune_all_models(
     cv_folds: int = 5,
     random_state: int = 42,
     config: DabbaConfig | None = None,
-) -> dict[str, Any | None]:
+) -> dict[str, Any | None] -> None:
     """Run Optuna tuning on multiple models and return tuned instances.
 
     Tunes each model in ``models_to_tune`` and returns a dict of

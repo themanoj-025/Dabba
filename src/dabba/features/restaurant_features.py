@@ -90,7 +90,7 @@ def encode_cuisines(df: pd.DataFrame, top_n: int = 30) -> pd.DataFrame:
 
 def add_restaurant_features(
     df: pd.DataFrame, config: DabbaConfig | None = None
-) -> pd.DataFrame:
+) -> pd.DataFrame -> None:
     """Engineer features for the rating prediction model.
 
     Features created:

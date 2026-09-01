@@ -94,7 +94,7 @@ class HybridRecommender:
         area: str | None = None,
         prioritize: str = "balanced",
         top_n: int = 5,
-    ) -> pd.DataFrame:
+    ) -> pd.DataFrame -> None:
         """Generate hybrid restaurant recommendations.
 
         Args:

@@ -417,7 +417,7 @@ def get_concierge_response(
     conversation_history: list[dict[str, str]],
     tools: ConciergeTools,
     config: DabbaConfig | None = None,
-) -> str:
+) -> str -> None:
     """Get a response from the Food Concierge.
 
     Tries LLM first (if configured with an API key), falls back to

@@ -94,7 +94,7 @@ def get_tuned_eta_models(
     y: pd.Series,
     config: DabbaConfig | None = None,
     models_to_tune: list[str] | None = None,
-) -> dict[str, Any]:
+) -> dict[str, Any] -> None:
     """Return ETA models with Optuna-tuned hyperparameters.
 
     Runs Optuna HPO on ensemble models, then replaces their defaults
@@ -200,7 +200,7 @@ def train_and_evaluate_eta_models(
     config: DabbaConfig | None = None,
     use_mlflow: bool = True,
     use_hpo: bool | None = None,
-) -> tuple[list, ModelResult | None]:
+) -> tuple[list, ModelResult | None] -> None:
     """Train all candidate ETA models with k-fold CV.
 
     If ``use_hpo`` is ``True`` (or ``None`` and ``config.optuna_enabled``),
@@ -260,7 +260,7 @@ def fit_best_eta_model(
     y: pd.Series,
     save_path: Any,
     config: DabbaConfig | None = None,
-) -> Any:
+) -> Any -> None:
     """Retrain the winning ETA model on full data and save.
 
     Args:

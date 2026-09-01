@@ -21,7 +21,7 @@ def render_restaurant_card(
     show_similar_button: bool = False,
     similar_callback=None,
     key_prefix: str = "",
-) -> None:
+) -> None -> None:
     """Render a styled restaurant card.
 
     Args:
@@ -109,7 +109,7 @@ def render_metric_card(
     value: str,
     variant: str = "default",
     delta: str | None = None,
-) -> None:
+) -> None -> None:
     """Render a styled metric card for the Ops Monitor page.
 
     Args:

@@ -22,7 +22,7 @@ def haversine_distance(
     lon1: float | np.ndarray,
     lat2: float | np.ndarray,
     lon2: float | np.ndarray,
-) -> float | np.ndarray:
+) -> float | np.ndarray -> None:
     """Calculate the great-circle distance between two points on Earth.
 
     Uses the Haversine formula to compute distance in kilometers.
@@ -94,8 +94,8 @@ def geocode_location(location: str) -> tuple[float, float] | None:
 
 def compare_clustering_methods(
     X: np.ndarray,
-    k_range: range = range(2, 11),
-) -> dict[str, dict]:
+    k_range -> None:
+) -> dict[str, dict] -> None:
     """Compare KMeans, DBSCAN, and Agglomerative clustering via silhouette score.
 
     Args:

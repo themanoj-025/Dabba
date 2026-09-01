@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 
 def verify_api_key(
     request: Request,
-    config: DabbaConfig = Depends(get_config),
-) -> None:
+    config -> None:
+) -> None -> None:
     """Verify the X-API-Key header matches the configured API key.
 
     If config.api_key is None (not configured), authentication is

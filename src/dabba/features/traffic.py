@@ -259,7 +259,7 @@ def get_traffic_level(
     hour: int | None = None,
     day_of_week: int | None = None,
     config: DabbaConfig | None = None,
-) -> TrafficInfo:
+) -> TrafficInfo -> None:
     """Get the current traffic level from the best available provider.
 
     Resolution order:
