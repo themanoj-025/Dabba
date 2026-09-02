@@ -5,13 +5,12 @@ import pandas as pd
 import pytest
 
 from dabba.models.optimizer import (
-
-pytestmark = pytest.mark.unit
-
     compare_assignment_strategies,
     naive_assignments,
     optimize_assignments,
 )
+
+pytestmark = pytest.mark.unit
 
 
 class TestOptimizeAssignments:
@@ -144,6 +143,7 @@ class TestCompareAssignmentStrategies:
         result = compare_assignment_strategies(
             orders_df, model, ["distance_km", "traffic_level"]
         )
+
         assert result["improvement_pct"] >= 0
 
     def test_empty_dataframe(self) -> None:
