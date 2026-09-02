@@ -10,6 +10,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+pytestmark = pytest.mark.integration
+
+
 pytestmark = pytest.mark.slow
 @pytest.fixture
 def client() -> None:

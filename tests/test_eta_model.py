@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.unit
+
 """Tests for ETA model training and evaluation."""
 
 from unittest.mock import patch

@@ -6,6 +6,9 @@ import pytest
 
 from dabba.monitoring.drift import DriftDetector
 
+pytestmark = pytest.mark.integration
+
+
 
 @pytest.fixture
 def reference_data() -> None:

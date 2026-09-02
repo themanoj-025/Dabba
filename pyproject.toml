@@ -50,6 +50,11 @@ dependencies = [
 where = ["src"]
 
 [tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests requiring external services",
+    "unit: marks pure unit tests",
+]
 addopts = "-m 'not slow' --cov --cov-fail-under=50"
 testpaths = ["tests"]
 pythonpath = ["src"]

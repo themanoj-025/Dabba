@@ -5,6 +5,9 @@ import pandas as pd
 import pytest
 
 from dabba.models.optimizer import (
+
+pytestmark = pytest.mark.unit
+
     compare_assignment_strategies,
     naive_assignments,
     optimize_assignments,
