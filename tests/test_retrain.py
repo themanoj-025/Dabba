@@ -9,6 +9,9 @@ import pytest
 from dabba.monitoring.drift import DriftResult
 from dabba.monitoring.retrain import maybe_trigger_retraining
 
+pytestmark = pytest.mark.integration
+
+
 # ─── Fixtures ─────────────────────────────────────────────────────────────
 
 

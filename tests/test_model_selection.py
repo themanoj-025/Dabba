@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.unit
+
 """Unit tests for model_selection.py — critical test protecting the automatic
 model selection logic from silently breaking.
 """
