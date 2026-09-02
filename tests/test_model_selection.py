@@ -1,14 +1,14 @@
 import pytest
 
+import pandas as pd
+from dabba.models.model_selection import (
 pytestmark = pytest.mark.unit
 
 """Unit tests for model_selection.py — critical test protecting the automatic
 model selection logic from silently breaking.
 """
 
-import pandas as pd
 
-from dabba.models.model_selection import (
     comparison_to_dataframe,
     save_comparison_csv,
     select_best_model,
