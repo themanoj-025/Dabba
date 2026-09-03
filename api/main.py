@@ -33,6 +33,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from api.auth import verify_api_key
+from api.health import create_health_router
 from api.limiter import limiter
 from api.routers import chat, eta, explain, model_info, recommend, restaurants
 from api.schemas import HealthResponse
@@ -258,3 +259,30 @@ async def health(request: Request) -> HealthResponse:
         ),
         eta_model_loaded=(getattr(request.app.state, "eta_model", None) is not None),
     )
+
+
+# ─── Readiness probes (canonical shared module) ─────────────────────────
+
+def _state_loaded(name: str):
+    """Return a probe that fails unless ``app.state.<name>`` is set at startup."""
+
+    def _probe() -> bool:
+        if getattr(app.state, name, None) is None:
+            raise RuntimeError(f"{name} not loaded")
+        return True
+
+    return _probe
+
+
+# Canonical readiness router (api/health.py is synced from
+# shared/aegis_common/health.py):
+#   GET /health        — liveness (the bespoke /health above wins on path)
+#   GET /health/ready  — readiness, 503 until both models are loaded
+app.include_router(
+    create_health_router(
+        checks={
+            "hybrid_recommender": _state_loaded("hybrid_recommender"),
+            "eta_model": _state_loaded("eta_model"),
+        }
+    )
+)
