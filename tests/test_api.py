@@ -61,6 +61,28 @@ class TestHealthEndpoint:
         response = client.get("/health", headers={})
         assert response.status_code == 200
 
+    def test_ready_ok_when_models_loaded(self, client) -> None:
+        """Readiness returns 200 once both models are in app.state."""
+        client.app.state.hybrid_recommender = object()
+        client.app.state.eta_model = object()
+
+        response = client.get("/health/ready")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ready"
+        assert all(c["status"] == "up" for c in data["checks"])
+
+    def test_ready_503_when_models_not_loaded(self, client) -> None:
+        """Readiness returns 503 when startup has not loaded the models."""
+        client.app.state.hybrid_recommender = None
+        client.app.state.eta_model = None
+
+        response = client.get("/health/ready")
+        assert response.status_code == 503
+        data = response.json()
+        assert data["status"] == "not_ready"
+        assert data["checks"][0]["status"] == "down"
+
 
 # ─── Model Info endpoint ─────────────────────────────────────────────
 
