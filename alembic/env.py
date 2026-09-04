@@ -11,12 +11,6 @@ Usage:
 from __future__ import annotations
 
 import os
-import sys
-from pathlib import Path
-
-# Ensure the project's src/ directory is on sys.path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
