@@ -7,7 +7,7 @@ joblib>=1.5.3,<2.0
 
 # Gradient Boosting
 xgboost>=3.2.0,<4.0
-lightgbm>=4.0,<5.0
+lightgbm>=4.7.0,<5.0
 catboost>=1.2,<2.0
 
 # Deep Learning / Embeddings
