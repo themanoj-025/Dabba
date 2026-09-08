@@ -2,7 +2,8 @@
 
 Schema design principles:
     - All tables use INTEGER auto-increment primary keys named ``id``.
-    - Timestamps are stored as UTC-naive and converted on read.
+    - Timestamps are created timezone-aware (UTC) and stored as UTC
+      wall-clock in naive columns; converted on read.
     - JSON columns store dicts/lists; the driver handles serialization.
     - Foreign keys use explicit ``CASCADE`` on delete where appropriate.
     - Column types match the Pandas dtypes of the source CSV data.
@@ -10,7 +11,7 @@ Schema design principles:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     JSON,
@@ -27,6 +28,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
     """Declarative base for all Dabba ORM models."""
+
+
+def _utcnow() -> datetime:
+    """Return the current UTC time as a timezone-aware datetime.
+
+    Column-default callable replacing the deprecated ``datetime.utcnow``.
+    """
+    return datetime.now(UTC)
 
 
 # ─── Shared column mapping ───────────────────────────────────────────
@@ -82,10 +91,10 @@ class Restaurant(Base):
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, onupdate=_utcnow, nullable=False
     )
 
     def __repr__(self) -> str:
@@ -122,7 +131,7 @@ class Order(Base):
     is_at_risk: Mapped[bool] = mapped_column(Boolean, default=False)
     actual_late: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     # Relationship
@@ -155,7 +164,7 @@ class Prediction(Base):
     output_value: Mapped[float] = mapped_column(Float, nullable=False)
     shap_values: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     def __repr__(self) -> str:
@@ -190,7 +199,7 @@ class ExperimentResult(Base):
     mlflow_run_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
     is_winner: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     def __repr__(self) -> str:
@@ -223,7 +232,7 @@ class DriftLog(Base):
     n_batch: Mapped[int] = mapped_column(Integer, nullable=False)
     alerted: Mapped[bool] = mapped_column(Boolean, default=False)
     detected_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=_utcnow, nullable=False
     )
 
     def __repr__(self) -> str:
