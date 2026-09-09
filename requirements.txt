@@ -27,7 +27,7 @@ anthropic>=1.0.0,<2.0
 
 # Web Framework
 fastapi>=0.104,<1.0
-uvicorn[standard]>=0.24,<1.0
+uvicorn[standard]>=0.52.4,<1.0
 pydantic>=2.5,<3.0
 pydantic-settings>=2.15.0,<3.0
 
