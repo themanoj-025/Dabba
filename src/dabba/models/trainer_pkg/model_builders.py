@@ -1,6 +1,24 @@
-# Model builder utilities
+"""Model builder utilities for the Dabba training pipelines.
+
+Split from ``base_trainer.py``: model factory helpers, the shared
+preprocessor builder, and the MLflow run helpers.
+"""
 
 from __future__ import annotations
+
+import logging
+import os
+from typing import Any
+
+import mlflow
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+from dabba.config import DabbaConfig
+
+logger = logging.getLogger(__name__)
 
 
 def _get_xgboost() -> Any:
