@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import logging
+import re
+import time
 from typing import Any
 
-from dabba.config import DabbaConfig
+from dabba.config import DabbaConfig, get_config
 from dabba.llm.concierge_tools import ConciergeTools, _execute_tool
+from dabba.observability import (
+    concierge_loop_duration_seconds,
+    concierge_tool_calls_total,
+)
 
 logger = logging.getLogger(__name__)
 

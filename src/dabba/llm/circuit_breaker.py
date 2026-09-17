@@ -80,3 +80,36 @@ class LLMCircuitBreaker:
 
 # Module-level singleton
 llm_breaker = LLMCircuitBreaker()
+
+
+class CircuitBreakerOpenError(Exception):
+    """Raised when a call is attempted while a circuit breaker is open."""
+
+    def __init__(self, name: str = "circuit") -> None:
+        self.name = name
+        super().__init__(f"Circuit breaker '{name}' is open — call rejected")
+
+
+class CircuitBreaker(LLMCircuitBreaker):
+    """Generic circuit breaker for external API calls (traffic, LLM, ...).
+
+    Extends the LLM breaker with a ``name`` label and a ``call()`` guard
+    that raises :class:`CircuitBreakerOpenError` while the circuit is open.
+    """
+
+    def __init__(
+        self,
+        failure_threshold: int = 3,
+        recovery_timeout: float = 30.0,
+        name: str = "circuit",
+    ) -> None:
+        super().__init__(
+            failure_threshold=failure_threshold,
+            recovery_timeout=recovery_timeout,
+        )
+        self.name = name
+
+    def call(self) -> None:
+        """Raise :class:`CircuitBreakerOpenError` if the breaker is open."""
+        if self.is_open():
+            raise CircuitBreakerOpenError(self.name)

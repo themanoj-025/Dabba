@@ -1,6 +1,34 @@
-# Training, evaluation, and model persistence
+"""Training, evaluation, and model persistence pipelines.
+
+Split from ``base_trainer.py``: the generic k-fold CV training loop,
+full-data retraining, and joblib persistence.
+"""
 
 from __future__ import annotations
+
+import logging
+import time
+from pathlib import Path
+from typing import Any
+
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import KFold, cross_val_predict
+from sklearn.pipeline import Pipeline
+
+from dabba.config import DabbaConfig, get_config
+from dabba.models.trainer_pkg.model_builders import (
+    _build_preprocessor,
+    _end_mlflow_run,
+    _log_model_to_mlflow,
+    _setup_mlflow,
+)
+from dabba.models.trainer_pkg.types import ModelResult
+
+logger = logging.getLogger(__name__)
 
 
 def train_and_evaluate_models(

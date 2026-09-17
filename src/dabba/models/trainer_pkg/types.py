@@ -74,6 +74,7 @@ from sklearn.model_selection import KFold, cross_val_predict
 from sklearn.pipeline import Pipeline
 
 from dabba.config import DabbaConfig, get_config
+from dabba.models.trainer_pkg.model_builders import _build_preprocessor
 
 logger = logging.getLogger(__name__)
 
