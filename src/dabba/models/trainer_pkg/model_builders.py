@@ -7,10 +7,8 @@ preprocessor builder, and the MLflow run helpers.
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
 
-import mlflow
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer

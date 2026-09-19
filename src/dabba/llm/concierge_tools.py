@@ -30,8 +30,6 @@ The model is passed to ``ConciergeTools`` at construction time.
 from __future__ import annotations
 
 import logging
-import re
-import time
 from typing import Any
 
 import pandas as pd
@@ -39,10 +37,6 @@ import pandas as pd
 from dabba.config import DabbaConfig, get_config
 from dabba.features.delivery_features import build_eta_features_for_api
 from dabba.features.geo import haversine_distance
-from dabba.observability import (
-    concierge_loop_duration_seconds,
-    concierge_tool_calls_total,
-)
 
 logger = logging.getLogger(__name__)
 
