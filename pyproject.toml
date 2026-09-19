@@ -46,7 +46,7 @@ dependencies = [
     "requests>=2.31,<3.0",
     "tenacity>=8.2,<10.0",
     "prometheus-client>=0.19,<1.0",
-    "optuna>=3.4,<5.0",
+    "optuna>=5.0.0,<6.0",
 ]
 
 [tool.setuptools.packages.find]
