@@ -95,9 +95,11 @@ app = FastAPI(
 # --- OpenTelemetry distributed tracing (OTEL_ENABLED=true) ---
 try:
     from dabba.tracing import setup_tracing
+
     _otel_ok = setup_tracing("dabba-api")
     if _otel_ok:
         from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
         FastAPIInstrumentor.instrument_app(app)
 except ImportError:
     pass
@@ -263,6 +265,7 @@ async def health(request: Request) -> HealthResponse:
 
 
 # ─── Readiness probes (canonical shared module) ─────────────────────────
+
 
 def _state_loaded(name: str):
     """Return a probe that fails unless ``app.state.<name>`` is set at startup."""

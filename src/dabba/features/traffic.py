@@ -38,8 +38,12 @@ from dabba.llm.circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
 logger = logging.getLogger(__name__)
 
 # Circuit breakers for external traffic APIs (open after 5 failures, recover after 60s)
-_tomtom_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60.0, name="tomtom")
-_mappls_breaker = CircuitBreaker(failure_threshold=5, recovery_timeout=60.0, name="mappls")
+_tomtom_breaker = CircuitBreaker(
+    failure_threshold=5, recovery_timeout=60.0, name="tomtom"
+)
+_mappls_breaker = CircuitBreaker(
+    failure_threshold=5, recovery_timeout=60.0, name="mappls"
+)
 
 
 # ─── Data types ──────────────────────────────────────────────────────

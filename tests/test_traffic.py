@@ -1,10 +1,6 @@
 """Tests for the real-time traffic API module (P3)."""
 
-from dabba.features.traffic import (
-    TrafficInfo,
-    _simulate_traffic,
-    get_traffic_level,
-)
+from dabba.features.traffic import TrafficInfo, _simulate_traffic, get_traffic_level
 
 
 class TestTrafficInfo:

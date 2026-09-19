@@ -96,8 +96,12 @@ def render_restaurant_card(
             )
 
         # Row 4: Similar button
-        if show_similar_button and similar_callback and st.button(
-            "🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"
+        if (
+            show_similar_button
+            and similar_callback
+            and st.button(
+                "🔍 Find Similar", key=f"{key_prefix}sim_{name}", type="secondary"
+            )
         ):
             similar_callback(restaurant)
 

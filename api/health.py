@@ -98,9 +98,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from fastapi import APIRouter, Response
 
 try:  # fastapi is not a hard dependency of every repo
-    from fastapi import APIRouter, Response  # noqa: F811
+    from fastapi import APIRouter, Response
 except ImportError:  # pragma: no cover
-    APIRouter = None  # noqa: F811
+    APIRouter = None
 
 
 def create_health_router(
@@ -136,7 +136,9 @@ def create_health_router(
     async def readiness(response: Response) -> dict[str, Any]:
         """200 only when every configured dependency is healthy (k8s readiness)."""
         deps = list((checks or {}).items())
-        results = [check_dependency(name, probe, timeout=timeout) for name, probe in deps]
+        results = [
+            check_dependency(name, probe, timeout=timeout) for name, probe in deps
+        ]
         payload = aggregate_readiness(results)
         if payload["status"] != "ready":
             response.status_code = 503

@@ -74,7 +74,10 @@ class TestDabbaConfig:
         from dabba.config import DabbaConfig
 
         cfg = DabbaConfig()
-        assert cfg.rating_comparison_path == cfg.reports_dir / "model_comparison_rating.csv"
+        assert (
+            cfg.rating_comparison_path
+            == cfg.reports_dir / "model_comparison_rating.csv"
+        )
 
     def test_eta_comparison_path(self) -> None:
         from dabba.config import DabbaConfig
@@ -86,7 +89,10 @@ class TestDabbaConfig:
         from dabba.config import DabbaConfig
 
         cfg = DabbaConfig()
-        assert cfg.synthetic_interactions_path == cfg.data_processed_dir / "synthetic_interactions.csv"
+        assert (
+            cfg.synthetic_interactions_path
+            == cfg.data_processed_dir / "synthetic_interactions.csv"
+        )
 
     def test_faiss_index_path(self) -> None:
         from dabba.config import DabbaConfig
@@ -160,14 +166,22 @@ class TestBusinessDefaults:
         from dabba.config import DabbaConfig
 
         cfg = DabbaConfig()
-        total = cfg.reliability_w_rating + cfg.reliability_w_sentiment + cfg.reliability_w_delay
+        total = (
+            cfg.reliability_w_rating
+            + cfg.reliability_w_sentiment
+            + cfg.reliability_w_delay
+        )
         assert abs(total - 1.0) < 1e-6
 
     def test_hybrid_weights_sum_to_one(self) -> None:
         from dabba.config import DabbaConfig
 
         cfg = DabbaConfig()
-        total = cfg.hybrid_weight_content + cfg.hybrid_weight_collaborative + cfg.hybrid_weight_reliability
+        total = (
+            cfg.hybrid_weight_content
+            + cfg.hybrid_weight_collaborative
+            + cfg.hybrid_weight_reliability
+        )
         assert abs(total - 1.0) < 1e-6
 
     def test_drift_thresholds(self) -> None:

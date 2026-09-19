@@ -14,13 +14,13 @@ WIRED INTO:
 """
 
 from __future__ import annotations
-from typing import Any
 
 import json
 import logging
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd

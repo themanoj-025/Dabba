@@ -6,10 +6,10 @@ completing the CSV→DB migration for the Streamlit dashboard.
 """
 
 from __future__ import annotations
-from typing import Any
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import plotly.express as px
@@ -63,7 +63,8 @@ def show() -> None:
 
     # ─── Methodology ───────────────────────────────────────────────
     st.header("📋 Methodology")
-    st.markdown("""
+    st.markdown(
+        """
         **How the comparison works:**
 
         1. **Same features** — All models train on identical feature sets
@@ -76,7 +77,8 @@ def show() -> None:
         GradientBoosting, XGBoost, LightGBM, **CatBoost** (+ KNN for ETA).
 
         All experiments logged via **MLflow** — view the tracking UI at `localhost:5000`.
-        """)
+        """
+    )
 
 
 def _load_experiment_results(task: str) -> Any:
@@ -196,14 +198,16 @@ def _show_model_section(df: pd.DataFrame, task: str) -> None:
         st.image(str(shap_png), use_container_width=True)
 
     # Winner reasoning
-    st.markdown(f"""
+    st.markdown(
+        f"""
         **Why {best["model"]} won:**
         This model achieved the lowest MAE of {best["mae"]:.4f}
         ({"minutes" if task == "eta" else "rating points"}),
         meaning its predictions are closest to the actual values on average.
         The comparison used 5-fold cross-validation with identical features
         for all models, ensuring a fair comparison.
-        """)
+        """
+    )
 
 
 def _show_ab_scenarios(path: Path) -> None:

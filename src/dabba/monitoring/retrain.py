@@ -48,7 +48,6 @@ def maybe_trigger_retraining(
     project_root: Path | None = None,
     dry_run: bool = False,
 ) -> bool:
-
     """Trigger model retraining if drift is severe enough.
 
     Compares the fraction of drifted features against

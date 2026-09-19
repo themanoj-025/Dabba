@@ -317,9 +317,7 @@ class TestAuthBehavior:
             assert with_key.status_code == 200
             assert "rating_model" in with_key.json()
 
-            wrong_key = client.get(
-                "/v1/model-info", headers={"X-API-Key": "wrong-key"}
-            )
+            wrong_key = client.get("/v1/model-info", headers={"X-API-Key": "wrong-key"})
             assert wrong_key.status_code == 401
         finally:
             client.app.dependency_overrides.clear()
@@ -373,9 +371,7 @@ def test_api_routers_no_csv_reads(rel_path: str) -> None:
             and isinstance(node.func.value, ast.Name)
             and node.func.value.id in ("pd", "pandas")
         ):
-            violations.append(
-                f"  Line {node.lineno}: direct pd.read_csv() call"
-            )
+            violations.append(f"  Line {node.lineno}: direct pd.read_csv() call")
 
     assert not violations, (
         f"{rel_path} still contains pd.read_csv() calls:\n"
@@ -429,12 +425,10 @@ def test_streamlit_pages_no_csv_reads(rel_path: str) -> None:
             and isinstance(node.func.value, ast.Name)
             and node.func.value.id in ("pd", "pandas")
         ):
-            violations.append(
-                f"  Line {node.lineno}: direct pd.read_csv() call"
-            )
+            violations.append(f"  Line {node.lineno}: direct pd.read_csv() call")
 
     assert not violations, (
         f"{rel_path} still contains pd.read_csv() calls:\n"
         + "\n".join(violations)
         + "\nMigrate to repository functions (database/repositories.py)."
-    )
+    )
