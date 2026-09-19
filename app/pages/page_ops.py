@@ -161,7 +161,9 @@ def show() -> None:
                     v = (
                         "success"
                         if on_time_rate > 90
-                        else "danger" if on_time_rate < 70 else "default"
+                        else "danger"
+                        if on_time_rate < 70
+                        else "default"
                     )
                     render_metric_card(
                         "On-Time Rate", f"{on_time_rate:.1f}%", variant=v
