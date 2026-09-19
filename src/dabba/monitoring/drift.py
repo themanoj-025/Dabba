@@ -112,7 +112,8 @@ def _send_slack_alert(
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        # nosec B310: operator-configured Slack webhook URL, POST with timeout.
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
             status = resp.status
             if 200 <= status < 300:
                 logger.info("Slack alert sent successfully to %s", channel or "default")

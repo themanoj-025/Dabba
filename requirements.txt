@@ -51,7 +51,7 @@ shap>=0.43,<1.0
 mlflow>=3.16.0,<4.0
 
 # Testing
-pytest>=7.4,<9.0
+pytest>=9.0.3,<10.0  # >=9.0.3 fixes PYSEC-2026-1845 (pytest 8.4.2 advisory)
 pytest-cov>=7.1.0,<8.0
 
 # Linting / Formatting
