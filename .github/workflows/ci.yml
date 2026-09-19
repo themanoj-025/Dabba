@@ -29,7 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        # requires-python is >=3.11 (pyproject) and numpy>=2.4.6 needs >=3.11
+        python-version: ["3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v7
@@ -111,7 +112,9 @@ jobs:
           pip install -r requirements.txt
           pip install mypy==1.15.0
       - name: Type check with mypy
-        run: mypy . --ignore-missing-imports
+        # --explicit-package-bases: api/ has no __init__.py, so mypy otherwise
+        # maps api/limiter.py to both "limiter" and "api.limiter" and aborts.
+        run: mypy . --ignore-missing-imports --explicit-package-bases
 
   security-audit:
     timeout-minutes: 15
@@ -127,7 +130,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pip-audit
       - name: Audit dependencies for known vulnerabilities
-        run: pip-audit -r requirements.txt
+        # Policy: bump to a fixed release whenever one exists; ignore only
+        # advisories with no upstream fix, documented in
+        # docs/security/dependency-audit-policy.md (currently nltk only).
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-3740
 
   bandit:
     name: Bandit security scan
@@ -157,6 +163,10 @@ jobs:
   schemathesis-fuzz:
     name: Contract fuzzing (Schemathesis)
     runs-on: ubuntu-latest
+    env:
+      # src/ layout is not installed by `pip install -r requirements.txt`, so
+      # `from api.main import app` needs the package root on the import path.
+      PYTHONPATH: ${{ github.workspace }}/src
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
