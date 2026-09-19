@@ -11,10 +11,7 @@ from dabba.features.geo import (
     geocode_location,
     haversine_distance,
 )
-from dabba.features.restaurant_features import (
-    add_restaurant_features,
-    encode_cuisines,
-)
+from dabba.features.restaurant_features import add_restaurant_features, encode_cuisines
 
 
 class TestHaversineDistance:

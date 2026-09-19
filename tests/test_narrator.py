@@ -1,10 +1,7 @@
 """Tests for the recommendation narrator — LLM-powered with rules fallback."""
 
 from dabba.config import get_config
-from dabba.llm.recommendation_narrator import (
-    _rules_narrate,
-    narrate_recommendation,
-)
+from dabba.llm.recommendation_narrator import _rules_narrate, narrate_recommendation
 
 SAMPLE_RESTAURANT = {
     "name": "Meghana Foods",

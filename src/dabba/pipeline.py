@@ -39,10 +39,7 @@ from dabba.models.collaborative_recommender import (
     save_collaborative_model,
     train_matrix_factorization,
 )
-from dabba.models.eta_model import (
-    fit_best_eta_model,
-    train_and_evaluate_eta_models,
-)
+from dabba.models.eta_model import fit_best_eta_model, train_and_evaluate_eta_models
 from dabba.models.model_selection import (
     comparison_to_dataframe,
     save_comparison_csv,
@@ -234,7 +231,12 @@ def _save_restaurants_to_db(df: pd.DataFrame, config) -> None:
                     if df_col in row and not pd.isna(row[df_col]):
                         setattr(restaurant, db_col, row[df_col])
 
-                if lat_col and lon_col and not pd.isna(row.get(lat_col)) and not pd.isna(row.get(lon_col)):
+                if (
+                    lat_col
+                    and lon_col
+                    and not pd.isna(row.get(lat_col))
+                    and not pd.isna(row.get(lon_col))
+                ):
                     restaurant.latitude = float(row[lat_col])
                     restaurant.longitude = float(row[lon_col])
 
@@ -360,14 +362,18 @@ def main() -> None:
     seen = set()
     feature_cols = []
     for c in df_zomato.columns:
-        if (c.startswith("cuisine_") or c in [
-            "votes_log",
-            "cost_for_two",
-            "online_order_binary",
-            "book_table_binary",
-            "cuisine_count",
-            "avg_sentiment",
-        ]) and c not in seen:
+        if (
+            c.startswith("cuisine_")
+            or c
+            in [
+                "votes_log",
+                "cost_for_two",
+                "online_order_binary",
+                "book_table_binary",
+                "cuisine_count",
+                "avg_sentiment",
+            ]
+        ) and c not in seen:
             seen.add(c)
             feature_cols.append(c)
 

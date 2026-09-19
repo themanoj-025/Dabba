@@ -186,5 +186,3 @@ def _end_mlflow_run(mlflow_run: Any) -> None:
             mlflow.end_run()
         except (ImportError, OSError):
             pass
-
-

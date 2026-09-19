@@ -100,7 +100,8 @@ elif "💬" in page:
     concierge.show()
 else:
     st.title("🍛 Dabba — Restaurant Intelligence Platform")
-    st.markdown("""
+    st.markdown(
+        """
         Welcome to **Dabba**, an India-focused restaurant ranking and
         delivery-reliability platform using rigorous ML experimentation.
 
@@ -117,5 +118,6 @@ else:
         ```
         A composite score combining restaurant quality, customer sentiment,
         and delivery reliability — using the winning ML models.
-        """)
+        """
+    )
     st.info("👈 Use the sidebar to navigate to a specific page.")

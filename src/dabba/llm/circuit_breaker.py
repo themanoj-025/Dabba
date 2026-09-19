@@ -44,7 +44,9 @@ class LLMCircuitBreaker:
         if self._state == "OPEN":
             if time.monotonic() - self._last_open_time >= self._current_timeout:
                 self._state = "HALF_OPEN"
-                logger.info("Dabba LLM circuit breaker half-open — allowing trial request")
+                logger.info(
+                    "Dabba LLM circuit breaker half-open — allowing trial request"
+                )
                 return False
             return True
 

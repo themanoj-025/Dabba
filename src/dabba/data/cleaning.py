@@ -83,9 +83,7 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
     return cleaned
 
 
-def clean_zomato(
-    df: pd.DataFrame, config: DabbaConfig | None = None
-) -> pd.DataFrame:
+def clean_zomato(df: pd.DataFrame, config: DabbaConfig | None = None) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw Zomato dataframe.
 
     Steps:
@@ -162,9 +160,7 @@ def clean_zomato(
 # ---------------------------------------------------------------------------
 
 
-def clean_delivery(
-    df: pd.DataFrame, config: DabbaConfig | None = None
-) -> pd.DataFrame:
+def clean_delivery(df: pd.DataFrame, config: DabbaConfig | None = None) -> pd.DataFrame:
     """Apply full cleaning pipeline to the raw delivery dataframe.
 
     Steps:

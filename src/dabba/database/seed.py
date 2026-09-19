@@ -125,22 +125,30 @@ def seed_orders(
                 distance_km=float(row.get("haversine_distance_km", 0)),
                 traffic_level=int(row.get("traffic_ordinal", 0)),
                 is_festival=bool(row.get("is_festival", False)),
-                delivery_person_age=float(row["delivery_person_age"])
-                if not pd.isna(row.get("delivery_person_age"))
-                else None,
-                delivery_person_rating=float(row["delivery_person_ratings"])
-                if not pd.isna(row.get("delivery_person_ratings"))
-                else None,
-                vehicle_condition=int(row["vehicle_condition"])
-                if not pd.isna(row.get("vehicle_condition"))
-                else None,
+                delivery_person_age=(
+                    float(row["delivery_person_age"])
+                    if not pd.isna(row.get("delivery_person_age"))
+                    else None
+                ),
+                delivery_person_rating=(
+                    float(row["delivery_person_ratings"])
+                    if not pd.isna(row.get("delivery_person_ratings"))
+                    else None
+                ),
+                vehicle_condition=(
+                    int(row["vehicle_condition"])
+                    if not pd.isna(row.get("vehicle_condition"))
+                    else None
+                ),
                 predicted_eta=pred_eta,
                 actual_eta=actual_eta,
                 sla_threshold=sla_threshold,
                 is_at_risk=bool(pred_eta > sla_threshold),
-                actual_late=bool(actual_eta > sla_threshold)
-                if not pd.isna(actual_eta)
-                else None,
+                actual_late=(
+                    bool(actual_eta > sla_threshold)
+                    if not pd.isna(actual_eta)
+                    else None
+                ),
             )
             db.add(order)
             count += 1

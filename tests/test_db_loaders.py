@@ -245,7 +245,6 @@ class TestFullImport:
             pytest.skip("Raw Zomato CSV not available")
         import contextlib
 
-
         with contextlib.suppress(Exception):
             # Acceptable — may fail on delivery CSV or features
             full_import(config)

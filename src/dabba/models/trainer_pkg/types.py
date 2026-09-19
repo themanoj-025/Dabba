@@ -512,5 +512,3 @@ def tune_all_models(
 
 
 # ─── Shared model factories (graceful import-error handling) ─────────
-
-

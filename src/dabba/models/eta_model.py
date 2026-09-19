@@ -34,18 +34,12 @@ from dabba.models.base_trainer import (
     _get_lightgbm,
     _get_xgboost,
 )
-from dabba.models.base_trainer import (
-    fit_best_model as _fit_best_model,
-)
-from dabba.models.base_trainer import (
-    save_model as _save_model,
-)
+from dabba.models.base_trainer import fit_best_model as _fit_best_model
+from dabba.models.base_trainer import save_model as _save_model
 from dabba.models.base_trainer import (
     train_and_evaluate_models as _train_and_evaluate_models,
 )
-from dabba.models.base_trainer import (
-    tune_all_models as _tune_all_models,
-)
+from dabba.models.base_trainer import tune_all_models as _tune_all_models
 
 logger = logging.getLogger(__name__)
 
