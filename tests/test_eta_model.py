@@ -12,8 +12,6 @@ pytestmark = pytest.mark.unit
 """Tests for ETA model training and evaluation."""
 
 
-
-
 # Lightweight model dict for fast unit tests (avoids training 10+ heavy models)
 _LIGHTWEIGHT_MODELS = {
     "LinearRegression": LinearRegression(),

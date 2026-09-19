@@ -60,7 +60,10 @@ def _llm_narrate(
 
     # Check circuit breaker
     if llm_breaker.is_open():
-        logger.warning("LLM circuit breaker open — skipping narration for %s", restaurant.get("name"))
+        logger.warning(
+            "LLM circuit breaker open — skipping narration for %s",
+            restaurant.get("name"),
+        )
         return None
 
     prompt = (

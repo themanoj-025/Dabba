@@ -242,5 +242,3 @@ def _execute_tool(
 
     logger.warning("Unknown tool called: %s", tool_name)
     return f"Error: unknown tool '{tool_name}'."
-
-

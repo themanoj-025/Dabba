@@ -7,10 +7,7 @@ existing imports (``from dabba.models.base_trainer import ...``) keep
 working unchanged.
 """
 
-from dabba.models.model_selection import (
-    comparison_to_dataframe,
-    select_best_model,
-)
+from dabba.models.model_selection import comparison_to_dataframe, select_best_model
 from dabba.models.trainer_pkg.model_builders import (
     _build_preprocessor,
     _end_mlflow_run,
