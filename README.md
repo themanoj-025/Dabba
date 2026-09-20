@@ -39,6 +39,7 @@
 - [📡 API Endpoints](#-api-endpoints)
 - [🗺️ Roadmap](#️-roadmap)
 - [🤝 Contributing](#-contributing)
+- [📬 Support](#-support)
 - [📄 License](#-license)
 - [🙏 Acknowledgements](#-acknowledgements)
 
@@ -157,10 +158,12 @@ make run-api
 | `DABBA_API_KEY` | API authentication key | — | Optional |
 | `DABBA_DATABASE_URL` | PostgreSQL connection | SQLite fallback | ❌ |
 | `DABBA_MLFLOW_TRACKING_URI` | MLflow server URL | `http://localhost:5000` | ❌ |
-| `ANTHROPIC_API_KEY` | Claude API key | — | Optional |
-| `KAGGLE_USERNAME` | Kaggle username | — | ✅ |
-| `KAGGLE_KEY` | Kaggle API key | — | ✅ |
-| `SLACK_WEBHOOK_URL` | Drift alerts | — | Optional |
+| `DABBA_ANTHROPIC_API_KEY` | Claude API key (enables the AI concierge) | — | Optional |
+| `DABBA_LLM_ENABLED` | Master switch for the LLM layer | `false` | ❌ |
+| `DABBA_SLACK_WEBHOOK_URL` | Incoming webhook for drift alerts | — | Optional |
+| `KAGGLE_USERNAME` / `KAGGLE_KEY` | Kaggle credentials — only if you prefer env vars over `kaggle.json` | — | Optional¹ |
+
+> 📝 **Note:** Dabba reads its own settings via pydantic-settings with the `DABBA_` prefix (see `.env.example`); unprefixed `ANTHROPIC_API_KEY` / `SLACK_WEBHOOK_URL` are ignored. Dataset download is credential-free by default via `python setup_kaggle.py` with a `kaggle.json` token — the Kaggle env vars are only the alternative path. ¹ Marked optional because the repo ships pre-trained artifacts; you only need credentials to re-download/re-train.
 
 ---
 
@@ -300,6 +303,14 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 - [Streamlit](https://streamlit.io/) - Dashboard
 - [MLflow](https://mlflow.org/) - Experiment tracking
 - [Optuna](https://optuna.org/) - Hyperparameter optimization
+
+---
+
+## 📬 Support
+
+- 🐛 [Report a bug](https://github.com/themanoj-025/Dabba/issues)
+- 💡 [Request a feature](https://github.com/themanoj-025/Dabba/issues)
+- ⭐ [Star the repository](https://github.com/themanoj-025/Dabba)
 
 ---
 
