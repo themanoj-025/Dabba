@@ -1,6 +1,6 @@
 # Dabba — Folder Structure
 
-```
+```text
 Dabba/
 ├── src/dabba/                    # Core ML package (src-layout)
 │   ├── __init__.py

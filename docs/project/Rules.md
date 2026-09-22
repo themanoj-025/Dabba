@@ -24,7 +24,7 @@
 - Formatter: black; linter: ruff; isort.
 - Structure:
 
-```
+```text
 dabba/
   data/          # ingestion, preprocessing
   models/        # rating, eta, cf, reliability

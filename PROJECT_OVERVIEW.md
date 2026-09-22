@@ -99,7 +99,7 @@
 
 ## 4. High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │              Kaggle Datasets (Zomato + Delivery)                │
 └─────────────────────────┬───────────────────────────────────────┘
@@ -146,7 +146,7 @@ The system separates concerns into:
 
 ## 5. Complete Folder Structure Tree
 
-```
+```text
 Dabba/
 ├── api/
 │   ├── __init__.py
@@ -528,7 +528,7 @@ make db-shell    # Interactive DB shell
 
 ### Flow 1: Restaurant Recommendation
 
-```
+```text
 1. Client sends POST /v1/recommend with user preferences
 2. api/routers/recommend.py validates input
 3. Loads hybrid_recommender from app.state
@@ -541,7 +541,7 @@ make db-shell    # Interactive DB shell
 
 ### Flow 2: Delivery ETA Prediction
 
-```
+```text
 1. Client sends POST /v1/predict-eta with delivery details
 2. api/routers/eta.py extracts features
 3. add_delivery_features() generates ML features
@@ -551,7 +551,7 @@ make db-shell    # Interactive DB shell
 
 ### Flow 3: Training Pipeline
 
-```
+```text
 1. python -m dabba.pipeline
 2. Stage 2: Load Zomato data → clean → feature engineer
 3. Stage 3: Load delivery data → clean → feature engineer
@@ -570,7 +570,7 @@ make db-shell    # Interactive DB shell
 
 ### Internal Dependencies
 
-```
+```text
 api/main.py
   ├── api/routers/* → api/auth.py, api/limiter.py
   ├── dabba.config → dabba.models.*
