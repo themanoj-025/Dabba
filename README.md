@@ -12,8 +12,8 @@
   <a href="https://github.com/themanoj-025/Dabba/actions"><img src="https://img.shields.io/github/actions/workflow/status/themanoj-025/Dabba/ci.yml?style=flat-square&label=CI" alt="CI Status" /></a>
   <a href="https://github.com/themanoj-025/Dabba/blob/main/LICENSE"><img src="https://img.shields.io/github/license/themanoj-025/Dabba?style=flat-square" alt="License" /></a>
   <a href="https://github.com/themanoj-025/Dabba/stargazers"><img src="https://img.shields.io/github/stars/themanoj-025/Dabba?style=social" alt="Stars" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/Python-3.11-blue?style=flat-square" alt="Python" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/MLflow-0194E2?style=flat-square" alt="MLflow" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11-blue?style=flat-square" alt="Python" /></a>
+  <a href="https://mlflow.org/"><img src="https://img.shields.io/badge/MLflow-0194E2?style=flat-square" alt="MLflow" /></a>
 </p>
 
 ---
@@ -100,7 +100,7 @@ India's food-tech landscape generates massive amounts of restaurant and delivery
 
 ### Reliability Score Formula
 
-```
+```text
 reliability_score = 0.4 × norm(rating) + 0.3 × norm(sentiment) - 0.3 × norm(delay_risk)
 ```
 
@@ -169,7 +169,7 @@ make run-api
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │              Kaggle Datasets (Zomato + Delivery)                │
 └─────────────────────────┬───────────────────────────────────────┘
@@ -203,7 +203,7 @@ make run-api
 
 ## 📁 Project Structure
 
-```
+```text
 Dabba/
 ├── api/
 │   ├── main.py              # FastAPI application
