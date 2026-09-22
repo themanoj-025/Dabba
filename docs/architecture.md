@@ -77,7 +77,7 @@ graph TD
 
 ## Data Flow (recommendation path)
 
-```
+```text
 GET /v1/recommend ──► auth ──► limiter ──► router ──► repositories ──► features.engineering
                                                               │
                                                               ▼

@@ -54,7 +54,7 @@
 
 **Restaurant card:**
 
-```
+```text
 ┌────────────────────────────────┐
 │ [image]  Name — ★ 4.3         │
 │          Cuisine · Cost ₹₹     │

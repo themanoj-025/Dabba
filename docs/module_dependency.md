@@ -2,7 +2,7 @@
 
 ## Core package (src/dabba) internal dependencies
 
-```
+```text
 dabba.config                ← imported by every domain module (paths, model names, env)
 dabba.data.loaders          ← used by features.*, database.seed, pipeline
 dabba.data.cleaning         ← used by features.delivery_features, pipeline
@@ -28,7 +28,7 @@ dabba.pipeline              ← **orchestrator**: depends on data, features, mod
 
 ## Interface layer → core
 
-```
+```text
 api/main.py          → dabba.config, dabba.database.session/repositories,
                        dabba.llm.food_concierge, dabba.models.*, dabba.cache
 api/routers/*        → api.main (DI via Depends), api.schemas, dabba.* facades
