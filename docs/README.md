@@ -9,7 +9,7 @@ platform with an ML pipeline and data-processing flow.
 
 ## Structure
 
-```
+```text
 docs/
 ├── README.md                      ← this index
 ├── architecture.md                system architecture
