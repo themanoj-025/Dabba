@@ -159,6 +159,9 @@ def show() -> None:
         st.session_state[filter_key] = current_hash
 
     def _on_find_similar(restaurant_name: str) -> Any:
+        # st.cache_data is untyped, so mypy sees df as Any | None inside the
+        # closure despite the caller's guard — re-assert the invariant.
+        assert df is not None
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
         if not matches.empty and embeddings is not None:
             # df was narrowed non-None above; matches.index labels inherit
