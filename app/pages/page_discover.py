@@ -161,9 +161,11 @@ def show() -> None:
     def _on_find_similar(restaurant_name: str) -> Any:
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
         if not matches.empty and embeddings is not None:
+            # df was narrowed non-None above; matches.index labels inherit
+            # the Optional from Streamlit's untyped session_state, hence the
+            # asserts (invariant: a non-empty match has a concrete label).
             first_label = matches.index[0]
-            if first_label is None:
-                return None
+            assert first_label is not None
             idx = df.index.get_loc(first_label)
             sim = find_similar_restaurants(
                 int(idx), df, embeddings, top_k=5, config=config
