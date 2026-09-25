@@ -59,7 +59,8 @@ def _load_faiss_index(config: DabbaConfig) -> Any:
 
         index_path = config.faiss_index_path
         if index_path.exists():
-            _faiss_index = faiss.read_index(str(index_path))
+            loaded: Any = faiss.read_index(str(index_path))
+            _faiss_index = loaded
             logger.info("Loaded FAISS index from %s", index_path)
             return _faiss_index
     except ImportError:

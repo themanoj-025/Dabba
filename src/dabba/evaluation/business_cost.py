@@ -100,7 +100,8 @@ def _min_max_norm(arr: np.ndarray) -> np.ndarray:
     mn, mx = arr.min(), arr.max()
     if mx == mn:
         return np.full_like(arr, 0.5)
-    return (arr - mn) / (mx - mn)
+    normalized: np.ndarray = (arr - mn) / (mx - mn)
+    return normalized
 
 
 def compute_reliability_score(
