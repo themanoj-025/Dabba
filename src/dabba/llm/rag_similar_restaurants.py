@@ -89,12 +89,13 @@ def build_restaurant_embeddings(
         logger.warning("No feature columns found for embeddings")
         return np.zeros((len(df), 1))
 
-    embeddings = df[existing_cols].fillna(0).values.astype(np.float32)
+    embeddings: np.ndarray = df[existing_cols].fillna(0).values.astype(np.float32)
 
     # L2 normalize
     norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
     norms[norms == 0] = 1
-    embeddings = embeddings / norms
+    normalized: np.ndarray = embeddings / norms
+    embeddings = normalized
 
     # Save
     config.models_dir.mkdir(parents=True, exist_ok=True)

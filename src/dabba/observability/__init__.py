@@ -204,7 +204,7 @@ except ImportError:
         def set(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    def generate_latest(*args: Any, **kwargs: Any) -> bytes:  # type: ignore[misc,no-redef]
+    def generate_latest(*args: Any, **kwargs: Any) -> bytes:  # type: ignore[misc]
         return b""
 
 
