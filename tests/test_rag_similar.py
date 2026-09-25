@@ -89,7 +89,10 @@ class TestFindSimilarRestaurants:
     @pytest.fixture
     def embeddings(self, sample_df) -> np.ndarray:
         """Build embeddings for the sample DataFrame."""
-        return build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
+        matrix: np.ndarray = np.asarray(
+            build_restaurant_embeddings(sample_df, ["rate", "cost_for_two"])
+        )
+        return matrix
 
     def test_returns_dataframe(self, sample_df, embeddings) -> None:
         """Should return a DataFrame."""

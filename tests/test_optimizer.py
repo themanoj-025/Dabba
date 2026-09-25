@@ -106,7 +106,8 @@ class TestCompareAssignmentStrategies:
         """A mock ETA model that returns predictions from a feature column."""
 
         def predict(self, X) -> np.ndarray:
-            return X.iloc[:, 0].values * 2 + 5
+            predictions: np.ndarray = np.asarray(X.iloc[:, 0].values * 2 + 5)
+            return predictions
 
     @pytest.fixture
     def orders_df(self) -> pd.DataFrame:

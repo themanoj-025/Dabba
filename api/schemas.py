@@ -109,7 +109,7 @@ class ChatRequest(BaseModel):
         ..., min_length=1, max_length=2000, description="User's message (1-2000 chars)"
     )
     history: list[ChatMessage] | None = Field(
-        default_factory=list, description="Conversation history"
+        default=None, description="Conversation history"
     )
 
 

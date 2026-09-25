@@ -171,7 +171,8 @@ def _get_pytorch_nn(input_dim: int) -> Any:
                 )
 
             def forward(self, x: torch.Tensor) -> torch.Tensor:
-                return self.net(x).squeeze(-1)
+                out: torch.Tensor = self.net(x).squeeze(-1)
+                return out
 
         from skorch import NeuralNetRegressor
 

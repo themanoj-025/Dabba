@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -106,7 +106,11 @@ except ImportError:
 
 # ─── Rate limiter ─────────────────────────────────────────────────────
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(
+    RateLimitExceeded,
+    cast(Any, _rate_limit_exceeded_handler),  # slowapi's handler signature
+)  # is narrower than Starlette's expected protocol
+
 
 # ─── CORS ────────────────────────────────────────────────────────────
 app.add_middleware(

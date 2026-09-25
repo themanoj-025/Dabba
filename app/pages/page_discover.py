@@ -162,6 +162,8 @@ def show() -> None:
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
         if not matches.empty and embeddings is not None:
             first_label = matches.index[0]
+            if first_label is None:
+                return None
             idx = df.index.get_loc(first_label)
             sim = find_similar_restaurants(
                 int(idx), df, embeddings, top_k=5, config=config
