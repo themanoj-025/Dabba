@@ -160,9 +160,12 @@ def show() -> None:
 
     def _on_find_similar(restaurant_name: str) -> Any:
         matches = df[df["name"].str.contains(restaurant_name, case=False, na=False)]
-        if not matches.empty:
-            idx = df.index.get_loc(matches.index[0])
-            sim = find_similar_restaurants(idx, df, embeddings, top_k=5, config=config)
+        if not matches.empty and embeddings is not None:
+            first_label = matches.index[0]
+            idx = df.index.get_loc(first_label)
+            sim = find_similar_restaurants(
+                int(idx), df, embeddings, top_k=5, config=config
+            )
             st.session_state[state_key] = sim
             st.session_state[name_key] = restaurant_name
         else:

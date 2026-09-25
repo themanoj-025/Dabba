@@ -86,4 +86,4 @@ def select_best_model(
         getattr(best, metric),
     )
 
-    return best.name
+    return str(best.name)

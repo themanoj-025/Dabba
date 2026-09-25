@@ -169,7 +169,7 @@ def _log_model_to_mlflow(
                     "train_time_s": elapsed,
                 }
             )
-            return child_run.info.run_id
+            return str(child_run.info.run_id)
     except (ImportError, OSError, AttributeError) as e:
         logger.warning("MLflow logging failed for %s: %s", name, e)
         return None

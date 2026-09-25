@@ -145,9 +145,10 @@ def setup_logger(
 
         def record_factory(*args: Any, **kwargs: Any) -> logging.LogRecord:
             record = old_factory(*args, **kwargs)
-            if not hasattr(record, "extra_fields"):
-                record.extra_fields = {}
-            record.extra_fields.update(context)
+            # extra_fields is a dynamic attribute (read via getattr in the
+            # JSON formatter); stash it in the record's __dict__ so mypy
+            # doesn't flag it as a LogRecord attr.
+            record.__dict__.setdefault("extra_fields", {}).update(context)
             return record
 
         logging.setLogRecordFactory(record_factory)

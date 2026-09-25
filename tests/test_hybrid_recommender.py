@@ -1,5 +1,6 @@
 """Tests for the HybridRecommender — blending content, collaborative, and reliability signals."""
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -10,7 +11,7 @@ class TestHybridRecommenderInit:
     """Tests for HybridRecommender initialization."""
 
     @pytest.fixture
-    def sample_df(self) -> None:
+    def sample_df(self) -> pd.DataFrame:
         """Create a small restaurant DataFrame for testing."""
         return pd.DataFrame(
             {
@@ -78,7 +79,7 @@ class TestHybridRecommenderRecommend:
     """Tests for HybridRecommender.recommend()."""
 
     @pytest.fixture
-    def sample_df(self) -> None:
+    def sample_df(self) -> pd.DataFrame:
         """Create a restaurant DataFrame with feature columns."""
         return pd.DataFrame(
             {
@@ -170,7 +171,7 @@ class TestGetWeightProfile:
     """Tests for _get_weight_profile()."""
 
     @pytest.fixture
-    def recommender(self) -> None:
+    def recommender(self) -> HybridRecommender:
         """Create a minimal HybridRecommender."""
         df = pd.DataFrame(
             {

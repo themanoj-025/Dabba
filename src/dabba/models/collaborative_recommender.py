@@ -166,7 +166,7 @@ class MatrixFactorization(nn.Module):
     rating predictions as the dot product of user and item embeddings.
     """
 
-    def __init__(self, n_users: int, n_items: int, n_factors: int = 50) -> Any:
+    def __init__(self, n_users: int, n_items: int, n_factors: int = 50) -> None:
         super().__init__()
         self.user_embeddings = nn.Embedding(n_users, n_factors)
         self.item_embeddings = nn.Embedding(n_items, n_factors)
@@ -187,13 +187,14 @@ class MatrixFactorization(nn.Module):
         """
         user_vecs = self.user_embeddings(user_ids)
         item_vecs = self.item_embeddings(item_ids)
-        return (user_vecs * item_vecs).sum(dim=1)
+        predictions: torch.Tensor = (user_vecs * item_vecs).sum(dim=1)
+        return predictions
 
 
 class InteractionDataset(Dataset):
     """PyTorch Dataset for user-item interaction data."""
 
-    def __init__(self, interactions: pd.DataFrame) -> Any:
+    def __init__(self, interactions: pd.DataFrame) -> None:
         # Use user_idx/item_idx (mapped to contiguous 0..N-1), not raw IDs
         self.user_ids = torch.LongTensor(interactions["user_idx"].values)
         self.item_ids = torch.LongTensor(interactions["item_idx"].values)
@@ -307,7 +308,8 @@ def predict_user_ratings(
         user_tensor = torch.LongTensor([user_id] * n_items).to(device)
         item_tensor = torch.LongTensor(list(range(n_items))).to(device)
         predictions = model(user_tensor, item_tensor)
-    return predictions.cpu().numpy()
+    scores: np.ndarray = predictions.cpu().numpy()
+    return scores
 
 
 def get_collaborative_scores(

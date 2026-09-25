@@ -10,7 +10,7 @@ pytestmark = pytest.mark.integration
 
 
 @pytest.fixture
-def reference_data() -> None:
+def reference_data() -> pd.DataFrame:
     """Create reference data with known distribution."""
     rng = np.random.RandomState(42)
     return pd.DataFrame(
@@ -147,7 +147,7 @@ class TestDetectAndAlert:
     """Tests for detect_and_alert with cooldown logic."""
 
     @pytest.fixture
-    def detector(self) -> None:
+    def detector(self) -> DriftDetector:
         rng = np.random.RandomState(42)
         ref = pd.DataFrame(
             {

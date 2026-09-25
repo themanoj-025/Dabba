@@ -7,6 +7,7 @@ delivery partners to orders minimizing total predicted delivery time.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -64,7 +65,7 @@ def naive_assignments(cost_matrix: np.ndarray) -> float:
 
 def compare_assignment_strategies(
     orders_df: pd.DataFrame,
-    eta_model: object,
+    eta_model: Any,
     feature_cols: list[str],
 ) -> dict[str, float]:
     """Compare optimized vs naive assignment on a set of simulated orders.

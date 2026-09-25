@@ -43,7 +43,7 @@ _engine = None
 _SessionLocal = None
 
 
-def _get_engine(config: DabbaConfig | None = None) -> None:
+def _get_engine(config: DabbaConfig | None = None) -> Any:
     """Create (or return) a configured SQLAlchemy Engine.
 
     For SQLite, enables WAL mode and foreign keys.

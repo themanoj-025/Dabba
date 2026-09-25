@@ -181,7 +181,7 @@ def _tomtom_traffic(
         )
 
     try:
-        result = _fetch_tomtom()
+        result: TrafficInfo | None = _fetch_tomtom()
         _tomtom_breaker.record_success()
         return result
     except CircuitBreakerOpenError:
@@ -244,7 +244,7 @@ def _mappls_traffic(
         )
 
     try:
-        result = _fetch_mappls()
+        result: TrafficInfo | None = _fetch_mappls()
         _mappls_breaker.record_success()
         return result
     except CircuitBreakerOpenError:

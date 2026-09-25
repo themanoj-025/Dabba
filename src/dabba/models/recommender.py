@@ -67,7 +67,7 @@ class RestaurantRecommender:
         df: pd.DataFrame,
         feature_cols: list[str],
         config: DabbaConfig | None = None,
-    ) -> Any:
+    ) -> None:
         """Initialize the recommender.
 
         Args:
@@ -124,7 +124,8 @@ class RestaurantRecommender:
             np.ndarray: Similarity scores for each restaurant.
         """
         query = query_features.reshape(1, -1)
-        return cosine_similarity(query, self.feature_matrix).flatten()
+        scores: np.ndarray = cosine_similarity(query, self.feature_matrix).flatten()
+        return scores
 
     def recommend(
         self,
