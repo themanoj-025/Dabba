@@ -1,5 +1,7 @@
 """Tests for collaborative filtering module."""
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,7 +21,7 @@ def sample_restaurants() -> pd.DataFrame:
     """Create a small sample restaurant DataFrame."""
     rng = np.random.RandomState(42)
     n = 20
-    cols = {"name": [f"Rest_{i}" for i in range(n)]}
+    cols: dict[str, Any] = {"name": [f"Rest_{i}" for i in range(n)]}
     cols["cost_for_two"] = rng.randint(100, 2000, n)
     cols["cuisines"] = rng.choice(
         ["North Indian", "Chinese", "Italian", "South Indian"], n
