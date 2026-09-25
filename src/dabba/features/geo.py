@@ -44,7 +44,8 @@ def haversine_distance(
     a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
     c = 2 * np.arcsin(np.sqrt(a))
 
-    return EARTH_RADIUS_KM * c
+    result = np.asarray(EARTH_RADIUS_KM * c)
+    return float(result) if result.ndim == 0 else result
 
 
 # Bangalore neighborhood centroids (approximate)

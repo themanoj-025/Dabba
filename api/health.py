@@ -100,7 +100,7 @@ if TYPE_CHECKING:  # pragma: no cover
 try:  # fastapi is not a hard dependency of every repo
     from fastapi import APIRouter, Response
 except ImportError:  # pragma: no cover
-    APIRouter = None
+    APIRouter = None  # type: ignore[assignment,misc]
 
 
 def create_health_router(

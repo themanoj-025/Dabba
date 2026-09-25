@@ -12,6 +12,7 @@ scikit-learn if FAISS index is not available.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -48,7 +49,7 @@ def _build_faiss_index(
         logger.warning("FAISS not available — using sklearn fallback")
 
 
-def _load_faiss_index(config: DabbaConfig) -> None:
+def _load_faiss_index(config: DabbaConfig) -> Any:
     """Load the FAISS index from disk."""
     global _faiss_index
     if _faiss_index is not None:

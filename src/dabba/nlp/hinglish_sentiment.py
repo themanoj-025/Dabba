@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 _PIPELINE = None
 
 
-def _get_transformer_pipeline() -> None:
+def _get_transformer_pipeline() -> Any:
     """Lazy-load the HuggingFace multilingual sentiment pipeline.
 
     Returns:

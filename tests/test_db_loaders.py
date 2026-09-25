@@ -13,7 +13,9 @@ import os
 
 import pandas as pd
 import pytest
+from fastapi.testclient import TestClient
 
+from dabba.config import DabbaConfig
 from dabba.database.seed import seed_orders, seed_restaurants
 
 pytestmark = pytest.mark.slow
@@ -22,7 +24,7 @@ pytestmark = pytest.mark.slow
 
 
 @pytest.fixture
-def client() -> None:
+def client() -> TestClient:
     """Create a test client for the FastAPI app."""
     from fastapi.testclient import TestClient
 
@@ -32,7 +34,7 @@ def client() -> None:
 
 
 @pytest.fixture
-def api_key() -> str:
+def api_key() -> str | None:
     """Return a test API key or None if not configured."""
     return os.environ.get("DABBA_API_KEY")
 
@@ -47,7 +49,7 @@ def auth_headers(api_key: str | None) -> dict[str, str]:
 # ─── Helpers ─────────────────────────────────────────────────────────
 
 
-def _make_memory_config() -> None:
+def _make_memory_config() -> DabbaConfig:
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
     from dabba.database.session import dispose_engine, init_db

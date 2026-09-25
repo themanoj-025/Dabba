@@ -171,38 +171,40 @@ try:
 except ImportError:
     PROMETHEUS_AVAILABLE = False
 
-    # Stub classes for when prometheus_client is not installed
-    class Counter:
+    # Stub classes for when prometheus_client is not installed. The type:
+    # ignore comments mark the intentional conditional redefinition of the
+    # imported metric classes (the standard optional-dependency pattern).
+    class Counter:  # type: ignore[no-redef]
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def labels(self, **kwargs: Any) -> Counter:
+        def labels(self, **kwargs: Any) -> Any:
             return self
 
         def inc(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    class Histogram:
+    class Histogram:  # type: ignore[no-redef]
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def labels(self, **kwargs: Any) -> Histogram:
+        def labels(self, **kwargs: Any) -> Any:
             return self
 
         def observe(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    class Gauge:
+    class Gauge:  # type: ignore[no-redef]
         def __init__(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-        def labels(self, **kwargs: Any) -> Gauge:
+        def labels(self, **kwargs: Any) -> Any:
             return self
 
         def set(self, *args: Any, **kwargs: Any) -> None:
             pass
 
-    def generate_latest(*args: Any, **kwargs: Any) -> bytes:
+    def generate_latest(*args: Any, **kwargs: Any) -> bytes:  # type: ignore[misc,no-redef]
         return b""
 
 
@@ -253,5 +255,5 @@ def metrics_endpoint() -> str:
         Prometheus text-format metrics as a string.
     """
     if PROMETHEUS_AVAILABLE:
-        return generate_latest().decode("utf-8")
+        return str(generate_latest().decode("utf-8"))
     return "# Prometheus client not available"

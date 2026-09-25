@@ -7,6 +7,7 @@ then injected via FastAPI ``Depends()`` — no module-level globals.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import joblib
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -38,7 +39,7 @@ def _load_eta_model() -> object | None:
         The fitted Pipeline (joblib-loaded), or None.
     """
     try:
-        model = joblib.load(config.best_eta_model_path)
+        model: object = joblib.load(config.best_eta_model_path)
         logger.info("Loaded ETA model from %s", config.best_eta_model_path)
         return model
     except FileNotFoundError:
@@ -107,7 +108,7 @@ async def predict_eta(
     )
 
     try:
-        prediction = model.predict(features)[0]
+        prediction = model.predict(features)[0]  # type: ignore[attr-defined]
     except (RuntimeError, ValueError) as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
 

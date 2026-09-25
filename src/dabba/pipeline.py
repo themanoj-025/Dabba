@@ -13,6 +13,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 
@@ -161,10 +162,10 @@ def generate_residual_plots(
         import plotly.graph_objects as go
         import plotly.io as pio
 
-        fig = go.Figure()
+        pfig: Any = go.Figure()
         for result in sorted_results:
             if result.predictions is not None:
-                fig.add_trace(
+                pfig.add_trace(
                     go.Scatter(
                         x=y_true,
                         y=result.predictions - y_true,
@@ -173,9 +174,9 @@ def generate_residual_plots(
                         marker=dict(size=4, opacity=0.3),
                     )
                 )
-        fig.add_hline(y=0, line_dash="dash", line_color="red")
-        fig.update_layout(title=f"{task.title()} — Residuals", template="plotly_white")
-        pio.write_json(fig, output_dir / f"{task}_residuals.json")
+        pfig.add_hline(y=0, line_dash="dash", line_color="red")
+        pfig.update_layout(title=f"{task.title()} — Residuals", template="plotly_white")
+        pio.write_json(pfig, output_dir / f"{task}_residuals.json")
     except ImportError:
         pass
 
