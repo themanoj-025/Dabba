@@ -13,6 +13,12 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
+def _default_subdir(*parts: str) -> Path:
+    """Return a project-root-relative default path (unleashes the ``/`` operator)."""
+    root = Path(__file__).resolve().parent.parent.parent
+    return root.joinpath(*parts)
+
+
 class DabbaConfig(BaseSettings):
     """Root configuration for the Dabba project v3.
 
@@ -180,52 +186,92 @@ class DabbaConfig(BaseSettings):
     @property
     def zomato_path(self) -> Path:
         """Full path to the raw Zomato dataset."""
-        return self.data_raw_dir / self.zomato_filename
+        return (
+            self.data_raw_dir / self.zomato_filename
+            if self.data_raw_dir
+            else _default_subdir("data", "raw", self.zomato_filename)
+        )
 
     @property
     def delivery_path(self) -> Path:
         """Full path to the raw delivery dataset."""
-        return self.data_raw_dir / self.delivery_filename
+        return (
+            self.data_raw_dir / self.delivery_filename
+            if self.data_raw_dir
+            else _default_subdir("data", "raw", self.delivery_filename)
+        )
 
     @property
     def best_rating_model_path(self) -> Path:
         """Path to the saved best rating model artifact."""
-        return self.models_dir / "best_rating_model.pkl"
+        return (
+            self.models_dir / "best_rating_model.pkl"
+            if self.models_dir
+            else _default_subdir("models", "best_rating_model.pkl")
+        )
 
     @property
     def best_eta_model_path(self) -> Path:
         """Path to the saved best ETA model artifact."""
-        return self.models_dir / "best_eta_model.pkl"
+        return (
+            self.models_dir / "best_eta_model.pkl"
+            if self.models_dir
+            else _default_subdir("models", "best_eta_model.pkl")
+        )
 
     @property
     def best_collaborative_model_path(self) -> Path:
         """Path to the saved collaborative filtering model."""
-        return self.models_dir / "best_collaborative_model.pt"
+        return (
+            self.models_dir / "best_collaborative_model.pt"
+            if self.models_dir
+            else _default_subdir("models", "best_collaborative_model.pt")
+        )
 
     @property
     def rating_comparison_path(self) -> Path:
         """Path to the rating model comparison CSV."""
-        return self.reports_dir / "model_comparison_rating.csv"
+        return (
+            self.reports_dir / "model_comparison_rating.csv"
+            if self.reports_dir
+            else _default_subdir("reports", "model_comparison_rating.csv")
+        )
 
     @property
     def eta_comparison_path(self) -> Path:
         """Path to the ETA model comparison CSV."""
-        return self.reports_dir / "model_comparison_eta.csv"
+        return (
+            self.reports_dir / "model_comparison_eta.csv"
+            if self.reports_dir
+            else _default_subdir("reports", "model_comparison_eta.csv")
+        )
 
     @property
     def synthetic_interactions_path(self) -> Path:
         """Path to the synthetic user-restaurant interaction dataset."""
-        return self.data_processed_dir / "synthetic_interactions.csv"
+        return (
+            self.data_processed_dir / "synthetic_interactions.csv"
+            if self.data_processed_dir
+            else _default_subdir("data", "processed", "synthetic_interactions.csv")
+        )
 
     @property
     def faiss_index_path(self) -> Path:
         """Path to the FAISS index for similar restaurant retrieval."""
-        return self.models_dir / "restaurant_faiss.index"
+        return (
+            self.models_dir / "restaurant_faiss.index"
+            if self.models_dir
+            else _default_subdir("models", "restaurant_faiss.index")
+        )
 
     @property
     def restaurant_embeddings_path(self) -> Path:
         """Path to the restaurant feature embeddings for RAG."""
-        return self.models_dir / "restaurant_embeddings.npy"
+        return (
+            self.models_dir / "restaurant_embeddings.npy"
+            if self.models_dir
+            else _default_subdir("models", "restaurant_embeddings.npy")
+        )
 
 
 def get_config() -> DabbaConfig:

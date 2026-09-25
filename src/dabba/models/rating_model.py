@@ -169,9 +169,10 @@ def train_and_evaluate_rating_models(
     else:
         models = get_rating_models()
 
-    return _train_and_evaluate_models(
+    results: tuple[list, ModelResult | None] = _train_and_evaluate_models(
         X, y, models, config=config, use_mlflow=use_mlflow, task="rating"
     )
+    return results
 
 
 def save_model(model: Any, path: Any) -> None:

@@ -8,6 +8,7 @@ production choice for Indian restaurant reviews.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ from dabba.config import DabbaConfig, get_config
 logger = logging.getLogger(__name__)
 
 
-def _get_vader() -> None:
+def _get_vader() -> Any:
     """Safely import and return VADER SentimentIntensityAnalyzer."""
     try:
         from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -48,7 +49,7 @@ def score_sentiment(text: str, analyzer=None) -> float:
     if pd.isna(text) or not isinstance(text, str) or not text.strip():
         return 0.0
     scores = analyzer.polarity_scores(text)
-    return scores["compound"]
+    return float(scores["compound"])
 
 
 def add_sentiment_scores(

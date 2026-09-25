@@ -342,7 +342,7 @@ def tune_hyperparameters(
             return float("inf")
 
         mae = mean_absolute_error(y, y_pred)
-        return mae
+        return float(mae)
 
     # Create and run Optuna study
     sampler = optuna.samplers.TPESampler(seed=random_state)

@@ -158,7 +158,7 @@ def _get_pytorch_nn(input_dim: int) -> Any:
         import torch.nn as nn
 
         class TabularNN(nn.Module):
-            def __init__(self, dim: int) -> Any:
+            def __init__(self, dim: int) -> None:
                 super().__init__()
                 self.net = nn.Sequential(
                     nn.Linear(dim, 64),
@@ -233,9 +233,10 @@ def train_and_evaluate_eta_models(
     if nn_model is not None:
         models["NeuralNet_MLP"] = nn_model
 
-    return _train_and_evaluate_models(
+    results: tuple[list, ModelResult | None] = _train_and_evaluate_models(
         X, y, models, config=config, use_mlflow=use_mlflow, task="eta"
     )
+    return results
 
 
 def save_eta_model(model: Any, path: Any) -> None:

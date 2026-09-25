@@ -41,12 +41,12 @@ def clean_zomato_rating(series: pd.Series) -> pd.Series:
 
     def _extract(value: object) -> float | None:
         if pd.isna(value):
-            return np.nan
+            return float("nan")
         s = str(value).strip()
         match = re.match(r"([\d.]+)\s*/\s*5", s)
         if match:
             return float(match.group(1))
-        return np.nan
+        return float("nan")
 
     cleaned = series.map(_extract)
     n_nulls = cleaned.isna().sum()
@@ -70,12 +70,12 @@ def clean_zomato_cost(series: pd.Series) -> pd.Series:
 
     def _parse(value: object) -> float | None:
         if pd.isna(value):
-            return np.nan
+            return float("nan")
         s = str(value).replace(",", "").replace("₹", "").replace(" ", "")
         try:
             return float(s)
         except ValueError:
-            return np.nan
+            return float("nan")
 
     cleaned = series.map(_parse)
     n_nulls = cleaned.isna().sum()

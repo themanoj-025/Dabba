@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # ─── Weight profiles for A/B scenario simulation ───────────────────────
 
-WEIGHT_PROFILES: dict[str, dict[str, float]] = {
+WEIGHT_PROFILES: dict[str, dict[str, Any]] = {
     "balanced": {
         "w_rating": 0.4,
         "w_sentiment": 0.3,
@@ -150,7 +150,7 @@ def compute_reliability_score(
     score = w_rating * norm_rating + w_sentiment * norm_sentiment - w_delay * norm_delay
     score = np.clip(score, 0.0, 1.0)
 
-    return float(score) if score.ndim == 0 else score
+    return float(score) if np.ndim(score) == 0 else np.asarray(score)
 
 
 def run_ab_scenario_simulation(
@@ -196,13 +196,18 @@ def run_ab_scenario_simulation(
     results: dict[str, Any] = {}
 
     for profile_name, weights in WEIGHT_PROFILES.items():
-        scores = compute_reliability_score(ratings, sentiments, delays, weights)
+        numeric_weights = {
+            k: v for k, v in weights.items() if isinstance(v, (int, float))
+        }
+        scores = np.asarray(
+            compute_reliability_score(ratings, sentiments, delays, numeric_weights)
+        )
         df_copy = df.copy()
         df_copy["ab_score"] = scores
 
         # Get top N
         top_idx = np.argsort(scores)[::-1][:top_n]
-        top_restaurants = []
+        top_restaurants: list[dict[str, Any]] = []
         for idx in top_idx:
             rest = {
                 "name": df_copy.iloc[idx].get("name", f"Restaurant {idx}"),

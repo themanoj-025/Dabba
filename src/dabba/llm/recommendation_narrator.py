@@ -89,7 +89,7 @@ def _llm_narrate(
             max_tokens=config.llm_max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        text = response.content[0].text.strip()
+        text: str = response.content[0].text.strip()
         llm_breaker.record_success()
         logger.info("LLM narration generated for %s", restaurant.get("name"))
         return text

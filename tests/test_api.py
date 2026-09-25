@@ -20,7 +20,7 @@ from dabba.config import DabbaConfig, get_config
 
 
 @pytest.fixture
-def client() -> None:
+def client() -> TestClient:
     """Create a test client for the FastAPI app.
 
     Uses DABBA_API_KEY from environment if set, otherwise
@@ -32,7 +32,7 @@ def client() -> None:
 
 
 @pytest.fixture
-def api_key() -> str:
+def api_key() -> str | None:
     """Return a test API key or None if not configured.
 
     If DABBA_API_KEY is set in the environment, use it;

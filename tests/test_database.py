@@ -5,6 +5,9 @@ Uses an in-memory SQLite database to avoid test pollution.
 
 from __future__ import annotations
 
+from collections.abc import Generator
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -27,7 +30,7 @@ from dabba.database.seed import seed_orders, seed_restaurants
 # ─── Helpers ─────────────────────────────────────────────────────────
 
 
-def _make_memory_config() -> None:
+def _make_memory_config() -> Any:
     """Create a config with an in-memory SQLite URL and init its tables."""
     from dabba.config import DabbaConfig
     from dabba.database.session import dispose_engine, init_db
@@ -42,7 +45,7 @@ def _make_memory_config() -> None:
 
 
 @pytest.fixture
-def in_memory_db() -> None:
+def in_memory_db() -> Generator[Any, None, None]:
     """Create tables on an in-memory SQLite database and yield a session."""
     engine = create_engine("sqlite:///:memory:", echo=False)
     Base.metadata.create_all(bind=engine)

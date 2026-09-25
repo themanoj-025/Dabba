@@ -52,7 +52,7 @@ class ConciergeTools:
         restaurants_df: pd.DataFrame,
         eta_model: Any = None,
         config: DabbaConfig | None = None,
-    ) -> Any:
+    ) -> None:
         self.df = restaurants_df
         self.eta_model = eta_model
         self.config = config or get_config()
@@ -84,7 +84,7 @@ class ConciergeTools:
             mask &= self.df["location"].str.contains(area, case=False, na=False)
 
         results = self.df[mask].head(top_n)
-        return results.to_dict("records")
+        return list(results.to_dict("records"))
 
     def get_eta_estimate(self, restaurant_name: str) -> dict[str, Any] | None:
         """Get a predicted delivery ETA for a restaurant using the real ETA model.

@@ -35,7 +35,7 @@ def _get_next_order_id() -> int:
     if key not in st.session_state:
         st.session_state[key] = 0
     st.session_state[key] += 1
-    return st.session_state[key]
+    return int(st.session_state[key])
 
 
 @st.cache_resource
@@ -161,9 +161,7 @@ def show() -> None:
                     v = (
                         "success"
                         if on_time_rate > 90
-                        else "danger"
-                        if on_time_rate < 70
-                        else "default"
+                        else "danger" if on_time_rate < 70 else "default"
                     )
                     render_metric_card(
                         "On-Time Rate", f"{on_time_rate:.1f}%", variant=v

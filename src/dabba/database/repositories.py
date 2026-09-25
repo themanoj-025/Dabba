@@ -59,7 +59,7 @@ def get_all_restaurants(
     Returns:
         List of Restaurant ORM instances.
     """
-    return (
+    return list(
         db.query(Restaurant).order_by(Restaurant.name).offset(offset).limit(limit).all()
     )
 
@@ -105,7 +105,7 @@ def get_restaurants_by_cuisine(
     Returns:
         List of matching Restaurant instances.
     """
-    return (
+    return list(
         db.query(Restaurant)
         .filter(Restaurant.cuisines.ilike(f"%{cuisine}%"))
         .order_by(desc(Restaurant.bayesian_rating))
@@ -144,7 +144,7 @@ def get_all_orders(
     Returns:
         List of Order ORM instances.
     """
-    return (
+    return list(
         db.query(Order)
         .order_by(desc(Order.created_at))
         .offset(offset)
@@ -168,7 +168,7 @@ def get_orders_by_restaurant(
     Returns:
         List of Order instances.
     """
-    return (
+    return list(
         db.query(Order)
         .filter(Order.restaurant_id == restaurant_id)
         .order_by(desc(Order.created_at))
@@ -198,7 +198,7 @@ def get_experiment_results(
     q = db.query(ExperimentResult).order_by(desc(ExperimentResult.created_at))
     if task:
         q = q.filter(ExperimentResult.task == task)
-    return q.limit(limit).all()
+    return list(q.limit(limit).all())
 
 
 def get_winning_model(db: Session, task: str) -> ExperimentResult | None:
@@ -238,7 +238,7 @@ def get_all_experiment_results(
     q = db.query(ExperimentResult).order_by(ExperimentResult.mae)
     if task:
         q = q.filter(ExperimentResult.task == task)
-    return q.all()
+    return list(q.all())
 
 
 # ─── Restaurant DataFrame helper ──────────────────────────────────
@@ -381,7 +381,7 @@ def get_recent_drift_logs(
     q = db.query(DriftLog).order_by(desc(DriftLog.detected_at))
     if only_alerted:
         q = q.filter(DriftLog.alerted.is_(True))
-    return q.limit(limit).all()
+    return list(q.limit(limit).all())
 
 
 def get_drift_summary(db: Session) -> dict[str, Any]:
