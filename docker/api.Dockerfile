@@ -25,10 +25,14 @@ RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.py
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
-    # Upgrade transitive packages with known HIGH CVEs flagged by the CI
-    # trivy gate (wheel CVE-2026-24049 -> 0.46.2, jaraco.context
-    # CVE-2026-23949 -> 6.1.0).
+    # Upgrade pip-space packages flagged by the CI trivy gate:
+    #   - wheel CVE-2026-24049 (fixed 0.46.2) and jaraco.context
+    #     CVE-2026-23949 (fixed 6.1.0). Trivy also reads the copies
+    #     VENDORED inside setuptools (_vendor/jaraco.context-5.3.0,
+    #     _vendor/wheel-0.45.1), so setuptools must be >= 83.0.0,
+    #     which vendors fixed versions of both.
     pip install --no-cache-dir --upgrade \
+        "setuptools>=83.0.0" \
         "wheel>=0.46.2" \
         "jaraco-context>=6.1.0"
 
