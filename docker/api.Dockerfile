@@ -24,7 +24,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    # Upgrade transitive packages with known HIGH CVEs flagged by the CI
+    # trivy gate (wheel CVE-2026-24049 -> 0.46.2, jaraco.context
+    # CVE-2026-23949 -> 6.1.0).
+    pip install --no-cache-dir --upgrade \
+        "wheel>=0.46.2" \
+        "jaraco-context>=6.1.0"
 
 # Copy application code — only what the API needs
 COPY api/ api/
