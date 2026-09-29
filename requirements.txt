@@ -84,6 +84,6 @@ tenacity>=9.1.4,<10.0
 
 # OpenTelemetry distributed tracing (optional, enabled via OTEL_ENABLED=true)
 opentelemetry-api>=1.45.0,<2.0
-opentelemetry-sdk>=1.20.0,<2.0
+opentelemetry-sdk>=1.45.0,<2.0
 opentelemetry-exporter-otlp-proto-grpc>=1.45.0,<2.0
 opentelemetry-instrumentation-fastapi>=0.65b0,<1.0
