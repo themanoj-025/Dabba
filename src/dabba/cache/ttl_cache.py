@@ -108,9 +108,7 @@ class TTLAsyncCache:
 
             try:
                 if inspect.iscoroutinefunction(loader):
-                    loader_callable = cast(
-                        "Callable[[], Awaitable[Any]]", loader
-                    )
+                    loader_callable = cast("Callable[[], Awaitable[Any]]", loader)
                     value = await loader_callable()
                 else:
                     value = await asyncio.to_thread(loader)
