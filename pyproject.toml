@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "dabba"
 version = "0.2.0"
 description = "India-focused restaurant ranking, recommendation, and delivery-reliability platform"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "pandas>=3.0.6,<4.0",
     "numpy>=2.4.6,<3.0",  # trained model artifacts pickle BitGenerators via numpy.random._mt19937 (numpy 2.x)
@@ -64,7 +64,7 @@ pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "BLE", "SIM", "ARG", "C4", "RUF", "PLC", "PIE"]
@@ -101,14 +101,14 @@ ignore = [
 
 [tool.black]
 line-length = 88
-target-version = ["py311"]
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
 line_length = 88
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 ignore_missing_imports = true
 warn_return_any = true
 warn_unused_configs = true
