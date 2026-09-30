@@ -3,7 +3,7 @@
 # Built with /health endpoint for load-balancer and Docker health checks.
 # Uses docker/entrypoint.sh to run Alembic migrations before startup.
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 

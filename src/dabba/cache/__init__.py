@@ -6,5 +6,6 @@ mode without a Redis server running.
 """
 
 from src.dabba.cache.redis_client import CacheClient, get_cache
+from src.dabba.cache.ttl_cache import TTLAsyncCache
 
-__all__ = ["CacheClient", "get_cache"]
+__all__ = ["CacheClient", "TTLAsyncCache", "get_cache"]

@@ -2,7 +2,7 @@
 # Lightweight container running MLflow server on port 5000.
 # Uses a persistent volume for the backend store (/mlflow/mlruns).
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 

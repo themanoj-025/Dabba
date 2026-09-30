@@ -2,7 +2,7 @@
 # Serves the user-facing dashboard on port 8501.
 # Requires the dabba package (src/) and models/ artifacts.
 
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
