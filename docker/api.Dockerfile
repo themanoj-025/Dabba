@@ -10,8 +10,10 @@ WORKDIR /app
 # The dabba package lives under src/ (see pyproject [tool.setuptools.packages.find])
 ENV PYTHONPATH=/app/src
 
-# Install runtime system dependencies + curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install runtime system dependencies + curl for healthcheck.
+# upgrade: the pinned base snapshot carries stale OS packages (libssl etc.);
+# pull Debian point releases so trivy CRITICAL/HIGH scans stay clean.
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*

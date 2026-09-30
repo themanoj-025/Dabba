@@ -142,9 +142,10 @@ jobs:
         # Exercises the real training→MLflow path: every model in the
         # comparison is logged as a nested run under a parent run, and the
         # winning run is tagged — making every CI-trained model versioned
-        # and traceable in the MLflow UI (artifact uploaded via actions).
-        env:
+        # and traceable in the MLflow UI (artifact uploaded via actions).          env:
           DABBA_MLFLOW_TRACKING_URI: file:///tmp/mlruns
+          # src/ layout — the package isn't pip-installed in this job
+          PYTHONPATH: src
         run: |
           python - <<'PY'
           """Train a small rating model with MLflow enabled and verify traceability."""
@@ -258,6 +259,9 @@ jobs:
           dockerfile: Dockerfile
           failure-threshold: error
           ignore: DL3066
+          # DL3005: images intentionally `apt-get upgrade` OS packages so
+          # trivy scans pass on the pinned python:3.12-slim base snapshot
+          # (openssl/libssl CVEs are fixed in point releases).
 
   schemathesis-fuzz:
     name: Contract fuzzing (Schemathesis)
