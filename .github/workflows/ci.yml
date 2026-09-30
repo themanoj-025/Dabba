@@ -36,8 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # requires-python is >=3.11 (pyproject) and numpy>=2.4.6 needs >=3.11
-        python-version: ["3.11", "3.12"]
+        # requires-python is >=3.12 (pyproject). 3.11 is EOL for the
+        # project floor; 3.13 is tested for forward compatibility.
+        python-version: ["3.12", "3.13"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -60,6 +61,9 @@ jobs:
           pre-commit run --all-files
 
       - name: Run unit tests (excludes slow training/transformers tests)
+        # Coverage gate: --cov-fail-under is the enforced floor. The
+        # [tool.coverage.report] fail_under=80 covers full-suite local
+        # runs; CI excludes slow/integration groups so the gate is 65.
         run: |
           pytest tests/ -v --tb=short --timeout=60 \
             --ignore=tests/e2e \
@@ -71,6 +75,20 @@ jobs:
             --ignore=tests/test_hinglish_sentiment.py \
             -k "not optuna and not train and not full_import" \
             --cov=src/dabba --cov-report=xml --cov-fail-under=65
+
+      - name: Enforce coverage gate
+        # Belt-and-braces: pytest-cov already exits non-zero above; this
+        # step makes the gate explicit in the job summary and guards
+        # against the flag being dropped from the pytest invocation.
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          coverage = float(ET.parse("coverage.xml").getroot().get("line-rate", "0")) * 100
+          gate = 65.0
+          print(f"Coverage: {coverage:.2f}% (gate: {gate:.0f}%)")
+          assert coverage >= gate, f"Coverage {coverage:.2f}% below gate {gate:.0f}%"
+          PY
 
       - name: Upload coverage
         uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
@@ -104,6 +122,78 @@ jobs:
           ignore-unfixed: true
           severity: CRITICAL,HIGH
 
+  mlflow-tracking:
+    name: MLflow model-registry tracking
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-timeout
+      - name: Train small model with MLflow tracking (file store)
+        # Exercises the real training→MLflow path: every model in the
+        # comparison is logged as a nested run under a parent run, and the
+        # winning run is tagged — making every CI-trained model versioned
+        # and traceable in the MLflow UI (artifact uploaded via actions).
+        env:
+          DABBA_MLFLOW_TRACKING_URI: file:///tmp/mlruns
+        run: |
+          python - <<'PY'
+          """Train a small rating model with MLflow enabled and verify traceability."""
+
+          import numpy as np
+          import pandas as pd
+
+          import mlflow
+          from mlflow.tracking import MlflowClient
+
+          from dabba.config import get_config
+          from dabba.models.rating_model import train_and_evaluate_rating_models
+
+          rng = np.random.RandomState(42)
+          n = 200
+          X = pd.DataFrame(
+              {
+                  "votes_log": rng.uniform(1, 8, n),
+                  "cost_for_two": rng.uniform(100, 2000, n),
+                  "online_order_binary": rng.choice([0, 1], n),
+                  "book_table_binary": rng.choice([0, 1], n),
+                  "cuisine_count": rng.randint(1, 8, n),
+                  "avg_sentiment": rng.uniform(-1, 1, n),
+              }
+          )
+          y = pd.Series(rng.uniform(2.5, 5.0, n))
+
+          results, best = train_and_evaluate_rating_models(
+              X, y, use_mlflow=True, use_hpo=False
+          )
+          assert best is not None, "training produced no best model"
+          assert best.mlflow_run_id, "best model has no mlflow_run_id"
+
+          # Prove the run is traceable in the registry store
+          client = MlflowClient(tracking_uri=get_config().mlflow_tracking_uri)
+          run = client.get_run(best.mlflow_run_id)
+          print(f"Best model: {best.name} (MAE={best.mae:.4f})")
+          print(f"MLflow run: {run.info.run_id} status={run.info.status}")
+          assert run.info.status == "FINISHED"
+          print("MLflow tracking verified: run versioned and traceable")
+          PY
+      - name: Upload MLflow runs as artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mlflow-runs
+          path: /tmp/mlruns
+          retention-days: 7
+          if-no-files-found: warn
+
   typecheck:
     timeout-minutes: 15
     runs-on: ubuntu-latest
@@ -112,7 +202,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           cache: pip
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -131,7 +221,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           cache: pip
-          python-version: "3.11"
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip

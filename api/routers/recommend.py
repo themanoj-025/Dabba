@@ -9,8 +9,10 @@ CSV→DB migration ensures the serving path never reads raw CSV files.
 
 from __future__ import annotations
 
+import functools
 import logging
 
+import anyio
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -139,16 +141,22 @@ async def recommend(
     for _, row in results.iterrows():
         rest_dict = row.to_dict()
 
-        # Generate narration if requested
+        # Generate narration if requested. The Anthropic client is
+        # synchronous — run it in a worker thread so the event loop
+        # keeps serving other requests during the LLM call. Args are
+        # bound eagerly (B023) since rest_dict is a loop variable.
         explanation = None
         if body.use_llm_narration and config.llm_enabled:
             rs = rest_dict.get("reliability_score_display", 0.5)
             sentiment = rest_dict.get("avg_sentiment", 0.0)
-            explanation = narrate_recommendation(
-                rest_dict,
-                rs,
-                sentiment_avg=sentiment,
-                config=config,
+            explanation = await anyio.to_thread.run_sync(
+                functools.partial(
+                    narrate_recommendation,
+                    rest_dict,
+                    rs,
+                    sentiment_avg=sentiment,
+                    config=config,
+                )
             )
 
         rec = Recommendation(

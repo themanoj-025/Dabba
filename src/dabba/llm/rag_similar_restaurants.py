@@ -18,14 +18,18 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
+from dabba.cache.ttl_cache import TTLAsyncCache
 from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)
 
 
-# ─── FAISS index (lazy) ─────────────────────────────────────────────────
+# ─── FAISS index (lazy, TTL + single-flight) ──────────────────────────
+# TTL keeps a retrained index from being served stale forever; the
+# per-key asyncio.Lock prevents a thundering herd on cold start.
 
-_faiss_index = None
+_faiss_cache = TTLAsyncCache(ttl_seconds=300.0)
+_faiss_index = None  # kept in sync by _build_faiss_index for sync readers
 
 
 def _build_faiss_index(
@@ -50,22 +54,45 @@ def _build_faiss_index(
 
 
 def _load_faiss_index(config: DabbaConfig) -> Any:
-    """Load the FAISS index from disk."""
-    global _faiss_index
-    if _faiss_index is not None:
-        return _faiss_index
-    try:
-        import faiss
+    """Load the FAISS index from disk (TTL-cached, single-flight)."""
 
-        index_path = config.faiss_index_path
-        if index_path.exists():
-            loaded: Any = faiss.read_index(str(index_path))
-            _faiss_index = loaded
-            logger.info("Loaded FAISS index from %s", index_path)
-            return _faiss_index
-    except ImportError:
-        pass
-    return None
+    def _load() -> Any:
+        global _faiss_index
+        try:
+            import faiss
+
+            index_path = config.faiss_index_path
+            if index_path.exists():
+                loaded: Any = faiss.read_index(str(index_path))
+                _faiss_index = loaded
+                logger.info("Loaded FAISS index from %s", index_path)
+                return _faiss_index
+        except ImportError:
+            pass
+        return None
+
+    return _faiss_cache.get_or_load_sync("faiss_index", _load)
+
+
+async def _load_faiss_index_async(config: DabbaConfig) -> Any:
+    """Async variant of :func:`_load_faiss_index` for FastAPI routes."""
+
+    def _load() -> Any:
+        global _faiss_index
+        try:
+            import faiss
+
+            index_path = config.faiss_index_path
+            if index_path.exists():
+                loaded: Any = faiss.read_index(str(index_path))
+                _faiss_index = loaded
+                logger.info("Loaded FAISS index from %s", index_path)
+                return _faiss_index
+        except ImportError:
+            pass
+        return None
+
+    return await _faiss_cache.get_or_load("faiss_index", _load)
 
 
 def build_restaurant_embeddings(

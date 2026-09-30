@@ -13,6 +13,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import anyio
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Request
 
@@ -112,11 +113,16 @@ async def chat(
     for msg in body.history or []:
         history.append({"role": msg.role, "content": msg.content})
 
-    response = get_concierge_response(
-        body.message,
-        history,
-        tools,
-        config=config,
+    # The Anthropic SDK client is synchronous — run the (potentially
+    # multi-second) ReAct loop in a worker thread so the event loop can
+    # keep serving other requests while this one waits on the LLM.
+    response = await anyio.to_thread.run_sync(
+        lambda: get_concierge_response(
+            body.message,
+            history,
+            tools,
+            config=config,
+        )
     )
 
     return ChatResponse(reply=response)
