@@ -31,45 +31,53 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from dabba.cache.ttl_cache import TTLAsyncCache
 from dabba.config import DabbaConfig, get_config
 
 logger = logging.getLogger(__name__)
 
-# ─── Model cache (lazy-loaded) ───────────────────────────────────────
+# ─── Model cache (lazy, TTL + single-flight) ─────────────────────
 
-_PIPELINE = None
+# TTL lets a re-downloaded HF model be picked up without a process
+# restart; the per-key lock prevents N workers downloading concurrently.
+_PIPELINE_CACHE = TTLAsyncCache(ttl_seconds=3600.0)
+_PIPELINE: Any = None  # last-loaded pipeline (kept for backward compat)
 
 
 def _get_transformer_pipeline() -> Any:
     """Lazy-load the HuggingFace multilingual sentiment pipeline.
 
+    Cached with a TTL and single-flight lock so concurrent callers do
+    not each trigger a (heavy) model download/load.
+
     Returns:
         A ``transformers.pipeline`` or None if transformers/torch
         is not available or the model fails to load.
     """
-    global _PIPELINE
-    if _PIPELINE is not None:
-        return _PIPELINE
 
-    try:
-        from transformers import pipeline
+    def _load() -> Any:
+        global _PIPELINE
+        try:
+            from transformers import pipeline
 
-        logger.info("Loading multilingual sentiment model...")
-        _PIPELINE = pipeline(
-            "text-classification",
-            model="tabularisai/multilingual-sentiment-analysis",
-            top_k=None,
-        )
-        logger.info("Multilingual sentiment model loaded successfully")
-        return _PIPELINE
-    except ImportError:
-        logger.warning(
-            "transformers not installed — falling back to VADER for sentiment"
-        )
-        return None
-    except (OSError, RuntimeError) as e:
-        logger.warning("Failed to load multilingual sentiment model: %s", e)
-        return None
+            logger.info("Loading multilingual sentiment model...")
+            _PIPELINE = pipeline(
+                "text-classification",
+                model="tabularisai/multilingual-sentiment-analysis",
+                top_k=None,
+            )
+            logger.info("Multilingual sentiment model loaded successfully")
+            return _PIPELINE
+        except ImportError:
+            logger.warning(
+                "transformers not installed — falling back to VADER for sentiment"
+            )
+            return None
+        except (OSError, RuntimeError) as e:
+            logger.warning("Failed to load multilingual sentiment model: %s", e)
+            return None
+
+    return _PIPELINE_CACHE.get_or_load_sync("hinglish_pipeline", _load)
 
 
 def _get_vader() -> Any:
