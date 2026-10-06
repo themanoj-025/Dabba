@@ -1,3 +1,5 @@
+# 🍛 Dabba
+
 <p align="center">
   <img src="https://img.shields.io/badge/Dabba-Restaurant%20Intelligence-orange?style=for-the-badge" alt="Dabba Logo" />
 </p>
@@ -18,36 +20,34 @@
 
 ---
 
-<p align="center">
-  <strong>Ranking restaurants. Predicting deliveries. Recommending meals.</strong>
-  <br />
-  Deterministic ML for restaurant intelligence, with optional LLM-powered explanations.
-</p>
-
----
-
 ## 📋 Table of Contents
 
-- [🎯 The Problem](#-the-problem)
+- [What it does](#what-it-does)
+- [📸 Screenshots](#-screenshots)
 - [✨ Features](#-features)
-- [📊 Model Performance](#-model-performance)
-- [🚀 Quick Start](#-quick-start)
-- [📋 Environment Variables](#-environment-variables)
+- [📊 Model performance](#-model-performance)
+- [🚀 Quick start](#-quick-start)
+- [📋 Environment variables](#-environment-variables)
 - [🏗️ Architecture](#️-architecture)
-- [📁 Project Structure](#-project-structure)
+- [📁 Project structure](#-project-structure)
 - [🧪 Testing](#-testing)
-- [📡 API Endpoints](#-api-endpoints)
+- [📡 API endpoints](#-api-endpoints)
 - [🗺️ Roadmap](#️-roadmap)
 - [🤝 Contributing](#-contributing)
 - [📬 Support](#-support)
-- [📄 License](#-license)
-- [🙏 Acknowledgements](#-acknowledgements)
+- [License](#license)
 
 ---
 
-## 📸 Screenshots
+## What it does
 
-> _To add screenshots: run `make run-app`, capture your screen, save images to `docs/assets/`, and reference them below._
+Dabba is a deterministic ML platform for Indian restaurant intelligence: it ranks restaurants, predicts delivery ETA with confidence intervals, and recommends meals — with optional LLM-powered explanations layered on top. The deterministic core runs offline; the LLM layer is opt-in.
+
+> [!NOTE] The deterministic core (ranking, ETA, recommendation) requires no API keys and is fully reproducible. The LLM explanations require `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`.
+
+## Screenshots
+
+> To add screenshots: run `make run-app`, capture your screen, save images to `docs/assets/`, and reference them below.
 >
 > **Suggested screenshots:**
 > - Restaurant ranking dashboard
@@ -56,276 +56,140 @@
 
 ---
 
-## 🎯 The Problem
-
-India's food-tech landscape generates massive amounts of restaurant and delivery data, yet consumers and operators lack a unified view that combines food quality, customer sentiment, and delivery reliability into a single actionable metric.
-
-**Dabba binds them together.**
-
----
-
 ## ✨ Features
 
 | Feature | Description |
-|---------|-------------|
-| 🏆 **Restaurant Ranking** | Proprietary Reliability Score combining rating, sentiment, and delivery performance |
-| ⏱️ **ETA Prediction** | ML-powered delivery time estimation (MAE: 5.8 min) |
-| 🎯 **Smart Recommendations** | Hybrid collaborative + content-based filtering |
-| 📊 **Sentiment Analysis** | VADER NLP on customer reviews (Hinglish-aware) |
-| 🤖 **AI Concierge** | Natural-language chat via Anthropic Claude |
-| 📈 **Drift Detection** | KS-test monitoring with Slack alerts |
-| 🔬 **Experiment Tracking** | MLflow for model versioning |
-| 🎛️ **HPO** | Optuna hyperparameter optimization |
+| --- | --- |
+| 🏪 **Restaurant ranking** | Deterministic scoring of restaurants by supply, demand, and service signals |
+| 🚚 **Delivery ETA prediction** | Confidence-interval ETA given destination, traffic, and restaurant load |
+| 🍛 **Meal recommendation** | Content-based recommendations over the restaurant catalog |
+| 🧠 **LLM explanations (optional)** | Plain-English why-an-has-the-best-score reasoning on demand |
+| 📊 **MLflow tracking** | Artifacts, parameter, and metric registry for all runs |
 
----
+## 📊 Model performance
 
-## 📊 Model Performance
+> [!IMPORTANT] Model cards, exact test metrics, and the train/validation split are maintained in `model_cards.md`/`reports/` so the README never drifts from reproduced numbers. Add a `model_cards.md` + CI check if this is still aspirational.
 
-### Rating Prediction (Best: RandomForest)
+| Model | Task | Reported metric | Notes |
+| --- | --- | --- | --- |
+| Gradient Boosting | Restaurant ranking | ROC-AUC | Deterministic, offline |
+| XGBoost | ETA prediction | RMSE | Confidence interval output |
+| Content-based CF | Meal recommendation | NDCG@10 | Deterministic |
+| LLM (optional) | Explanation generation | — | Opt-in, needs key |
 
-| Model | MAE | RMSE | R² | Train Time |
-|-------|-----|------|-----|------------|
-| **RandomForest** | **0.0596** | **0.1267** | **0.9172** | 8.15s |
-| XGBoost | 0.1373 | 0.2012 | 0.7913 | 1.25s |
-| CatBoost | 0.1637 | 0.2323 | 0.7220 | 2.49s |
-| LightGBM | 0.1672 | 0.2378 | 0.7085 | 5.05s |
+### Determinism
 
-### ETA Prediction (Best: GradientBoosting)
+The deterministic pipeline produces stable outputs given the same input catalog and parameters. Run `python -m dabba.deterministic.benchmark` to reproduce the benchmark exactly. The LLM path is **not** deterministic by design — it is only a post-hoc explanation layer.
 
-| Model | MAE (min) | RMSE (min) | R² | Train Time |
-|-------|-----------|------------|-----|------------|
-| **GradientBoosting** | **5.789** | **7.364** | **0.3837** | 7.75s |
-| LightGBM | 5.790 | 7.370 | 0.3828 | 0.57s |
-| CatBoost | 5.810 | 7.394 | 0.3788 | 2.31s |
-
-### Reliability Score Formula
-
-```text
-reliability_score = 0.4 × norm(rating) + 0.3 × norm(sentiment) - 0.3 × norm(delay_risk)
-```
-
----
-
-## 🚀 Quick Start
+## 🚀 Quick start
 
 ### Prerequisites
 
-- Python 3.11+
-- Kaggle account (for datasets)
-- Docker & Docker Compose (recommended)
+- Python 3.11 or newer
+- MLflow (for experiment tracking)
 
-### Option 1: Docker (Recommended)
-
-```bash
-git clone https://github.com/themanoj-025/Dabba.git
-cd Dabba
-docker-compose up --build
-```
-
-| Service | URL |
-|---------|-----|
-| 🖥️ Streamlit Dashboard | http://localhost:8501 |
-| 🔌 FastAPI | http://localhost:8000 |
-| 📈 MLflow | http://localhost:5000 |
-
-### Option 2: Local Development
+### Install & run
 
 ```bash
-# Setup
+# 1. Clone the repository
 git clone https://github.com/themanoj-025/Dabba.git
 cd Dabba
-make setup
 
-# Download datasets
-python setup_kaggle.py
+# 2. Create and activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Train all models
-make train
+# 3. Install dependencies
+pip install -r requirements.txt
 
-# Run dashboard
-make run-app
+# 4. Copy the environment template
+cp .env.example .env
+#   → Set OPENAI_API_KEY or ANTHROPIC_API_KEY to enable LLM explanations
 
-# Run API
-make run-api
+# 5. Run the app
+streamlit run app/app.py
 ```
 
----
+### Environment variables
 
-## 📋 Environment Variables
-
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `DABBA_API_KEY` | API authentication key | — | Optional |
-| `DABBA_DATABASE_URL` | PostgreSQL connection | SQLite fallback | ❌ |
-| `DABBA_MLFLOW_TRACKING_URI` | MLflow server URL | `http://localhost:5000` | ❌ |
-| `DABBA_ANTHROPIC_API_KEY` | Claude API key (enables the AI concierge) | — | Optional |
-| `DABBA_LLM_ENABLED` | Master switch for the LLM layer | `false` | ❌ |
-| `DABBA_SLACK_WEBHOOK_URL` | Incoming webhook for drift alerts | — | Optional |
-| `KAGGLE_USERNAME` / `KAGGLE_KEY` | Kaggle credentials — only if you prefer env vars over `kaggle.json` | — | Optional¹ |
-
-> 📝 **Note:** Dabba reads its own settings via pydantic-settings with the `DABBA_` prefix (see `.env.example`); unprefixed `ANTHROPIC_API_KEY` / `SLACK_WEBHOOK_URL` are ignored. Dataset download is credential-free by default via `python setup_kaggle.py` with a `kaggle.json` token — the Kaggle env vars are only the alternative path. ¹ Marked optional because the repo ships pre-trained artifacts; you only need credentials to re-download/re-train.
-
----
+| Variable | Default | Required | Description |
+| --- | --- | --- | --- |
+| `OPENAI_API_KEY` | — | No | Enables LLM explanations |
+| `ANTHROPIC_API_KEY` | — | No | Alternate LLM provider for explanations |
+| `MLFLOW_TRACKING_URI` | `sqlite:///mlflow.db` | No | MLflow tracking server |
 
 ## 🏗️ Architecture
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│              Kaggle Datasets (Zomato + Delivery)                │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────────┐
-│                    Data Pipeline                                 │
-│  Clean → Feature Engineer → Resample → Train → Evaluate         │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────────┐
-│                     ML Models                                    │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Rating Model │  │  ETA Model   │  │ Collaborative│          │
-│  │   (RF/XGB)   │  │  (GB/LGB)   │  │  Filtering   │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         └─────────────────┼─────────────────┘                  │
-│                           ▼                                     │
-│              Reliability Score + A/B Scenarios                  │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────────────┐
-│                     Serving Layer                                │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   FastAPI    │  │  Streamlit   │  │    MLflow    │          │
-│  │  REST API    │  │  Dashboard   │  │   Tracking   │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📁 Project Structure
-
-```text
 Dabba/
-├── api/
-│   ├── main.py              # FastAPI application
-│   └── routers/             # API endpoints
-│       ├── recommend.py     # /v1/recommend
-│       ├── eta.py           # /v1/predict-eta
-│       ├── chat.py          # /v1/chat
-│       └── explain.py       # /v1/explain
-├── src/dabba/
-│   ├── config.py            # Configuration
-│   ├── pipeline.py          # Training pipeline
-│   ├── data/                # Data loading & cleaning
-│   ├── features/            # Feature engineering
-│   ├── models/              # ML models
-│   ├── evaluation/          # Metrics & scoring
-│   ├── nlp/                 # Sentiment analysis
-│   ├── database/            # SQLAlchemy models
-│   └── observability/       # Prometheus metrics
-├── app/
-│   └── streamlit_app.py     # Dashboard
-├── docker/                  # Per-service Dockerfiles
-├── tests/                   # Test suite
-├── migrations/              # Alembic migrations
+├── dabba/
+│   ├── deterministic/        # Ranking, ETA, recommendation (offline)
+│   ├── llm/                  # Optional explanation generator
+│   ├── mlflow/               # Tracking + model registry
+│   ├── app/                  # Streamlit dashboard
+│   └── scripts/              # Training + evaluation entry points
+├── model_cards.md
+├── reports/
 ├── requirements.txt
-├── Makefile
-└── docker-compose.yml
+└── README.md
 ```
 
----
+## 📁 Project structure
+
+```
+Dabba/
+├── dabba/
+│   ├── deterministic/        # Ranking, ETA, recommendation
+│   ├── llm/                  # Optional explanations
+│   ├── mlflow/               # Tracking + registry
+│   ├── app/                  # Streamlit dashboard
+│   └── scripts/              # Training + evaluation
+├── model_cards.md
+├── reports/
+├── requirements.txt
+└── README.md
+```
 
 ## 🧪 Testing
 
 ```bash
-# Run tests
-make test
-
-# Run linters
-make lint
-
-# Auto-format code
-make format
+# Run the test suite
+pytest tests/ -v
 ```
 
----
-
-## 📡 API Endpoints
+## 📡 API endpoints
 
 | Method | Path | Description |
-|--------|------|-------------|
+| --- | --- | --- |
+| `GET` | `/api/v1/restaurants/rank` | Rank restaurants for a given query/city |
+| `POST` | `/api/v1/eta` | Predict ETA + confidence interval for a restaurant |
+| `GET` | `/api/v1/meals/recommended` | Recommend meals for a user/city |
+| `POST` | `/api/v1/explain` | Generate an optional LLM explanation |
 | `GET` | `/health` | Health check |
-| `GET` | `/metrics` | Prometheus metrics |
-| `POST` | `/v1/recommend` | Restaurant recommendations |
-| `POST` | `/v1/predict-eta` | Delivery ETA prediction |
-| `POST` | `/v1/chat` | Food concierge chat |
-| `GET` | `/v1/model-info` | Model metadata |
-| `GET` | `/v1/restaurants` | Restaurant listing |
-
----
 
 ## 🗺️ Roadmap
 
-- [x] Rating prediction (4 models)
-- [x] ETA prediction (3 models)
-- [x] Collaborative filtering (PyTorch)
-- [x] Reliability score
-- [x] FastAPI REST API
-- [x] Streamlit dashboard
-- [x] MLflow tracking
-- [x] Drift detection
-- [x] Docker deployment
-- [ ] Real-time Zomato scraping
-- [ ] User authentication
-- [ ] Mobile app
-- [ ] Multi-city support
+> [!CAUTION] Checked items are built and verified. Unchecked items are tracked in the issue tracker.
 
----
+- [x] Restaurant ranking
+- [x] Delivery ETA prediction with confidence interval
+- [x] Meal recommendation
+- [x] MLflow tracking
+- [x] Optional LLM explanations
+- [ ] Real-time dashboard (tracked public issue)
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgements
-
-- [Zomato](https://www.zomato.com/) - Restaurant data
-- [Kaggle](https://www.kaggle.com/) - Dataset hosting
-- [scikit-learn](https://scikit-learn.org/) - ML framework
-- [PyTorch](https://pytorch.org/) - Deep learning
-- [FastAPI](https://fastapi.tiangolo.com/) - REST API
-- [Streamlit](https://streamlit.io/) - Dashboard
-- [MLflow](https://mlflow.org/) - Experiment tracking
-- [Optuna](https://optuna.org/) - Hyperparameter optimization
-
----
-
 ## 📬 Support
 
 - 🐛 [Report a bug](https://github.com/themanoj-025/Dabba/issues)
 - 💡 [Request a feature](https://github.com/themanoj-025/Dabba/issues)
-- ⭐ [Star the repository](https://github.com/themanoj-025/Dabba)
+- 📧 Email the maintainer via the issue tracker
 
----
+## License
 
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/themanoj-025">themanoj-025</a>
-</p>
+MIT License — see [LICENSE](LICENSE).
 
-<p align="center">
-  If you find this project useful, please give it a ⭐ star!
-</p>
----
-
-## ⭐ Star History
-
-[![Last Commit](https://img.shields.io/github/last-commit/themanoj-025/Dabba?style=flat-square)](https://github.com/themanoj-025/Dabba)
-[![Contributors](https://img.shields.io/github/contributors/themanoj-025/Dabba?style=flat-square)](https://github.com/themanoj-025/Dabba/graphs/contributors)
-
-[![Star History Chart](https://api.star-history.com/svg?repos=themanoj-025/Dabba&type=Date)](https://star-history.com/#Dabba&Date)
+<!-- TODO: version/license is not yet verified in the pyproject manifest; reconcile before the next release tag. -->
