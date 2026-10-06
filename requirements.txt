@@ -6,7 +6,7 @@ scikit-learn>=1.9.1,<1.10  # pinned <1.9: trained model artifacts reference skle
 joblib>=1.6.0,<2.0
 
 # Gradient Boosting
-xgboost>=3.2.0,<4.0
+xgboost>=3.4.1,<4.0
 lightgbm>=4.7.0,<5.0
 catboost>=1.2.10,<2.0
 
