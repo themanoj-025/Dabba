@@ -1,0 +1,11 @@
+# Dabba Conventional Commit template
+#
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# AI-Assisted: yes | no | partial
+# Co-authored-by: <Tool Name> <noreply@...>
+#
+# Types: feat | fix | docs | test | refactor | perf | chore | ci
+# Scope: delivery | catalog | pricing | inventory | api | web | tests | docs
