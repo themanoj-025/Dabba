@@ -1,0 +1,57 @@
+# ─── Dabba API service ──────────────────────────────────────────────
+# Serves the FastAPI restaurant intelligence API on port 8000.
+# Built with /health endpoint for load-balancer and Docker health checks.
+# Uses docker/entrypoint.sh to run Alembic migrations before startup.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# The dabba package lives under src/ (see pyproject [tool.setuptools.packages.find])
+ENV PYTHONPATH=/app/src
+
+# Install runtime system dependencies + curl for healthcheck.
+# upgrade: the pinned base snapshot carries stale OS packages (libssl etc.);
+# pull Debian point releases so trivy CRITICAL/HIGH scans stay clean.
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies.
+# torch is needed at runtime (HybridRecommender -> collaborative_recommender)
+# but only for CPU inference; the default PyPI wheel bundles ~4GB of CUDA
+# deps. Install the CPU build in its OWN layer (before requirements.txt) so
+# it stays cacheable and satisfies the requirements.txt constraint.
+RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && \
+    # Upgrade pip-space packages flagged by the CI trivy gate:
+    #   - wheel CVE-2026-24049 (fixed 0.46.2) and jaraco.context
+    #     CVE-2026-23949 (fixed 6.1.0). Trivy also reads the copies
+    #     VENDORED inside setuptools (_vendor/jaraco.context-5.3.0,
+    #     _vendor/wheel-0.45.1), so setuptools must be >= 83.0.0,
+    #     which vendors fixed versions of both.
+    pip install --no-cache-dir --upgrade \
+        "setuptools>=83.0.0" \
+        "wheel>=0.46.2" \
+        "jaraco-context>=6.1.0"
+
+# Copy application code — only what the API needs
+COPY api/ api/
+COPY src/ src/
+COPY alembic/ alembic/
+COPY alembic.ini .
+COPY docker/entrypoint.sh docker/entrypoint.sh
+COPY models/ models/
+
+# Make entrypoint executable
+RUN chmod +x docker/entrypoint.sh
+
+# Port for uvicorn
+EXPOSE 8000
+
+# Default command — run migrations then start uvicorn
+ENTRYPOINT ["./docker/entrypoint.sh"]
+CMD []

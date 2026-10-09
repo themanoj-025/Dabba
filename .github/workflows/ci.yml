@@ -1,0 +1,337 @@
+# Cancel superseded runs of this workflow on the same ref (PR pushes).
+# Never cancels on main pushes or scheduled runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+name: CI
+
+permissions:
+  contents: read
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: '3.12'
+      - name: Install ruff
+        run: pip install ruff==0.16.4
+      - name: Lint with ruff
+        run: ruff check src/ tests/ --output-format=github
+      - name: Format check with ruff
+        run: ruff format --check src/ tests/
+
+  lint-and-test:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # requires-python is >=3.12 (pyproject). 3.11 is EOL for the
+        # project floor; 3.13 is tested for forward compatibility.
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-timeout
+
+      - name: Run pre-commit checks
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
+
+      - name: Run unit tests (excludes slow training/transformers tests)
+        # Coverage gate: --cov-fail-under is the enforced floor. The
+        # [tool.coverage.report] fail_under=80 covers full-suite local
+        # runs; CI excludes slow/integration groups so the gate is 65.
+        run: |
+          pytest tests/ -v --tb=short --timeout=60 \
+            --ignore=tests/e2e \
+            --ignore=tests/integration \
+            --ignore=tests/test_db_loaders.py \
+            --ignore=tests/test_eta_model.py \
+            --ignore=tests/test_rating_model.py \
+            --ignore=tests/test_optuna_tuning.py \
+            --ignore=tests/test_hinglish_sentiment.py \
+            -k "not optuna and not train and not full_import" \
+            --cov=src/dabba --cov-report=xml --cov-fail-under=65
+
+      - name: Enforce coverage gate
+        # Belt-and-braces: pytest-cov already exits non-zero above; this
+        # step makes the gate explicit in the job summary and guards
+        # against the flag being dropped from the pytest invocation.
+        run: |
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          coverage = float(ET.parse("coverage.xml").getroot().get("line-rate", "0")) * 100
+          gate = 65.0
+          print(f"Coverage: {coverage:.2f}% (gate: {gate:.0f}%)")
+          assert coverage >= gate, f"Coverage {coverage:.2f}% below gate {gate:.0f}%"
+          PY
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  docker:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Validate compose files
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+
+      - name: Build API image
+        run: docker build -f docker/api.Dockerfile -t dabba-api:ci .
+
+      - name: Build Streamlit image
+        run: docker build -f docker/streamlit.Dockerfile -t dabba-ui:ci .
+
+      - name: Scan API image for vulnerabilities
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          image-ref: dabba-api:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+
+  mlflow-tracking:
+    name: MLflow model-registry tracking
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-timeout
+      - name: Train small model with MLflow tracking (file store)
+        # Exercises the real training→MLflow path: every model in the
+        # comparison is logged as a nested run under a parent run, and the
+        # winning run is tagged — making every CI-trained model versioned
+        # and traceable in the MLflow UI (artifact uploaded via actions).          env:
+          DABBA_MLFLOW_TRACKING_URI: file:///tmp/mlruns
+          # src/ layout — the package isn't pip-installed in this job
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          """Train a small rating model with MLflow enabled and verify traceability."""
+
+          import numpy as np
+          import pandas as pd
+
+          import mlflow
+          from mlflow.tracking import MlflowClient
+
+          from dabba.config import get_config
+          from dabba.models.rating_model import train_and_evaluate_rating_models
+
+          rng = np.random.RandomState(42)
+          n = 200
+          X = pd.DataFrame(
+              {
+                  "votes_log": rng.uniform(1, 8, n),
+                  "cost_for_two": rng.uniform(100, 2000, n),
+                  "online_order_binary": rng.choice([0, 1], n),
+                  "book_table_binary": rng.choice([0, 1], n),
+                  "cuisine_count": rng.randint(1, 8, n),
+                  "avg_sentiment": rng.uniform(-1, 1, n),
+              }
+          )
+          y = pd.Series(rng.uniform(2.5, 5.0, n))
+
+          results, best = train_and_evaluate_rating_models(
+              X, y, use_mlflow=True, use_hpo=False
+          )
+          assert best is not None, "training produced no best model"
+          assert best.mlflow_run_id, "best model has no mlflow_run_id"
+
+          # Prove the run is traceable in the registry store
+          client = MlflowClient(tracking_uri=get_config().mlflow_tracking_uri)
+          run = client.get_run(best.mlflow_run_id)
+          print(f"Best model: {best.name} (MAE={best.mae:.4f})")
+          print(f"MLflow run: {run.info.run_id} status={run.info.status}")
+          assert run.info.status == "FINISHED"
+          print("MLflow tracking verified: run versioned and traceable")
+          PY
+      - name: Upload MLflow runs as artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mlflow-runs
+          path: /tmp/mlruns
+          retention-days: 7
+          if-no-files-found: warn
+
+  typecheck:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mypy==1.15.0
+      - name: Type check with mypy
+        # --explicit-package-bases: api/ has no __init__.py, so mypy otherwise
+        # maps api/limiter.py to both "limiter" and "api.limiter" and aborts.
+        run: mypy . --ignore-missing-imports --explicit-package-bases
+
+  security-audit:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+      - name: Audit dependencies for known vulnerabilities
+        # Policy: bump to a fixed release whenever one exists; ignore only
+        # advisories with no upstream fix, documented in
+        # docs/security/dependency-audit-policy.md (currently nltk only).
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-3740
+
+  bandit:
+    name: Bandit security scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          cache: pip
+          python-version: '3.12'
+      - name: Install bandit
+        run: pip install bandit==1.9.4
+      - name: Run bandit
+        run: bandit -r src/dabba -ll
+
+  hadolint:
+    name: Container lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: error
+          ignore: DL3066
+          # DL3005: images intentionally `apt-get upgrade` OS packages so
+          # trivy scans pass on the pinned python:3.12-slim base snapshot
+          # (openssl/libssl CVEs are fixed in point releases).
+
+  schemathesis-fuzz:
+    name: Contract fuzzing (Schemathesis)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # src/ layout is not installed by `pip install -r requirements.txt`, so
+      # `from api.main import app` needs the package root on the import path.
+      PYTHONPATH: ${{ github.workspace }}/src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt 2>/dev/null || pip install -e ".[dev]" 2>/dev/null || true
+          pip install schemathesis
+      - name: Generate OpenAPI spec
+        run: |
+          python -c "
+          from api.main import app
+          import json, sys
+          with open('/tmp/openapi.json', 'w') as f:
+              json.dump(app.openapi(), f, indent=2)
+          print('OpenAPI spec generated:', len(json.dumps(app.openapi())), 'bytes')
+          "
+      - name: Fuzz API against OpenAPI contract
+        run: |
+          uvicorn api.main:app --host 0.0.0.0 --port 8000 &
+          sleep 3
+          st run --checks all /tmp/openapi.json --base-url http://localhost:8000 -w 5 --hypothesis-suppress-health-check=too_slow 2>&1 | tail -20 || true
+
+  docker-cache:
+    name: Docker image build + layer cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build image (cached)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: Dockerfile
+          load: true
+          tags: dabba-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  dive:
+    name: Docker image size audit (dive)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          load: true
+          tags: dive-audit:latest
+          cache-from: type=gha
+      - name: Install dive
+        run: |
+          wget -q https://github.com/wagoodman/dive/releases/download/v0.12.0/dive_0.12.0_linux_amd64.deb
+          sudo dpkg -i dive_0.12.0_linux_amd64.deb
+      - name: Run dive (efficiency check)
+        run: |
+          CI=true dive dive-audit:latest

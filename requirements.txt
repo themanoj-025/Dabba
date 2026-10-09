@@ -1,0 +1,89 @@
+# Core
+pandas>=3.0.6,<4.0
+numpy>=2.4.6,<3.0  # trained model artifacts pickle BitGenerators via numpy.random._mt19937 (numpy 2.x)
+scipy>=1.17.1,<2.0
+scikit-learn>=1.9.1,<1.10  # pinned <1.9: trained model artifacts reference sklearn._loss (removed in 1.9)
+joblib>=1.6.0,<2.0
+
+# Gradient Boosting
+xgboost>=3.2.0,<4.0
+lightgbm>=4.7.0,<5.0
+catboost>=1.2.10,<2.0
+
+# Deep Learning / Embeddings
+torch>=2.14.0,<3.0
+faiss-cpu>=1.15.1,<2.0
+skorch>=1.4.0,<2.0
+
+# NLP / Sentiment (Hinglish-aware)
+# scikit-learn already provides TF-IDF features
+# For production: fine-tune IndicBERT or Hinglish-RoBERTa
+
+# NLP / Sentiment
+nltk>=3.10.3,<4.0
+
+# LLM Integration
+anthropic>=1.6.0,<2.0
+
+# Web Framework
+fastapi>=0.104,<1.0
+uvicorn[standard]>=0.53.0,<1.0
+pydantic>=2.13.5,<3.0
+pydantic-settings>=2.15.0,<3.0
+
+# Rate Limiting / Auth
+slowapi>=0.1.9,<1.0
+PyJWT>=2.14.0,<3.0
+
+# Dashboard
+streamlit>=1.64.0,<2.0
+
+# Visualization
+plotly>=7.1.0,<8.0
+matplotlib>=3.11.2,<4.0
+folium>=0.20.0,<1.0
+seaborn>=0.13,<1.0
+
+# Explainability
+shap>=0.43,<1.0
+
+# Experiment Tracking
+mlflow>=3.16.1,<4.0
+
+# Testing
+pytest>=9.0.3,<10.0  # >=9.0.3 fixes PYSEC-2026-1845 (pytest 8.4.2 advisory)
+pytest-cov>=7.1.0,<8.0
+
+# Linting / Formatting
+ruff>=0.16.8,<1.0
+black>=26.5.1,<27.0
+isort>=8.0.1,<9.0
+
+# Kaggle API (for dataset download)
+kaggle>=1.5,<3.0
+
+# Database
+sqlalchemy>=2.0,<3.0
+psycopg2-binary>=2.9.13,<3.0  # Postgres driver (compose uses postgres)
+alembic>=1.20.0,<2.0
+
+# Cache
+redis>=5.0,<6.0
+
+# Environment
+python-dotenv>=1.0,<2.0
+
+# Observability
+prometheus-client>=0.19,<1.0
+
+# Hyperparameter Optimization
+optuna>=5.0.0,<6.0
+
+# Retry with exponential backoff
+tenacity>=9.1.4,<10.0
+
+# OpenTelemetry distributed tracing (optional, enabled via OTEL_ENABLED=true)
+opentelemetry-api>=1.20.0,<2.0
+opentelemetry-sdk>=1.20.0,<2.0
+opentelemetry-exporter-otlp-proto-grpc>=1.44.0,<2.0
+opentelemetry-instrumentation-fastapi>=0.65b0,<1.0

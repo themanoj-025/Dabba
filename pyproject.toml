@@ -1,0 +1,121 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dabba"
+version = "0.2.0"
+description = "India-focused restaurant ranking, recommendation, and delivery-reliability platform"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=3.0.6,<4.0",
+    "numpy>=2.4.6,<3.0",  # trained model artifacts pickle BitGenerators via numpy.random._mt19937 (numpy 2.x)
+    "scipy>=1.17.1,<2.0",
+    "scikit-learn>=1.9.1,<1.10",  # pinned <1.9: trained model artifacts reference sklearn._loss (removed in 1.9)
+    "joblib>=1.6.0,<2.0",
+    "xgboost>=3.2.0,<4.0",
+    "lightgbm>=4.7.0,<5.0",
+    "catboost>=1.2.10,<2.0",
+    "torch>=2.14.0,<3.0",
+    "faiss-cpu>=1.15.1,<2.0",
+    "nltk>=3.10.3,<4.0",
+    "anthropic>=1.6.0,<2.0",
+    "fastapi>=0.104,<1.0",
+    "uvicorn[standard]>=0.53.0,<1.0",
+    "pydantic>=2.13.5,<3.0",
+    "pydantic-settings>=2.15.0,<3.0",
+    "slowapi>=0.1.9,<1.0",
+    "PyJWT>=2.14.0,<3.0",
+    "streamlit>=1.64.0,<2.0",
+    "plotly>=7.1.0,<8.0",
+    "matplotlib>=3.11.2,<4.0",
+    "folium>=0.20.0,<1.0",
+    "seaborn>=0.13,<1.0",
+    "shap>=0.43,<1.0",
+    "mlflow>=3.16.1,<4.0",
+    "pytest>=7.4,<9.0",
+    "pytest-cov>=7.1.0,<8.0",
+    "ruff>=0.16.8,<1.0",
+    "black>=26.5.1,<27.0",
+    "isort>=8.0.1,<9.0",
+    "kaggle>=1.5,<3.0",
+    "sqlalchemy>=2.0,<3.0",
+    "alembic>=1.20.0,<2.0",
+    "redis>=5.0,<6.0",
+    "python-dotenv>=1.0,<2.0",
+    "requests>=2.34.2,<3.0",
+    "tenacity>=8.2,<10.0",
+    "prometheus-client>=0.19,<1.0",
+    "optuna>=5.0.0,<6.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests requiring external services",
+    "unit: marks pure unit tests",
+]
+addopts = "-m 'not slow' --cov --cov-fail-under=50"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "BLE", "SIM", "ARG", "C4", "RUF", "PLC", "PIE"]
+# black (line-length 88) is the enforced formatter; E501 duplicates it and
+# only fires on docstrings/comments/strings. ruff's recommended black setup.
+ignore = [
+    "E501",    # line too long — style preference
+    "PLC0415", # import-outside-top-level — lazy imports in Streamlit/FastAPI
+    "F821",    # undefined name — false positives from type annotations
+    "RUF002",  # ambiguous unicode — intentional
+    "RUF059",  # unused loop variable — common in iteration
+    "C408",    # unnecessary dict call — plotly/visualization pattern
+    "SIM102",  # collapsible if — circuit breaker pattern
+    "RUF012",  # mutable class default
+    "RUF001",  # ambiguous unicode — intentional
+    "F401",    # unused import — re-export pattern
+    "RUF005",  # collection-literal-in-comparison
+    "BLE001",  # blind except — defensive coding
+    "RUF003",  # ambiguous unicode — intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI idioms: Depends() in argument defaults and the injected `request`
+# param are required by the framework, not lint violations.
+"api/**/*.py" = ["B008", "ARG001"]
+"app/**/*.py" = ["B007", "B008", "ARG001"]
+# scikit-learn convention: X (feature matrix), y, C, R are standard names.
+"src/dabba/models/**/*.py" = ["N803", "N806", "ARG001"]
+"src/dabba/features/**/*.py" = ["N803", "ARG001"]
+"src/dabba/pipeline.py" = ["N803", "N806"]
+"tests/**/*.py" = ["N803", "N806", "ARG002"]
+# Decorator shims that intentionally forward *args/**kwargs.
+"src/dabba/observability/__init__.py" = ["ARG001", "ARG002"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+skip_empty = true
