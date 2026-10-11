@@ -1,0 +1,14 @@
+{
+  "repository": "Dabba",
+  "mode": "AUDIT_ONLY",
+  "aggressiveness": 3,
+  "phase": 9,
+  "status": "COMPLETED_AUDIT",
+  "baseline_sha": "5bb30a84222c5cf1c2e7721558ea475c32ac054c",
+  "total_candidates": 101,
+  "t0_count": 70,
+  "t1_count": 0,
+  "t2_count": 30,
+  "t3_count": 1,
+  "updated_at": "2026-10-11T07:39:20.948Z"
+}
