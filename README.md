@@ -23,11 +23,11 @@
 ## 📋 Table of Contents
 
 - [What it does](#what-it-does)
-- [📸 Screenshots](#-screenshots)
+- [📸 Screenshots](#screenshots)
 - [✨ Features](#-features)
 - [📊 Model performance](#-model-performance)
 - [🚀 Quick start](#-quick-start)
-- [📋 Environment variables](#-environment-variables)
+- [📋 Environment variables](#environment-variables)
 - [🏗️ Architecture](#️-architecture)
 - [📁 Project structure](#-project-structure)
 - [🧪 Testing](#-testing)
@@ -136,7 +136,7 @@ Dabba/
 
 ## 📁 Project structure
 
-```
+```text
 Dabba/
 ├── dabba/
 │   ├── deterministic/        # Ranking, ETA, recommendation
@@ -193,3 +193,4 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 MIT License — see [LICENSE](LICENSE).
 
 <!-- TODO: version/license is not yet verified in the pyproject manifest; reconcile before the next release tag. -->
+
