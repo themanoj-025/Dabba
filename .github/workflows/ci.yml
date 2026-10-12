@@ -142,7 +142,8 @@ jobs:
         # Exercises the real training→MLflow path: every model in the
         # comparison is logged as a nested run under a parent run, and the
         # winning run is tagged — making every CI-trained model versioned
-        # and traceable in the MLflow UI (artifact uploaded via actions).          env:
+        # and traceable in the MLflow UI (artifact uploaded via actions).
+        env:
           DABBA_MLFLOW_TRACKING_URI: file:///tmp/mlruns
           # src/ layout — the package isn't pip-installed in this job
           PYTHONPATH: src
