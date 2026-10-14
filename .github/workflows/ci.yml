@@ -145,6 +145,7 @@ jobs:
         # and traceable in the MLflow UI (artifact uploaded via actions).
         env:
           DABBA_MLFLOW_TRACKING_URI: file:///tmp/mlruns
+          MLFLOW_ALLOW_FILE_STORE: "true"
           # src/ layout — the package isn't pip-installed in this job
           PYTHONPATH: src
         run: |
