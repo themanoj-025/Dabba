@@ -166,7 +166,7 @@ graph TD
     Consumer["Food Consumer / App User"] -->|"HTTPS Browser"| Dabba["Dabba System Boundary"]
     Partner["Restaurant Partner / Cloud Kitchen"] -->|"Web Analytics Dashboard"| Dabba
     Dispatcher["Logistics Dispatch System"] -->|"REST API /v1/predict-eta"| Dabba
-    
+
     Dabba -->|"LLM Queries (Optional)"| Claude["Anthropic Claude / External LLM API"]
     Dabba -->|"Telemetry Scraping"| Prometheus["Prometheus Monitoring"]
     Dabba -->|"Stores Orders & Logs"| Database[("Relational Database (SQLite / PostgreSQL)")]
@@ -734,55 +734,55 @@ Production deployment utilizes Docker containers orchestrated via Docker Compose
 
 ## <a id="exam"></a>§EXAM — Cold-Reader Verification Exam (25 Questions)
 
-1. **Q: What is the Python runtime requirement for Dabba?**  
+1. **Q: What is the Python runtime requirement for Dabba?**
    *A:* Python >= 3.12. Reference: [`pyproject.toml`](pyproject.toml).
-2. **Q: How many total tracked files exist in the Dabba repository?**  
+2. **Q: How many total tracked files exist in the Dabba repository?**
    *A:* 217 files. Reference: [§APP](#app).
-3. **Q: How many automated test functions exist across how many test files?**  
+3. **Q: How many automated test functions exist across how many test files?**
    *A:* 380 test functions across 32 test files. Reference: [`tests/`](tests/).
-4. **Q: What framework powers the REST API endpoints?**  
+4. **Q: What framework powers the REST API endpoints?**
    *A:* FastAPI (version >= 0.115.0). Reference: [`requirements.txt`](requirements.txt).
-5. **Q: What dashboard framework serves the operational cockpit?**  
+5. **Q: What dashboard framework serves the operational cockpit?**
    *A:* Streamlit (version >= 1.38.0). Reference: [`requirements.txt`](requirements.txt).
-6. **Q: What deep learning framework powers collaborative filtering?**  
+6. **Q: What deep learning framework powers collaborative filtering?**
    *A:* PyTorch (`torch >= 2.3.0`). Reference: [`requirements.txt`](requirements.txt).
-7. **Q: What NLP library is specialized for culinary review sentiment?**  
+7. **Q: What NLP library is specialized for culinary review sentiment?**
    *A:* VADER (`vaderSentiment >= 3.3.0`). Reference: [`src/dabba/nlp/sentiment.py`](src/dabba/nlp/sentiment.py).
-8. **Q: How many relational database tables are declared in `models.py`?**  
+8. **Q: How many relational database tables are declared in `models.py`?**
    *A:* 5 tables (`restaurants`, `orders`, `predictions`, `experiment_results`, `drift_logs`). Reference: [`src/dabba/database/models.py`](src/dabba/database/models.py).
-9. **Q: What algorithm performs gradient-boosted delivery ETA prediction?**  
+9. **Q: What algorithm performs gradient-boosted delivery ETA prediction?**
    *A:* XGBoost / GradientBoosting. Reference: [`src/dabba/models/`](src/dabba/models/).
-10. **Q: What platform tracks machine learning experiments and metrics?**  
+10. **Q: What platform tracks machine learning experiments and metrics?**
     *A:* MLflow. Reference: [`requirements.txt`](requirements.txt).
-11. **Q: What is the default SQLite database path?**  
+11. **Q: What is the default SQLite database path?**
     *A:* `sqlite+aiosqlite:///data/dabba.db`. Reference: [§ENV](#env).
-12. **Q: What endpoint exposes Prometheus operational metrics?**  
+12. **Q: What endpoint exposes Prometheus operational metrics?**
     *A:* `/metrics`. Reference: [`api/main.py`](api/main.py).
-13. **Q: What external LLM provider can be used for dining concierge chat?**  
+13. **Q: What external LLM provider can be used for dining concierge chat?**
     *A:* Anthropic Claude (`ANTHROPIC_API_KEY`). Reference: [§ENV](#env).
-14. **Q: How many endpoints are exposed by the FastAPI backend?**  
+14. **Q: How many endpoints are exposed by the FastAPI backend?**
     *A:* 10 endpoints. Reference: [§API](#api).
-15. **Q: What test file executes end-to-end integration workflows?**  
+15. **Q: What test file executes end-to-end integration workflows?**
     *A:* `tests/e2e/test_workflow.py`. Reference: [`tests/e2e/test_workflow.py`](tests/e2e/test_workflow.py).
-16. **Q: What module implements feature drift tracking?**  
+16. **Q: What module implements feature drift tracking?**
     *A:* `src/dabba/monitoring/drift.py`. Reference: [`src/dabba/monitoring/drift.py`](src/dabba/monitoring/drift.py).
-17. **Q: What total lines of code exist across the codebase?**  
+17. **Q: What total lines of code exist across the codebase?**
     *A:* 32,042 lines of code. Reference: [§META](#meta).
-18. **Q: What git commit hash was verified for this documentation?**  
+18. **Q: What git commit hash was verified for this documentation?**
     *A:* `32d8c97` (`32d8c97828b8a57e7af2a116f72d50ca75556a19`). Reference: [§META](#meta).
-19. **Q: What git tree hash represents the verified codebase?**  
+19. **Q: What git tree hash represents the verified codebase?**
     *A:* `b72a3eaa1bb03a263e6561f4f3fcf7c07bfae06e`. Reference: [§META](#meta).
-20. **Q: What fallback occurs if the external LLM is unreachable?**  
+20. **Q: What fallback occurs if the external LLM is unreachable?**
     *A:* A deterministic template-based recommendation narrative is served without external latency. Reference: [§RESILIENCE](#resilience).
-21. **Q: What tool is configured for code formatting and linting?**  
+21. **Q: What tool is configured for code formatting and linting?**
     *A:* Ruff. Reference: [`pyproject.toml`](pyproject.toml).
-22. **Q: What table logs model prediction events and features?**  
+22. **Q: What table logs model prediction events and features?**
     *A:* The `predictions` table. Reference: [`src/dabba/database/models.py`](src/dabba/database/models.py).
-23. **Q: What is the target SLA for ETA prediction inference?**  
+23. **Q: What is the target SLA for ETA prediction inference?**
     *A:* Under 15 ms (measured 8.2 ms P95). Reference: [§PERF](#perf).
-24. **Q: What is the primary domain focus of Dabba?**  
+24. **Q: What is the primary domain focus of Dabba?**
     *A:* Food-tech intelligence, restaurant ranking, and delivery reliability in India. Reference: [§TLDR](#tldr).
-25. **Q: How many tracked files are cataloged with 100% manifest coverage in Appendix A?**  
+25. **Q: How many tracked files are cataloged with 100% manifest coverage in Appendix A?**
     *A:* All 217 tracked files. Reference: [§APP](#app).
 
 ---
