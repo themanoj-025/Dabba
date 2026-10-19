@@ -29,7 +29,7 @@ anthropic>=1.13.0,<2.0
 fastapi>=0.143.0,<1.0
 uvicorn[standard]>=0.53.0,<1.0
 pydantic>=2.13.5,<3.0
-pydantic-settings>=2.15.0,<3.0
+pydantic-settings>=2.16.0,<3.0
 
 # Rate Limiting / Auth
 slowapi>=0.1.9,<1.0
