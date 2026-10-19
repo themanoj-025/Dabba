@@ -44,7 +44,7 @@ dependencies = [
     "redis>=5.0,<6.0",
     "python-dotenv>=1.2.4,<2.0",
     "requests>=2.34.2,<3.0",
-    "tenacity>=8.2,<10.0",
+    "tenacity>=9.2.1,<10.0",
     "prometheus-client>=0.19,<1.0",
     "optuna>=5.0.0,<6.0",
 ]
