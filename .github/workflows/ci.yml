@@ -91,7 +91,7 @@ jobs:
           PY
 
       - name: Upload coverage
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
@@ -114,7 +114,7 @@ jobs:
         run: docker build -f docker/streamlit.Dockerfile -t dabba-ui:ci .
 
       - name: Scan API image for vulnerabilities
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: dabba-api:ci
           format: table
@@ -190,7 +190,7 @@ jobs:
           print("MLflow tracking verified: run versioned and traceable")
           PY
       - name: Upload MLflow runs as artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mlflow-runs
           path: /tmp/mlruns
