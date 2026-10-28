@@ -15,7 +15,7 @@ annotated-doc==0.0.5
     # via fastapi
 annotated-types==0.8.0
     # via pydantic
-anthropic==1.13.0
+anthropic==2.3.0
     # via -r requirements.txt
 anyio==4.14.2
     # via
@@ -34,6 +34,8 @@ attrs==26.1.0
     #   referencing
 black==26.10.1
     # via -r requirements.txt
+bleach==6.4.0
+    # via kaggle
 blinker==1.9.0
     # via flask
 branca==0.8.2
@@ -44,9 +46,10 @@ cachetools==7.1.7
     #   mlflow-tracing
 catboost==1.2.10
     # via -r requirements.txt
-certifi==2026.7.22
+certifi==2026.10.23
     # via
     #   kaggle
+    #   kagglesdk
     #   requests
 cffi==2.1.1
     # via cryptography
@@ -97,10 +100,12 @@ docstring-parser==0.18.0
     # via anthropic
 faiss-cpu==1.15.1
     # via -r requirements.txt
-fastapi==0.143.0
+fastapi==0.162.0
     # via
     #   -r requirements.txt
     #   mlflow-skinny
+fastjsonschema==2.22.2
+    # via nbformat
 filelock==3.32.3
     # via torch
 flask==3.1.3
@@ -148,9 +153,7 @@ h11==0.16.0
 httpcore2==2.13.0
     # via httpx2
 httptools==0.8.0
-    # via
-    #   streamlit
-    #   uvicorn
+    # via uvicorn
 httpx2==2.13.0
     # via anthropic
 huey==3.3.4
@@ -187,21 +190,31 @@ joblib==1.6.0
     #   nltk
     #   scikit-learn
 jsonschema==4.26.0
-    # via altair
+    # via
+    #   altair
+    #   nbformat
 jsonschema-specifications==2025.9.1
     # via jsonschema
-kaggle==1.5.0
+jupyter-core==5.9.1
+    # via nbformat
+jupytext==1.19.6
+    # via kaggle
+kaggle==2.2.5
     # via -r requirements.txt
+kagglesdk==0.1.38
+    # via kaggle
 kiwisolver==1.5.0
     # via matplotlib
 lightgbm==4.7.0
     # via -r requirements.txt
 limits==5.8.0
     # via slowapi
-llvmlite==0.49.0
-    # via numba
 mako==1.4.1
     # via alembic
+markdown-it-py==4.2.0
+    # via
+    #   jupytext
+    #   mdit-py-plugins
 markupsafe==3.0.3
     # via
     #   flask
@@ -214,11 +227,15 @@ matplotlib==3.11.2
     #   catboost
     #   mlflow
     #   seaborn
-mlflow==3.17.1
+mdit-py-plugins==0.6.1
+    # via jupytext
+mdurl==0.1.2
+    # via markdown-it-py
+mlflow==3.17.2
     # via -r requirements.txt
-mlflow-skinny==3.17.1
+mlflow-skinny==3.17.2
     # via mlflow
-mlflow-tracing==3.17.1
+mlflow-tracing==3.17.2
     # via mlflow
 mpmath==1.3.0
     # via sympy
@@ -236,13 +253,13 @@ narwhals==2.25.0
     #   lightgbm
     #   plotly
     #   scikit-learn
+nbformat==5.11.1
+    # via jupytext
 networkx==3.6.1
     # via torch
-nltk==3.10.3
+nltk==3.10.4
     # via -r requirements.txt
-numba==0.67.0
-    # via shap
-numpy==2.4.6
+numpy==2.5.4
     # via
     #   -r requirements.txt
     #   catboost
@@ -252,7 +269,6 @@ numpy==2.4.6
     #   lightgbm
     #   matplotlib
     #   mlflow
-    #   numba
     #   optuna
     #   pandas
     #   pydeck
@@ -310,6 +326,7 @@ nvidia-nvtx==13.0.85
 opentelemetry-api==1.45.1
     # via
     #   -r requirements.txt
+    #   anthropic
     #   fastapi
     #   mlflow-skinny
     #   mlflow-tracing
@@ -363,6 +380,8 @@ packaging==26.3
     #   altair
     #   black
     #   faiss-cpu
+    #   jupytext
+    #   kaggle
     #   limits
     #   matplotlib
     #   mlflow-skinny
@@ -374,7 +393,7 @@ packaging==26.3
     #   shap
     #   skops
     #   streamlit
-pandas==3.0.6
+pandas==3.1.0
     # via
     #   -r requirements.txt
     #   catboost
@@ -389,7 +408,9 @@ pillow==12.3.0
     #   matplotlib
     #   streamlit
 platformdirs==4.11.3
-    # via black
+    # via
+    #   black
+    #   jupyter-core
 plotly==7.1.0
     # via
     #   -r requirements.txt
@@ -410,6 +431,8 @@ protobuf==6.33.6
     # via
     #   databricks-sdk
     #   googleapis-common-protos
+    #   kaggle
+    #   kagglesdk
     #   mlflow-skinny
     #   mlflow-tracing
     #   opentelemetry-proto
@@ -436,7 +459,7 @@ pydantic==2.13.5
     #   pydantic-settings
 pydantic-core==2.46.5
     # via pydantic
-pydantic-settings==2.15.0
+pydantic-settings==2.16.2
     # via -r requirements.txt
 pydeck==0.9.3
     # via streamlit
@@ -461,6 +484,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.4
     # via
     #   -r requirements.txt
+    #   kaggle
     #   mlflow-skinny
     #   pydantic-settings
     #   uvicorn
@@ -472,6 +496,7 @@ pytokens==0.4.1
     # via black
 pyyaml==6.0.3
     # via
+    #   jupytext
     #   mlflow-skinny
     #   optuna
     #   uvicorn
@@ -489,13 +514,14 @@ requests==2.32.5
     #   docker
     #   folium
     #   kaggle
+    #   kagglesdk
     #   mlflow-skinny
     #   streamlit
 rpds-py==2026.6.3
     # via
     #   jsonschema
     #   referencing
-ruff==0.17.0
+ruff==0.17.3
     # via -r requirements.txt
 scikit-learn==1.9.1
     # via
@@ -519,18 +545,17 @@ seaborn==0.13.0
     # via -r requirements.txt
 setuptools==84.0.0
     # via torch
-shap==0.43.0
+shap==0.54.1
     # via -r requirements.txt
 six==1.17.0
     # via
     #   catboost
-    #   kaggle
     #   python-dateutil
 skops==0.14.0
     # via mlflow
 skorch==1.4.0
     # via -r requirements.txt
-slicer==0.0.7
+slicer==0.0.8
     # via shap
 slowapi==0.1.9
     # via -r requirements.txt
@@ -538,7 +563,7 @@ smmap==5.0.3
     # via gitdb
 sniffio==1.3.1
     # via anthropic
-sqlalchemy==2.1.4
+sqlalchemy==2.1.6
     # via
     #   -r requirements.txt
     #   alembic
@@ -551,20 +576,18 @@ starlette==1.6.0
     #   fastapi
     #   mlflow-skinny
     #   streamlit
-streamlit==1.64.0
+streamlit==1.66.1
     # via -r requirements.txt
 sympy==1.14.0
     # via torch
 tabulate==0.10.0
     # via skorch
-tenacity==9.1.4
+tenacity==9.2.1
     # via -r requirements.txt
 text-unidecode==1.3
     # via python-slugify
 threadpoolctl==3.6.0
     # via scikit-learn
-toml==0.10.2
-    # via streamlit
 torch==2.14.1
     # via -r requirements.txt
 tqdm==4.70.0
@@ -574,6 +597,10 @@ tqdm==4.70.0
     #   optuna
     #   shap
     #   skorch
+traitlets==5.16.1
+    # via
+    #   jupyter-core
+    #   nbformat
 triton==3.8.0
     # via torch
 truststore==0.10.4
@@ -600,6 +627,7 @@ typing-extensions==4.16.0
     #   opentelemetry-semantic-conventions
     #   pydantic
     #   pydantic-core
+    #   pydantic-settings
     #   referencing
     #   sqlalchemy
     #   starlette
@@ -615,7 +643,7 @@ urllib3==1.22
     # via
     #   kaggle
     #   requests
-uvicorn==0.53.0
+uvicorn==0.54.0
     # via
     #   -r requirements.txt
     #   mlflow-skinny
@@ -628,6 +656,8 @@ watchfiles==1.2.0
     # via uvicorn
 wcwidth==0.8.2
     # via prettytable
+webencodings==0.6.1
+    # via bleach
 websocket-client==1.9.2
     # via docker
 websockets==16.1.1
