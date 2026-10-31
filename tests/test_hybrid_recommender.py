@@ -1,6 +1,5 @@
 """Tests for the HybridRecommender — blending content, collaborative, and reliability signals."""
 
-import numpy as np
 import pandas as pd
 import pytest
 

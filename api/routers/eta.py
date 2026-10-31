@@ -7,7 +7,6 @@ then injected via FastAPI ``Depends()`` — no module-level globals.
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import joblib
 from fastapi import APIRouter, Depends, HTTPException, Request
