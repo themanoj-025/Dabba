@@ -871,8 +871,6 @@ Production deployment utilizes Docker containers orchestrated via Docker Compose
 | [`.gitmessage`](.gitmessage) | `no-ext` | 11 | 303 | Configuration or build asset |
 | [`.mailmap`](.mailmap) | `no-ext` | 6 | 298 | Configuration or build asset |
 | [`.pre-commit-config.yaml`](.pre-commit-config.yaml) | `.yaml` | 32 | 1112 | Configuration or build asset |
-| [`AGENTS.md`](AGENTS.md) | `.md` | 73 | 1864 | Documentation asset |
-| [`AI_DISCLOSURE.md`](AI_DISCLOSURE.md) | `.md` | 67 | 2677 | Documentation asset |
 | [`CHANGELOG.md`](CHANGELOG.md) | `.md` | 40 | 1378 | Documentation asset |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | `.md` | 29 | 897 | Documentation asset |
 | [`Dockerfile`](Dockerfile) | `no-ext` | 46 | 1435 | Configuration or build asset |
@@ -882,7 +880,6 @@ Production deployment utilizes Docker containers orchestrated via Docker Compose
 | [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 899 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 345 | 13783 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 981 | Documentation asset |
-| [`ai-provenance.json`](ai-provenance.json) | `.json` | 64 | 1703 | Configuration or build asset |
 | [`alembic.ini`](alembic.ini) | `.ini` | 38 | 578 | Configuration or build asset |
 | [`alembic/env.py`](alembic/env.py) | `.py` | 76 | 2118 | Configuration or build asset |
 | [`alembic/script.py.mako`](alembic/script.py.mako) | `.mako` | 27 | 670 | Configuration or build asset |
