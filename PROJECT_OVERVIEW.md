@@ -7,8 +7,8 @@ git_commit_full: "32d8c97828b8a57e7af2a116f72d50ca75556a19"
 git_tree_hash: "b72a3eaa1bb03a263e6561f4f3fcf7c07bfae06e"
 document_version: "3.0.0"
 generated_at: "2026-10-15T15:35:00+05:30"
-author: "Antigravity Autonomous Forensics Engine"
-verification_status: "VERIFIED_CANONICAL"
+author: "Manoj Jana"
+verification_status: "VERIFIED"
 manifests_sha256:
   requirements.txt: "4083fd8ad0cd6e9a177de6277e6fcf84e9bdf8794b5e6e45bd0d5e97887ab04c"
   pyproject.toml: "f91a67b3801d77313530607dcf6dfa63aa35382f8634951bac34a1ef0dc4648b"
@@ -875,9 +875,7 @@ Production deployment utilizes Docker containers orchestrated via Docker Compose
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | `.md` | 29 | 897 | Documentation asset |
 | [`Dockerfile`](Dockerfile) | `no-ext` | 46 | 1435 | Configuration or build asset |
 | [`LICENSE`](LICENSE) | `no-ext` | 21 | 1075 | Configuration or build asset |
-| [`MODERNIZATION_AUDIT.md`](MODERNIZATION_AUDIT.md) | `.md` | 46 | 1821 | Documentation asset |
 | [`Makefile`](Makefile) | `no-ext` | 56 | 2175 | Configuration or build asset |
-| [`PROJECT_ANALYSIS.md`](PROJECT_ANALYSIS.md) | `.md` | 18 | 899 | Documentation asset |
 | [`README.md`](README.md) | `.md` | 345 | 13783 | Documentation asset |
 | [`SECURITY.md`](SECURITY.md) | `.md` | 25 | 981 | Documentation asset |
 | [`alembic.ini`](alembic.ini) | `.ini` | 38 | 578 | Configuration or build asset |
