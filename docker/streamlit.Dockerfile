@@ -20,7 +20,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 # torch is used by src/dabba/models for CPU inference only; the default
 # PyPI wheel bundles ~4GB of CUDA deps. Install the CPU build in its OWN
 # layer (before requirements.txt) so it stays cacheable.
-RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir --default-timeout=180 --retries 5 "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \

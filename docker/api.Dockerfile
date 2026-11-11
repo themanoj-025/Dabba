@@ -23,7 +23,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 # but only for CPU inference; the default PyPI wheel bundles ~4GB of CUDA
 # deps. Install the CPU build in its OWN layer (before requirements.txt) so
 # it stays cacheable and satisfies the requirements.txt constraint.
-RUN pip install --no-cache-dir "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir --default-timeout=180 --retries 5 "torch>=2.0,<3.0" --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt && \
