@@ -82,7 +82,7 @@ cuda-bindings==13.4.2
     # via torch
 cuda-pathfinder==1.8.2
     # via cuda-bindings
-cuda-toolkit==13.0.3.0
+cuda-toolkit==13.2.2
     # via torch
 cycler==0.12.1
     # via matplotlib
@@ -280,30 +280,30 @@ numpy==2.5.4
     #   skorch
     #   streamlit
     #   xgboost
-nvidia-cublas==13.1.1.3
+nvidia-cublas==13.4.1.3
     # via
     #   cuda-toolkit
     #   nvidia-cudnn-cu13
     #   nvidia-cusolver
-nvidia-cuda-cupti==13.0.85
+nvidia-cuda-cccl==13.3.5.0.6
+    # via nvidia-nvshmem-cu13
+nvidia-cuda-cupti==13.2.86
     # via cuda-toolkit
-nvidia-cuda-nvrtc==13.0.88
+nvidia-cuda-nvrtc==13.2.86
     # via
     #   cuda-toolkit
     #   nvidia-cublas
-nvidia-cuda-runtime==13.0.96
+nvidia-cuda-runtime==13.2.86
     # via cuda-toolkit
-nvidia-cudnn-cu13==9.24.0.43
+nvidia-cudnn-cu13==9.26.0.51
     # via torch
-nvidia-cufft==12.0.0.61
+nvidia-cufft==12.2.0.57
     # via cuda-toolkit
-nvidia-cufile==1.15.1.6
+nvidia-cufile==1.17.1.22
     # via cuda-toolkit
-nvidia-curand==10.4.0.35
+nvidia-cusolver==12.2.0.11
     # via cuda-toolkit
-nvidia-cusolver==12.0.4.66
-    # via cuda-toolkit
-nvidia-cusparse==12.6.3.3
+nvidia-cusparse==12.7.10.12
     # via
     #   cuda-toolkit
     #   nvidia-cusolver
@@ -319,11 +319,11 @@ nvidia-nvjitlink==13.4.92
     #   nvidia-cufft
     #   nvidia-cusolver
     #   nvidia-cusparse
-nvidia-nvshmem-cu13==3.4.5
+nvidia-nvshmem-cu13==3.7.2
     # via torch
-nvidia-nvtx==13.0.85
+nvidia-nvtx==13.2.86
     # via cuda-toolkit
-opentelemetry-api==1.45.1
+opentelemetry-api==1.45.2
     # via
     #   -r requirements.txt
     #   anthropic
@@ -336,40 +336,40 @@ opentelemetry-api==1.45.1
     #   opentelemetry-instrumentation-fastapi
     #   opentelemetry-sdk
     #   opentelemetry-semantic-conventions
-opentelemetry-exporter-otlp-common==0.66b1
+opentelemetry-exporter-otlp-common==0.66b2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-common==1.45.1
+opentelemetry-exporter-otlp-proto-common==1.45.2
     # via opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-exporter-otlp-proto-grpc==1.45.1
+opentelemetry-exporter-otlp-proto-grpc==1.45.2
     # via -r requirements.txt
-opentelemetry-instrumentation==0.66b1
+opentelemetry-instrumentation==0.66b2
     # via
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
-opentelemetry-instrumentation-asgi==0.66b1
+opentelemetry-instrumentation-asgi==0.66b2
     # via opentelemetry-instrumentation-fastapi
-opentelemetry-instrumentation-fastapi==0.66b1
+opentelemetry-instrumentation-fastapi==0.66b2
     # via -r requirements.txt
-opentelemetry-proto==1.45.1
+opentelemetry-proto==1.45.2
     # via
     #   mlflow-skinny
     #   mlflow-tracing
     #   opentelemetry-exporter-otlp-proto-common
     #   opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-sdk==1.45.1
+opentelemetry-sdk==1.45.2
     # via
     #   -r requirements.txt
     #   mlflow-skinny
     #   mlflow-tracing
     #   opentelemetry-exporter-otlp-common
     #   opentelemetry-exporter-otlp-proto-grpc
-opentelemetry-semantic-conventions==0.66b1
+opentelemetry-semantic-conventions==0.66b2
     # via
     #   opentelemetry-instrumentation
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
     #   opentelemetry-sdk
-opentelemetry-util-http==0.66b1
+opentelemetry-util-http==0.66b2
     # via
     #   opentelemetry-instrumentation-asgi
     #   opentelemetry-instrumentation-fastapi
@@ -449,7 +449,7 @@ pyasn1-modules==0.4.2
     # via google-auth
 pycparser==3.0
     # via cffi
-pydantic==2.13.5
+pydantic==2.14.3
     # via
     #   -r requirements.txt
     #   anthropic
@@ -457,7 +457,7 @@ pydantic==2.13.5
     #   mlflow-skinny
     #   mlflow-tracing
     #   pydantic-settings
-pydantic-core==2.46.5
+pydantic-core==2.50.4
     # via pydantic
 pydantic-settings==2.16.2
     # via -r requirements.txt
@@ -469,7 +469,7 @@ pyjwt==2.15.1
     # via -r requirements.txt
 pyparsing==3.3.2
     # via matplotlib
-pytest==9.0.3
+pytest==9.2.0
     # via
     #   -r requirements.txt
     #   pytest-cov
@@ -588,7 +588,7 @@ text-unidecode==1.3
     # via python-slugify
 threadpoolctl==3.6.0
     # via scikit-learn
-torch==2.14.1
+torch==2.15.0
     # via -r requirements.txt
 tqdm==4.70.0
     # via
@@ -601,7 +601,7 @@ traitlets==5.16.1
     # via
     #   jupyter-core
     #   nbformat
-triton==3.8.0
+triton==3.9.0
     # via torch
 truststore==0.10.4
     # via

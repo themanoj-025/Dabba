@@ -330,6 +330,7 @@ jobs:
           load: true
           tags: dive-audit:latest
           cache-from: type=gha
+          provenance: false
       - name: Install dive
         run: |
           wget -q https://github.com/wagoodman/dive/releases/download/v0.12.0/dive_0.12.0_linux_amd64.deb
