@@ -1,6 +1,6 @@
 # Core
 pandas>=3.1.1,<4.0
-numpy>=2.5.4,<3.0  # trained model artifacts pickle BitGenerators via numpy.random._mt19937 (numpy 2.x)
+numpy>=2.5.5,<3.0  # trained model artifacts pickle BitGenerators via numpy.random._mt19937 (numpy 2.x)
 scipy>=1.18.1,<2.0
 scikit-learn>=1.9.1,<1.10  # pinned <1.9: trained model artifacts reference sklearn._loss (removed in 1.9)
 joblib>=1.6.0,<2.0
@@ -12,7 +12,7 @@ catboost>=1.2.10,<2.0
 
 # Deep Learning / Embeddings
 torch>=2.15.0,<3.0
-faiss-cpu>=1.15.1,<2.0
+faiss-cpu>=1.16.0,<2.0
 skorch>=1.4.0,<2.0
 
 # NLP / Sentiment (Hinglish-aware)
@@ -23,13 +23,13 @@ skorch>=1.4.0,<2.0
 nltk>=3.10.4,<4.0
 
 # LLM Integration
-anthropic>=2.6.0,<3.0
+anthropic>=2.11.0,<3.0
 
 # Web Framework
-fastapi>=0.162.2,<1.0
+fastapi>=0.165.0,<1.0
 uvicorn[standard]>=0.54.0,<1.0
-pydantic>=2.14.3,<3.0
-pydantic-settings>=2.16.2,<3.0
+pydantic>=2.14.4,<3.0
+pydantic-settings>=2.16.3,<3.0
 
 # Rate Limiting / Auth
 slowapi>=0.1.9,<1.0
@@ -41,7 +41,7 @@ streamlit>=1.67.0,<2.0
 # Visualization
 plotly>=7.1.0,<8.0
 matplotlib>=3.11.2,<4.0
-folium>=0.20.0,<1.0
+folium>=1.0.0,<2.0
 seaborn>=0.13,<1.0
 
 # Explainability
@@ -55,7 +55,7 @@ pytest>=9.2.0,<10.0  # >=9.0.3 fixes PYSEC-2026-1845 (pytest 8.4.2 advisory)
 pytest-cov>=7.1.0,<8.0
 
 # Linting / Formatting
-ruff>=0.17.4,<1.0
+ruff>=0.17.6,<1.0
 black>=26.10.1,<27.0
 isort>=9.0.2,<10.0
 
@@ -63,7 +63,7 @@ isort>=9.0.2,<10.0
 kaggle>=2.2.5,<3.0
 
 # Database
-sqlalchemy>=2.1.8,<3.0
+sqlalchemy>=2.1.9,<3.0
 psycopg2-binary>=2.9.13,<3.0  # Postgres driver (compose uses postgres)
 alembic>=1.20.1,<2.0
 
@@ -77,7 +77,7 @@ python-dotenv>=1.2.4,<2.0
 prometheus-client>=0.19,<1.0
 
 # Hyperparameter Optimization
-optuna>=5.0.0,<6.0
+optuna>=5.1.0,<6.0
 
 # Retry with exponential backoff
 tenacity>=9.2.1,<10.0
