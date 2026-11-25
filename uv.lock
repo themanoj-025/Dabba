@@ -1018,7 +1018,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.20.1,<2.0" },
-    { name = "anthropic", specifier = ">=2.11.0,<3.0" },
+    { name = "anthropic", specifier = ">=2.12.0,<3.0" },
     { name = "black", specifier = ">=26.10.1,<27.0" },
     { name = "catboost", specifier = ">=1.2.10,<2.0" },
     { name = "faiss-cpu", specifier = ">=1.16.0,<2.0" },
